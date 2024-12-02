@@ -1,0 +1,14 @@
+{
+  "name": "ct553-server",
+  "module": "index.js",
+  "type": "module",
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "ct553-server": "file:"
+  }
+}
