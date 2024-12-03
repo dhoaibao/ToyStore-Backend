@@ -1,11 +1,12 @@
 import express from 'express';
-import { create, findAll } from "../controllers/user.controller.js";
+import { create, findAll, remove } from "../controllers/user.controller.js";
 
 const userRoutes = express.Router();
 
 userRoutes.route('/')
     .get(findAll)
-    .post(create);
+    .post(create)
+    .delete(remove);
 
 
 export default userRoutes;

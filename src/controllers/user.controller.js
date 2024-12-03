@@ -2,7 +2,6 @@ import User from '../models/user.model.js';
 
 export const create = async (req, res) => {
     try {
-        console.log(req.body);
         const user = await User.query().insert(req.body);
         return res.status(201).json(user);
     } catch (error) {
@@ -10,7 +9,6 @@ export const create = async (req, res) => {
         return res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
 };
-
 
 export const findAll = async (req, res) => {
     try {
@@ -41,7 +39,7 @@ export const update = async (req, res) => {
 
 export const remove = async (req, res) => {
     try {
-        await User.query().deleteById(req.params.id);
+        await User.query().delete();
         return res.status(204).send();
     } catch (error) {
         return res.status(500).json(error);
