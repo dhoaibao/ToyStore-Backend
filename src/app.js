@@ -10,13 +10,11 @@ app.use(cors());
 app.use(express.json());
 app.use(logger('dev'));
 
-app.get('/check', (_, res) => {
-    res.status(200).json({
-        status: 'OK',
-    });
-});
-
 app.use('/api/users', userRoutes);
+
+app.get("/", (req, res) => {
+    res.json({message: "Welcome to my application!"});
+});
 
 app.use((_, __, next) => {
     next(new ApiError(404, 'Not Found'));
