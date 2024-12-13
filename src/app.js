@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import logger from 'morgan';
 import ApiError from './middlewares/api-error.js';
-import userRoutes from './routes/user.route.js';
+import authRoutes from './routes/auth.route.js';
 
 const app = express();
 
@@ -10,10 +10,10 @@ app.use(cors());
 app.use(express.json());
 app.use(logger('dev'));
 
-app.use('/api/users', userRoutes);
+app.use('/api/auth', authRoutes);
 
 app.get("/", (req, res) => {
-    res.json({message: "Welcome to my application!"});
+    res.json({message: "Server is running!"});
 });
 
 app.use((_, __, next) => {
