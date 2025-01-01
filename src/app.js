@@ -10,14 +10,14 @@ app.use(cors());
 app.use(express.json());
 app.use(logger('dev'));
 
-app.use('/api/auth', authRoutes);
+app.use('/api/v1/auth', authRoutes);
 
 app.get("/", (req, res) => {
     res.json({message: "Server is running!"});
 });
 
 app.use((_, __, next) => {
-    next(new ApiError(404, 'Not Found'));
+    next(new ApiError(404, 'Not Found Route!'));
 });
 
 app.use((err, _, res, __) => {

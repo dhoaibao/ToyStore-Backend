@@ -7,6 +7,166 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Role {
+  roleId Int @id @default(autoincrement())
+  roleName String
+  roleDesc String
+  isActive Boolean
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users User[]
+  permissions Permission[] @relation("permission_roles")
+
+  @@map("roles")
+}
+
+model Permission {
+  permissionId Int @id @default(autoincrement())
+  permissionName String
+  apiPath String
+  medthod String
+  module String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  roles Role[] @relation("permission_roles")
+
+  @@map("permissions")
+}
+
+model Conversation {
+  conversationid Int @id @default(autoincrement())
+  text String
+  isRead Boolean
+
+  senderId       Int
+  sender         User   @relation("Sent", fields: [senderId], references: [userId])
+
+  receiverId     Int
+  receiver       User   @relation("Received", fields: [receiverId], references: [userId])
+
+  @@map("conversations")
+}
+
+model UploadImage {
+  uploadImageId Int @id @default(autoincrement())
+  path String
+  fileName String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  banners Banner[]
+  productImages ProductImage[]
+  blogImages BlogImage[]
+  // productImageEmbeddings productImageEmbedding[]
+  avatar User[]
+  shopLogo SystemConfiguration[]
+
+  @@map("upload_images")
+}
+
+model Banner {
+  bannerId Int @id @default(autoincrement())
+  isActive Boolean
+
+  imageId Int
+  image UploadImage @relation(fields: [imageId], references: [uploadImageId])
+
+  systemConfigId Int
+  systemConfig SystemConfiguration @relation(fields: [systemConfigId], references: [systemConfigId])
+
+  @@map("banners")
+}
+
+model SystemConfiguration {
+  systemConfigId Int @id @default(autoincrement())
+  shopName String
+  shopEmail String
+  shopPhone String
+
+  banners Banner[]
+  priceFillters PriceFillter[]
+
+  shopLogoId Int
+  shopLogo UploadImage @relation(fields: [shopLogoId], references: [uploadImageId])
+
+  @@map("system_configurations")
+}
+
+model PriceFillter {
+  priceFillterId Int @id @default(autoincrement())
+  minPrice Float
+  maxPrice Float
+
+  systemConfigId Int
+  systemConfig SystemConfiguration @relation(fields: [systemConfigId], references: [systemConfigId])
+
+  @@map("price_fillters")
+}
+
+model Blog {
+  blogId Int @id @default(autoincrement())
+  title String @unique
+  slug String
+  text String
+  published Boolean
+  publishedAt DateTime @default(now())
+
+  blogImages BlogImage[]
+
+  @@map("blogs")
+}
+
+model BlogImage {
+  blogImageId Int @id @default(autoincrement())
+
+  blogId Int
+  blog Blog @relation(fields: [blogId], references: [blogId])
+
+  imageId Int
+  image UploadImage @relation(fields: [imageId], references: [uploadImageId])
+
+  @@map("blog_images")
+}
+
+// model productImageEmbedding {
+//   productImageEmbeddingId Int @id @default(autoincrement())
+//   embedding Unsupported("vector")
+
+//   imageId Int
+//   image UploadImage @relation(fields: [imageId], references: [uploadImageId])
+
+//   productId Int
+//   product Product @relation(fields: [productId], references: [productId])
+
+//   @@map("product_image_embeddings")
+// }
+
+model ProductImage {
+  productImageId Int @id @default(autoincrement())
+
+  imageId Int
+  image UploadImage @relation(fields: [imageId], references: [uploadImageId])
+
+  productId Int
+  product Product @relation(fields: [productId], references: [productId])
+
+  @@map("product_images")
+}
+
+model Product {
+  productId Int @id @default(autoincrement())
+  productName String @unique
+  price Float
+  slug String
+  visible Boolean
+
+  productImages ProductImage[]
+  // productImageEmbeddings productImageEmbedding[]
+  
+  @@map("products")
+}
 model User {
   userId    Int      @id @default(autoincrement())
   fullName      String
@@ -14,8 +174,20 @@ model User {
   password  String
   phone     String?
   gender    Boolean?
-  refreshToken String?
+  birthday DateTime
   isActive  Boolean  @default(true)
+  refreshToken String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  avatar UploadImage? @relation(fields: [avatarId], references: [uploadImageId])
+  avatarId Int?
+
+  roleId Int?
+  role Role? @relation(fields: [roleId], references: [roleId])
+
+  sentConversations     Conversation[] @relation("Sent")
+  receivedConversations Conversation[] @relation("Received")
+
+  @@map("users")
 }

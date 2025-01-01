@@ -1,4 +1,4 @@
-const tf = require('@tensorflow/tfjs-node'); // Use tfjs-node for server-side
+const tf = require('@tensorflow/tfjs'); // Use tfjs-node for server-side
 const mobilenet = require('@tensorflow-models/mobilenet');
 const fs = require('fs');
 const axios = require('axios');
