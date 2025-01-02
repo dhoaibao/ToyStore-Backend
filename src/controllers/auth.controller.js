@@ -1,40 +1,8 @@
 import prisma from '../config/prismaClient.js'
 import bcrypt from 'bcrypt';
 import generateToken from '../utils/generateToken.js';
-
-export const getLoggedInUser = async (req, res) => {
-    try {
-        const user = req.user;
-
-        const existingUser = await prisma.user.findUnique({
-            where: { userId: user.userId },
-            select: {
-                userId: true,
-                fullName: true,
-                email: true,
-                birthday: true,
-                phone: true,
-                gender: true,
-                isActive: true,
-            }
-        });
-
-        if (!existingUser) {
-            return res.status(404).json({ message: "User not found!" });
-        }
-
-        return res.status(200).json({
-            message: 'User logged in!',
-            data: existingUser,
-        });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({
-            message: 'Internal Server Error',
-            error: error.message
-        });
-    }
-}
+import { sendOTPEmail } from '../utils/sendEmail.js';
+import { saveOTP, verifyOTP, saveUser, getUser } from '../utils/redis.js';
 
 export const signUp = async (req, res) => {
     try {
@@ -66,18 +34,23 @@ export const signUp = async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        const user = await prisma.user.create({
-            data: {
-                fullName,
-                email,
-                password: hashedPassword,
-                birthday: new Date(birthday),
-            }
-        });
+        const otp = (Math.floor(100000 + Math.random() * 900000)).toString().padStart(6, '0'); // Generate a 6-digit OTP as a string
+        await sendOTPEmail(email, otp);
+        await saveOTP(email, otp);
+
+        const user = {
+            fullName,
+            email,
+            password: hashedPassword,
+            birthday: new Date(birthday),
+        };
+
+        await saveUser(user);
 
         return res.status(201).json({
-            message: 'User created!',
+            message: 'Done! Please verify your email with the OTP sent.',
             data: user,
+            otp: otp,
         });
     } catch (error) {
         console.error(error);
@@ -118,6 +91,58 @@ export const signIn = async (req, res) => {
         return res.status(200).json({
             message: 'User logged in!',
             data: tokens,
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            message: 'Internal Server Error',
+            error: error.message
+        });
+    }
+}
+
+export const verifyEmail = async (req, res) => {
+    try {
+        const { email, otp } = req.body;
+
+        const isOtpValid = await verifyOTP(email, otp);
+
+        if (isOtpValid) {
+            const user = await getUser(email);
+            const { fullName, email: userEmail, password, birthday } = user;
+            await prisma.user.create({
+                data: {
+                    fullName,
+                    email: userEmail,
+                    password,
+                    birthday: new Date(birthday),
+                }
+            });
+
+            return res.status(200).json({ message: 'Email verified successfully!' });
+        } else {
+            return res.status(400).json({ message: 'Invalid OTP or OTP expired.' });
+        }
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            message: 'Internal Server Error',
+            error: error.message
+        });
+    }
+}
+
+export const resendOtp = async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        const otp = (Math.floor(100000 + Math.random() * 900000)).toString().padStart(6, '0');
+        await sendOTPEmail(email, otp);
+        await saveOTP(email, otp);
+
+        return res.status(200).json({
+            message: 'OTP resend successfully!',
+            otp: otp,
         });
     } catch (error) {
         console.error(error);

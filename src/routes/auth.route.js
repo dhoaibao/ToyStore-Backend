@@ -1,11 +1,11 @@
 import express from 'express';
-import { signUp, signIn, getLoggedInUser } from "../controllers/auth.controller.js";
-import { auth } from "../middlewares/authentication.js";
+import { signUp, signIn, verifyEmail, resendOtp } from "../controllers/auth.controller.js";
 
 const router = express.Router();
 
 router.post('/sign-up', signUp);
 router.post('/sign-in', signIn);
-router.get('/me', auth, getLoggedInUser);
+router.post('/verify-email', verifyEmail);
+router.post('/resend-otp', resendOtp);
 
 export default router;
