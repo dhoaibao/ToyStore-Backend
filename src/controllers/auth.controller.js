@@ -152,3 +152,23 @@ export const resendOtp = async (req, res) => {
         });
     }
 }
+
+export const signOut = async (req, res) => {
+    try {
+        const { user } = req.user;
+
+        await prisma.user.update({
+            where: { userId: user.userId },
+            data: { refreshToken: null },
+        });
+
+        return res.status(200).json({ message: 'User logged out!' });
+    }
+    catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            message: 'Internal Server Error',
+            error: error.message
+        });
+    }
+}
