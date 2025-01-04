@@ -10,27 +10,39 @@ client.connect().catch((err) => {
     console.error('Error connecting to Redis:', err);
 });
 
-export const saveOTP = async (email, otp) => {
+export const saveData = async (key, time, value) => {
     try {
-        await client.setEx(email, 60, otp); // 60s
-        console.log('OTP saved for:', email);
+        await client.setEx(key, parseInt(time), value);
+        console.log('Data saved for:', key);
     } catch (err) {
-        console.error('Error saving OTP:', err);
+        console.error('Error saving data:', err);
     }
 };
 
-export const verifyOTP = async (email, enteredOtp) => {
+export const getData = async (key) => {
     try {
-        const storedOtp = await client.get(email); // Retrieve OTP from Redis
-        if (storedOtp === enteredOtp) {
-            console.log('OTP verified successfully!');
+        const value = await client.get(key);
+        console.log('Data fetched:', value);
+        return value;
+    } catch (err) {
+        console.error('Error fetching data:', err);
+        return null;
+    }
+}
+
+export const verifyData = async (key, value) => {
+    try {
+        const storedValue = await client.get(key);
+        console.log('Stored value:', storedValue);
+        if (storedValue === value) {
+            console.log('Data verified successfully!');
             return true;
         } else {
-            console.log('Invalid OTP');
+            console.log('Invalid data');
             return false;
         }
     } catch (err) {
-        console.error('Error verifying OTP:', err);
+        console.error('Error verifying data:', err);
         return false;
     }
 };
@@ -46,7 +58,7 @@ export const saveUser = async (user) => {
         });
 
         // Đặt thời gian hết hạn (nếu cần, ví dụ 1 ngày)
-        await client.expire(userKey, 86400); 
+        await client.expire(userKey, 86400);
     } catch (err) {
         console.error('Error verifying OTP:', err);
         return false;

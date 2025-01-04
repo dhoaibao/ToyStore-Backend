@@ -2,18 +2,34 @@ import jwt from 'jsonwebtoken';
 
 export const auth = async (req, res, next) => {
     try {
-        const token = req.headers.authorization?.split(' ')[1];
+        const authHeader = req.headers.authorization;
 
+        if (!authHeader) {
+            return res.status(401).json({ message: 'Authorization header is missing' });
+        }
+
+        const token = authHeader.split(' ')[1];
         if (!token) {
-            return res.status(401).json({ message: 'No token provided' });
+            return res.status(401).json({ message: 'Token is missing from the authorization header' });
         }
 
         const secret = process.env.ACCESS_TOKEN_SECRET;
-        const decoded = jwt.verify(token, secret);
 
-        req.user = { userId: decoded.userId, email: decoded.email };
-        next();
+        try {
+            const decoded = jwt.verify(token, secret);
+            req.userId = decoded.userId;
+            next();
+        } catch (verificationError) {
+            if (verificationError.name === 'TokenExpiredError') {
+                return res.status(403).json({ message: 'Token has expired' });
+            }
+            if (verificationError.name === 'JsonWebTokenError') {
+                return res.status(403).json({ message: 'Invalid token' });
+            }
+            return res.status(403).json({ message: 'Failed to verify token' });
+        }
     } catch (err) {
-        return res.status(403).json(err.message);
+        console.error('Authorization error:', err); // Ghi nhật ký lỗi
+        res.status(500).json({ message: 'Internal server error' });
     }
 };
