@@ -1,5 +1,5 @@
 import express from 'express';
-import { signUp, signIn, verifyEmail, resendOtp, refreshToken, resetPassword, verifyResetPassword } from "../controllers/auth.controller.js";
+import { signUp, signIn, verifyEmail, resendOtp, refreshToken, resetPassword, verifyResetPassword, signInWithGoogle } from "../controllers/auth.controller.js";
 
 const router = express.Router();
 
@@ -10,5 +10,6 @@ router.post('/resend-otp', resendOtp);
 router.post('/refresh-token', refreshToken);
 router.post('/reset-password', resetPassword);
 router.post('/verify-reset-password', verifyResetPassword);
+router.post('/sign-in-with-google', signInWithGoogle);
 
 export default router;

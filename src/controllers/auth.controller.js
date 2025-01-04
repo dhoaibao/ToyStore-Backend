@@ -96,6 +96,38 @@ export const signIn = async (req, res) => {
     }
 }
 
+export const signInWithGoogle = async (req, res) => {
+    try {
+        const { email, fullName } = req.body;
+
+        console.log(email, fullName);
+
+        let user = await prisma.user.findUnique({ where: { email } });
+
+        if (!user) {
+            user = await prisma.user.create({
+                data: {
+                    email,
+                    fullName,
+                }
+            });
+        }
+
+        const tokens = generateToken(user);
+
+        return res.status(200).json({
+            message: 'User logged in!',
+            data: tokens,
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            message: 'Internal Server Error',
+            error: error.message
+        });
+    }
+}
+
 export const verifyEmail = async (req, res) => {
     try {
         const { email, otp } = req.body;

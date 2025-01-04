@@ -171,10 +171,10 @@ model User {
   userId    Int      @id @default(autoincrement())
   fullName      String
   email     String   @unique
-  password  String
+  password  String?
   phone     String?
   gender    Boolean?
-  birthday DateTime
+  birthday DateTime?
   isActive  Boolean  @default(true)
   refreshToken String?
   createdAt DateTime @default(now())
