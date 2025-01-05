@@ -1,4 +1,5 @@
 import { createClient } from 'redis';
+import { convertTimeToSeconds } from './time.js';
 
 const client = createClient();
 
@@ -10,20 +11,38 @@ client.connect().catch((err) => {
     console.error('Error connecting to Redis:', err);
 });
 
-export const saveData = async (key, time, value) => {
+export const setData = async (key, time, value) => {
     try {
-        await client.setEx(key, parseInt(time), value);
-        console.log('Data saved for:', key);
+        const ttl = time ? convertTimeToSeconds(time) : null;
+        const valueToStore = typeof value === "object" ? JSON.stringify(value) : value;
+        if (ttl) {
+            await client.setEx(key, ttl, valueToStore);
+        } else {
+            await client.set(key, valueToStore);
+        }
+
+        console.log("Data saved for:", key);
+        return true;
     } catch (err) {
-        console.error('Error saving data:', err);
+        console.error("Error saving data:", err);
+        return false;
     }
 };
 
 export const getData = async (key) => {
     try {
         const value = await client.get(key);
-        console.log('Data fetched:', value);
-        return value;
+        
+        const parsedValue = (() => {
+            try {
+                return JSON.parse(value);
+            } catch {
+                return value;
+            }
+        })();
+
+        console.log("Data fetched:", parsedValue);
+        return parsedValue;
     } catch (err) {
         console.error('Error fetching data:', err);
         return null;
@@ -33,12 +52,29 @@ export const getData = async (key) => {
 export const verifyData = async (key, value) => {
     try {
         const storedValue = await client.get(key);
-        console.log('Stored value:', storedValue);
-        if (storedValue === value) {
+
+        if (storedValue === null) {
+            console.log(`No data found for key: ${key}`);
+            return false;
+        }
+
+        const parsedStoredValue = (() => {
+            try {
+                return JSON.parse(storedValue);
+            } catch {
+                return storedValue;
+            }
+        })();
+
+        const isVerified = typeof parsedStoredValue === "object"
+            ? JSON.stringify(parsedStoredValue) === JSON.stringify(value)
+            : String(parsedStoredValue) === value;
+
+        if (isVerified) {
             console.log('Data verified successfully!');
             return true;
         } else {
-            console.log('Invalid data');
+            console.log('Data verification failed!');
             return false;
         }
     } catch (err) {
@@ -46,37 +82,3 @@ export const verifyData = async (key, value) => {
         return false;
     }
 };
-
-export const saveUser = async (user) => {
-    try {
-        const userKey = `user:${user.email}`; // Sử dụng ID làm khóa
-        await client.hSet(userKey, {
-            fullName: user.fullName,
-            email: user.email,
-            password: user.password,
-            birthday: user.birthday.toISOString(), // Chuyển ngày tháng sang chuỗi
-        });
-
-        // Đặt thời gian hết hạn (nếu cần, ví dụ 1 ngày)
-        await client.expire(userKey, 86400);
-    } catch (err) {
-        console.error('Error verifying OTP:', err);
-        return false;
-    }
-};
-
-export const getUser = async (userEmail) => {
-    const userKey = `user:${userEmail}`;
-
-    // Kiểm tra nếu người dùng tồn tại trong Redis
-    const userExists = await client.exists(userKey);
-    if (!userExists) {
-        console.log('User not found in Redis');
-        return null;
-    }
-
-    // Lấy thông tin người dùng
-    const user = await client.hGetAll(userKey);
-    console.log('User from Redis:', user);
-    return user;
-}

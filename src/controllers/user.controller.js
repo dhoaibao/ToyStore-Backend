@@ -1,21 +1,28 @@
 import prisma from '../config/prismaClient.js'
 import bcrypt from 'bcrypt';
 
+const userSelect = {
+    userId: true,
+    fullName: true,
+    avatar: {
+        select: {
+            url: true,
+        },
+    },
+    email: true,
+    birthday: true,
+    phone: true,
+    gender: true,
+    isActive: true,
+};
+
 export const getLoggedInUser = async (req, res) => {
     try {
         const userId = req.userId;
 
         const existingUser = await prisma.user.findUnique({
             where: { userId: userId },
-            select: {
-                userId: true,
-                fullName: true,
-                email: true,
-                birthday: true,
-                phone: true,
-                gender: true,
-                isActive: true,
-            }
+            select: userSelect,
         });
 
         if (!existingUser) {
@@ -44,15 +51,7 @@ export const getAllUsers = async (req, res) => {
         const users = await prisma.user.findMany({
             skip,
             take,
-            select: {
-                userId: true,
-                fullName: true,
-                email: true,
-                birthday: true,
-                phone: true,
-                gender: true,
-                isActive: true,
-            }
+            select: userSelect,
         });
 
         const totalUsers = await prisma.user.count();
@@ -79,19 +78,11 @@ export const getAllUsers = async (req, res) => {
 
 export const getUserById = async (req, res) => {
     try {
-        const { userId } = req.params;
+        const { id } = req.params;
 
         const user = await prisma.user.findUnique({
-            where: { userId: parseInt(userId) },
-            select: {
-                userId: true,
-                fullName: true,
-                email: true,
-                birthday: true,
-                phone: true,
-                gender: true,
-                isActive: true,
-            }
+            where: { userId: parseInt(id) },
+            select: userSelect,
         });
 
         if (!user) {
@@ -114,34 +105,27 @@ export const getUserById = async (req, res) => {
 
 export const updateUser = async (req, res) => {
     try {
-        const { userId } = req.params;
+        const { id } = req.params;
 
-        const { fullName, email, phone, gender, birthday } = req.body;
+        const { fullName, email, phone, gender, birthday, avatarId } = req.body;
 
-        const user = await prisma.user.findUnique({ where: { userId: parseInt(userId) } });
+        const user = await prisma.user.findUnique({ where: { userId: parseInt(id) } });
 
         if (!user) {
             return res.status(404).json({ message: 'User not found!' });
         }
 
         const updatedUser = await prisma.user.update({
-            where: { userId: parseInt(userId) },
+            where: { userId: parseInt(id) },
             data: {
                 fullName: fullName || user.fullName,
                 email: email || user.email,
                 phone: phone || user.phone,
                 gender: gender || user.gender,
-                birthday: birthday || user.birthday,
+                avatarId: avatarId || user.avatarId,
+                birthday: new Date(birthday) || new Date(user.birthday),
             },
-            select: {
-                userId: true,
-                fullName: true,
-                email: true,
-                birthday: true,
-                phone: true,
-                gender: true,
-                isActive: true,
-            }
+            select: userSelect,
         });
 
         return res.status(200).json({
@@ -210,9 +194,9 @@ export const changePassword = async (req, res) => {
 
 export const deleteUser = async (req, res) => {
     try {
-        const { userId } = req.params;
+        const { id } = req.params;
 
-        await prisma.user.delete({ where: { userId: parseInt(userId) } });
+        await prisma.user.delete({ where: { userId: parseInt(id) } });
 
         return res.status(200).json({ message: 'User deleted!' });
     }

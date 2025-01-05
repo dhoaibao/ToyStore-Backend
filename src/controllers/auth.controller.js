@@ -1,8 +1,8 @@
 import prisma from '../config/prismaClient.js'
 import bcrypt from 'bcrypt';
 import { generateToken, decodedRefreshToken } from '../utils/token.js';
-import { sendOTPEmail, sendPasswordResetSuccessEmail } from '../utils/sendEmail.js';
-import { saveData, getData, verifyData, saveUser, getUser } from '../utils/redis.js';
+import { sendOTPEmail, sendPasswordResetSuccessEmail } from '../utils/email.js';
+import { setData, getData, verifyData } from '../utils/redis.js';
 
 export const signUp = async (req, res) => {
     try {
@@ -36,7 +36,7 @@ export const signUp = async (req, res) => {
 
         const otp = (Math.floor(100000 + Math.random() * 900000)).toString().padStart(6, '0'); // Generate a 6-digit OTP as a string
         await sendOTPEmail(email, otp);
-        await saveData(`otp:${email}`, 60, otp);
+        await setData(`otp:${email}`, '60s', otp);
 
         const user = {
             fullName,
@@ -45,7 +45,7 @@ export const signUp = async (req, res) => {
             birthday: new Date(birthday),
         };
 
-        await saveUser(user);
+        await setData(`user:${email}`, '1d', user);
 
         return res.status(201).json({
             message: 'Done! Please verify your email with the OTP sent.',
@@ -74,7 +74,7 @@ export const signIn = async (req, res) => {
         if (!existingUser) {
             return res.status(404).json({ message: "User not found!" });
         }
-
+        console.log(password, existingUser.password);
         const isPasswordValid = await bcrypt.compare(password, existingUser.password);
 
         if (!isPasswordValid) {
@@ -135,7 +135,8 @@ export const verifyEmail = async (req, res) => {
         const isOtpValid = await verifyData(`otp:${email}`, otp);
 
         if (isOtpValid) {
-            const user = await getUser(email);
+            console.log('OTP verified successfully!');
+            const user = await getData(`user:${email}`);
             const { fullName, email: userEmail, password, birthday } = user;
             await prisma.user.create({
                 data: {
@@ -165,7 +166,7 @@ export const resendOtp = async (req, res) => {
 
         const otp = (Math.floor(100000 + Math.random() * 900000)).toString().padStart(6, '0');
         await sendOTPEmail(email, otp);
-        await saveData(`otp:${email}`, 60, otp);
+        await setData(`otp:${email}`, '60s', otp);
 
         return res.status(200).json({
             message: 'OTP resend successfully!',
@@ -208,11 +209,11 @@ export const resetPassword = async (req, res) => {
 
         const otp = (Math.floor(100000 + Math.random() * 900000)).toString().padStart(6, '0'); // Generate a 6-digit OTP as a string
         await sendOTPEmail(email, otp);
-        await saveData(`otp:${email}`, 60, otp);
+        await setData(`otp:${email}`, '60s', otp);
 
         const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-        await saveData(`pass:${email}`, 86400, hashedPassword);
+        await setData(`pass:${email}`, '1d', hashedPassword);
         return res.status(201).json({
             message: 'Password reset successfully!',
             otp: otp,
@@ -234,6 +235,8 @@ export const verifyResetPassword = async (req, res) => {
 
         if (isOtpValid) {
             const password = await getData(`pass:${email}`);
+
+            console.log('Password:', password)
 
             await prisma.user.update({
                 where: { email },
@@ -265,18 +268,13 @@ export const refreshToken = async (req, res) => {
 
         const userId = decodedRefreshToken(refreshToken);
 
-        const existingUser = await prisma.user.findFirst({ where: { userId } });
+        const existingUser = await prisma.user.findUnique({ where: { userId } });
 
         if (!existingUser) {
             return res.status(404).json({ message: 'User not found!' });
         }
 
         const tokens = generateToken(existingUser);
-
-        await prisma.user.update({
-            where: { userId: existingUser.userId },
-            data: { refreshToken: tokens.refreshToken },
-        });
 
         return res.status(200).json({
             message: 'Token refreshed!',

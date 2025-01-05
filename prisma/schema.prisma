@@ -51,8 +51,8 @@ model Conversation {
 
 model UploadImage {
   uploadImageId Int @id @default(autoincrement())
-  path String
-  fileName String
+  url String
+  publicId String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -176,9 +176,10 @@ model User {
   gender    Boolean?
   birthday DateTime?
   isActive  Boolean  @default(true)
-  refreshToken String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  addresses Address[]
 
   avatar UploadImage? @relation(fields: [avatarId], references: [uploadImageId])
   avatarId Int?
@@ -190,4 +191,23 @@ model User {
   receivedConversations Conversation[] @relation("Received")
 
   @@map("users")
+}
+
+model Address {
+  addressId Int @id @default(autoincrement())
+  provinceCode String
+  districtCode String
+  wardCode String
+  provinceName String
+  districtName String
+  wardName String
+  detail String
+  isDefault Boolean
+  contactName String
+  contactPhone String
+
+  userId Int
+  user User @relation(fields: [userId], references: [userId])
+
+  @@map("addresses")
 }
