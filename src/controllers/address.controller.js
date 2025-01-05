@@ -22,7 +22,7 @@ const addressSelect = {
     }
 };
 
-export const getAllAddresss = async (req, res) => {
+export const getAllAddreses = async (req, res) => {
     try {
         const addresss = await prisma.address.findMany({
             select: addressSelect,
@@ -69,27 +69,67 @@ export const getAddressById = async (req, res) => {
     }
 }
 
+export const createAddress = async (req, res) => {
+    try {
+        const { provinceCode, districtCode, wardCode, provinceName, districtName, wardName, detail, isDefault, contactName, contactPhone, userId } = req.body;
+
+        const address = await prisma.address.create({
+            data: {
+                provinceCode,
+                districtCode,
+                wardCode,
+                provinceName,
+                districtName,
+                wardName,
+                detail,
+                isDefault,
+                contactName,
+                contactPhone,
+                userId: parseInt(userId),
+            },
+            select: addressSelect,
+        });
+
+        return res.status(201).json({
+            message: 'Address created!',
+            data: address,
+        });
+    }
+    catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            message: 'Internal Server Error',
+            error: error.message
+        });
+    }
+}
+
 export const updateAddress = async (req, res) => {
     try {
-        const { addressId } = req.params;
+        const { id } = req.params;
 
-        const { fullName, email, phone, gender, birthday, avatarId } = req.body;
+        const { provinceCode, districtCode, wardCode, provinceName, districtName, wardName, detail, isDefault, contactName, contactPhone, userId } = req.body;
 
-        const address = await prisma.address.findUnique({ where: { addressId: parseInt(addressId) } });
+        const address = await prisma.address.findUnique({ where: { addressId: parseInt(id) } });
 
         if (!address) {
             return res.status(404).json({ message: 'Address not found!' });
         }
 
         const updatedAddress = await prisma.address.update({
-            where: { addressId: parseInt(addressId) },
+            where: { addressId: parseInt(id) },
             data: {
-                fullName: fullName || address.fullName,
-                email: email || address.email,
-                phone: phone || address.phone,
-                gender: gender || address.gender,
-                avatarId: avatarId || address.avatarId,
-                birthday: new Date(birthday) || new Date(address.birthday),
+                provinceCode: provinceCode || address.provinceCode,
+                districtCode: districtCode || address.districtCode,
+                wardCode: wardCode || address.wardCode,
+                provinceName: provinceName || address.provinceName,
+                districtName: districtName || address.districtName,
+                wardName: wardName || address.wardName,
+                detail: detail || address.detail,
+                isDefault: isDefault || address.isDefault,
+                contactName: contactName || address.contactName,
+                contactPhone: contactPhone || address.contactPhone,
+                userId: parseInt(userId) || address.userId,
             },
             select: addressSelect,
         });
