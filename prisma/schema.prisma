@@ -195,6 +195,7 @@ model User {
 
 model Address {
   addressId Int @id @default(autoincrement())
+  addressName String
   provinceCode String
   districtCode String
   wardCode String

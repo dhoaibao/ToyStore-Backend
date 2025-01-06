@@ -2,6 +2,7 @@ import prisma from '../config/prismaClient.js'
 
 const addressSelect = {
     addressId: true,
+    addressName: true,
     provinceCode: true,
     districtCode: true,
     wardCode: true,
@@ -21,6 +22,29 @@ const addressSelect = {
         }
     }
 };
+
+export const getAddressByUser = async (req, res) => {
+    try {
+        const userId = req.userId;
+
+        const addresss = await prisma.address.findMany({
+            where: { userId: parseInt(userId) },
+            select: addressSelect,
+        });
+
+        return res.status(200).json({
+            message: 'All addresss fetched!',
+            data: addresss,
+        });
+    }
+    catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            message: 'Internal Server Error',
+            error: error.message
+        });
+    }
+}
 
 export const getAllAddreses = async (req, res) => {
     try {
@@ -71,18 +95,19 @@ export const getAddressById = async (req, res) => {
 
 export const createAddress = async (req, res) => {
     try {
-        const { provinceCode, districtCode, wardCode, provinceName, districtName, wardName, detail, isDefault, contactName, contactPhone, userId } = req.body;
+        const { addressName, provinceCode, districtCode, wardCode, provinceName, districtName, wardName, detail, isDefault, contactName, contactPhone, userId } = req.body;
 
         const address = await prisma.address.create({
             data: {
-                provinceCode,
-                districtCode,
-                wardCode,
+                addressName,
+                provinceCode: String(provinceCode),
+                districtCode: String(districtCode),
+                wardCode: String(wardCode),
                 provinceName,
                 districtName,
                 wardName,
                 detail,
-                isDefault,
+                isDefault: isDefault || false,
                 contactName,
                 contactPhone,
                 userId: parseInt(userId),
@@ -108,7 +133,7 @@ export const updateAddress = async (req, res) => {
     try {
         const { id } = req.params;
 
-        const { provinceCode, districtCode, wardCode, provinceName, districtName, wardName, detail, isDefault, contactName, contactPhone, userId } = req.body;
+        const { addressName, provinceCode, districtCode, wardCode, provinceName, districtName, wardName, detail, isDefault, contactName, contactPhone, userId } = req.body;
 
         const address = await prisma.address.findUnique({ where: { addressId: parseInt(id) } });
 
@@ -119,9 +144,10 @@ export const updateAddress = async (req, res) => {
         const updatedAddress = await prisma.address.update({
             where: { addressId: parseInt(id) },
             data: {
-                provinceCode: provinceCode || address.provinceCode,
-                districtCode: districtCode || address.districtCode,
-                wardCode: wardCode || address.wardCode,
+                addressName: addressName || address.addressName,
+                provinceCode: String(provinceCode) || address.provinceCode,
+                districtCode: String(districtCode) || address.districtCode,
+                wardCode: String(wardCode) || address.wardCode,
                 provinceName: provinceName || address.provinceName,
                 districtName: districtName || address.districtName,
                 wardName: wardName || address.wardName,
