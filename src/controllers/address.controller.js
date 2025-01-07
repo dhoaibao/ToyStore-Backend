@@ -97,6 +97,10 @@ export const createAddress = async (req, res) => {
     try {
         const { addressName, provinceCode, districtCode, wardCode, provinceName, districtName, wardName, detail, isDefault, contactName, contactPhone, userId } = req.body;
 
+        if (!addressName || !provinceCode || !districtCode || !wardCode || !provinceName || !districtName || !wardName || !detail || !contactName || !contactPhone) {
+            return res.status(400).json({ message: 'Missing required fields!' });
+        }
+
         const address = await prisma.address.create({
             data: {
                 addressName,
@@ -115,7 +119,6 @@ export const createAddress = async (req, res) => {
             select: addressSelect,
         });
 
-        
         if (isDefault) {
             await prisma.address.updateMany({
                 where: { addressId: { not: address.addressId } },
