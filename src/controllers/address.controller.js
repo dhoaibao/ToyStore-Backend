@@ -46,7 +46,7 @@ export const getAddressByUser = async (req, res) => {
     }
 }
 
-export const getAllAddreses = async (req, res) => {
+export const getAllAddreses = async (_, res) => {
     try {
         const addresss = await prisma.address.findMany({
             select: addressSelect,
