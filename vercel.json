@@ -1,15 +1,22 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "server.js",
-      "use": "@vercel/node"
+    "version": 2,
+    "builds": [
+      {
+        "src": "server.js",
+        "use": "@vercel/node"
+      }
+    ],
+    "routes": [
+      {
+        "src": "/(.*)",
+        "dest": "server.js"
+      }
+    ],
+    "build": {
+      "env": {
+        "DATABASE_URL": "your_database_url"
+      },
+      "buildCommand": "npm install && npx prisma generate"
     }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "server.js"
-    }
-  ]
-}
+  }
+  
