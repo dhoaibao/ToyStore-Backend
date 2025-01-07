@@ -115,6 +115,14 @@ export const createAddress = async (req, res) => {
             select: addressSelect,
         });
 
+        
+        if (isDefault) {
+            await prisma.address.updateMany({
+                where: { addressId: { not: address.addressId } },
+                data: { isDefault: false },
+            });
+        }
+
         return res.status(201).json({
             message: 'Address created!',
             data: address,
@@ -159,6 +167,13 @@ export const updateAddress = async (req, res) => {
             },
             select: addressSelect,
         });
+
+        if (isDefault) {
+            await prisma.address.updateMany({
+                where: { addressId: { not: parseInt(id) } },
+                data: { isDefault: false },
+            });
+        }
 
         return res.status(200).json({
             message: 'Address updated!',
