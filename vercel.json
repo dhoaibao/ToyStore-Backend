@@ -14,7 +14,7 @@
     ],
     "build": {
       "env": {
-        "DATABASE_URL": "your_database_url"
+        "DATABASE_URL": "postgres://avnadmin:AVNS_CK25fTrQPFU5SJ4OX0r@pg-3f0cb446-dhbao.d.aivencloud.com:23315/defaultdb?sslmode=require"
       },
       "buildCommand": "npm install && npx prisma generate"
     }
