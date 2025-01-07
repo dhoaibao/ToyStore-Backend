@@ -1,7 +1,14 @@
 import { createClient } from 'redis';
 import { convertTimeToSeconds } from './time.js';
 
-const client = createClient();
+const client = createClient({
+    username: process.env.REDIS_USERNAME,
+    password: process.env.REDIS_PASSWORD,
+    socket: {
+        host: process.env.REDIS_HOST,
+        port: process.env.REDIS_PORT
+    }
+});
 
 client.on('error', (err) => {
     console.error('Redis client error:', err);
