@@ -1,5 +1,5 @@
 import { createClient } from 'redis';
-import { convertTimeToSeconds } from './time.js';
+import convertTimeToSeconds from './convertTimeToSeconds.js';
 
 const client = createClient({
     username: process.env.REDIS_USERNAME,

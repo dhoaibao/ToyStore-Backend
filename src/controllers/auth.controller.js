@@ -1,7 +1,7 @@
 import prisma from '../config/prismaClient.js'
 import bcrypt from 'bcrypt';
 import { generateToken, decodedRefreshToken } from '../utils/token.js';
-import { sendOTPEmail, sendPasswordResetSuccessEmail } from '../utils/email.js';
+import { sendOTPEmail, sendPasswordResetSuccessEmail } from '../utils/sendEmail.js';
 import { setData, getData, verifyData } from '../utils/redis.js';
 
 export const signUp = async (req, res) => {

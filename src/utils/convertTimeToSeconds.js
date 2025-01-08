@@ -19,4 +19,4 @@ function convertTimeToSeconds(time) {
     return conversionFactors[unit] ? value * conversionFactors[unit] : null;
 }
 
-export { convertTimeToSeconds };
+export default convertTimeToSeconds;
