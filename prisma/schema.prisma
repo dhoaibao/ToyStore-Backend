@@ -59,7 +59,7 @@ model UploadImage {
   banners Banner[]
   productImages ProductImage[]
   blogImages BlogImage[]
-  // productImageEmbeddings productImageEmbedding[]
+  productImageEmbeddings productImageEmbedding[]
   avatar User[]
   shopLogo SystemConfiguration[]
 
@@ -130,18 +130,18 @@ model BlogImage {
   @@map("blog_images")
 }
 
-// model productImageEmbedding {
-//   productImageEmbeddingId Int @id @default(autoincrement())
-//   embedding Unsupported("vector")
+model productImageEmbedding {
+  productImageEmbeddingId Int @id @default(autoincrement())
+  embedding Unsupported("vector")
 
-//   imageId Int
-//   image UploadImage @relation(fields: [imageId], references: [uploadImageId])
+  imageId Int
+  image UploadImage @relation(fields: [imageId], references: [uploadImageId])
 
-//   productId Int
-//   product Product @relation(fields: [productId], references: [productId])
+  productId Int
+  product Product @relation(fields: [productId], references: [productId])
 
-//   @@map("product_image_embeddings")
-// }
+  @@map("product_image_embeddings")
+}
 
 model ProductImage {
   productImageId Int @id @default(autoincrement())
@@ -163,10 +163,27 @@ model Product {
   visible Boolean
 
   productImages ProductImage[]
-  // productImageEmbeddings productImageEmbedding[]
+  productImageEmbeddings productImageEmbedding[]
+
+  brandId Int?
+  brand Brand? @relation(fields: [brandId], references: [brandId])
   
   @@map("products")
 }
+
+model Brand {
+  brandId Int @id @default(autoincrement())
+  brandName String @unique
+  brandDesc String
+  isActive Boolean
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  products Product[]
+
+  @@map("brands")
+}
+
 model User {
   userId    Int      @id @default(autoincrement())
   fullName      String

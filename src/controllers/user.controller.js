@@ -1,5 +1,6 @@
 import prisma from '../config/prismaClient.js'
 import bcrypt from 'bcrypt';
+import { uploadSingleImage } from '../services/upload.service.js';
 
 const userSelect = {
     userId: true,
@@ -107,7 +108,17 @@ export const updateUser = async (req, res) => {
     try {
         const { id } = req.params;
 
-        const { fullName, email, phone, gender, birthday, avatarId } = req.body;
+        let avatarId = null;
+
+        if (req.file) {
+            const filePath = req.file.path;
+
+            const imageData = await uploadSingleImage(filePath);
+
+            avatarId = imageData.image.uploadImageId;
+        }
+
+        const { fullName, email, phone, gender, birthday } = req.body;
 
         const user = await prisma.user.findUnique({ where: { userId: parseInt(id) } });
 
@@ -121,7 +132,7 @@ export const updateUser = async (req, res) => {
                 fullName: fullName || user.fullName,
                 email: email || user.email,
                 phone: phone || user.phone,
-                gender: gender || user.gender,
+                gender: Boolean(gender) || user.gender,
                 avatarId: avatarId || user.avatarId,
                 birthday: new Date(birthday) || new Date(user.birthday),
             },

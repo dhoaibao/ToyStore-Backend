@@ -24,14 +24,6 @@ CREATE TABLE "permissions" (
 );
 
 -- CreateTable
-CREATE TABLE "permission_roles" (
-    "permissionId" INTEGER NOT NULL,
-    "roleId" INTEGER NOT NULL,
-
-    CONSTRAINT "permission_roles_pkey" PRIMARY KEY ("permissionId","roleId")
-);
-
--- CreateTable
 CREATE TABLE "conversations" (
     "conversationid" SERIAL NOT NULL,
     "text" TEXT NOT NULL,
@@ -45,8 +37,8 @@ CREATE TABLE "conversations" (
 -- CreateTable
 CREATE TABLE "upload_images" (
     "uploadImageId" SERIAL NOT NULL,
-    "path" TEXT NOT NULL,
-    "fileName" TEXT NOT NULL,
+    "url" TEXT NOT NULL,
+    "publicId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -106,6 +98,16 @@ CREATE TABLE "blog_images" (
 );
 
 -- CreateTable
+CREATE TABLE "product_image_embeddings" (
+    "productImageEmbeddingId" SERIAL NOT NULL,
+    "embedding" VECTOR(512) NOT NULL,
+    "imageId" INTEGER NOT NULL,
+    "productId" INTEGER NOT NULL,
+
+    CONSTRAINT "product_image_embeddings_pkey" PRIMARY KEY ("productImageEmbeddingId")
+);
+
+-- CreateTable
 CREATE TABLE "product_images" (
     "productImageId" SERIAL NOT NULL,
     "imageId" INTEGER NOT NULL,
@@ -121,35 +123,66 @@ CREATE TABLE "products" (
     "price" DOUBLE PRECISION NOT NULL,
     "slug" TEXT NOT NULL,
     "visible" BOOLEAN NOT NULL,
+    "brandId" INTEGER,
 
     CONSTRAINT "products_pkey" PRIMARY KEY ("productId")
 );
 
 -- CreateTable
-CREATE TABLE "User" (
-    "userId" SERIAL NOT NULL,
-    "fullName" TEXT NOT NULL,
-    "email" TEXT NOT NULL,
-    "password" TEXT NOT NULL,
-    "phone" TEXT,
-    "gender" BOOLEAN,
-    "birtdDay" TIMESTAMP(3) NOT NULL,
-    "isActive" BOOLEAN NOT NULL DEFAULT true,
-    "refreshToken" TEXT,
+CREATE TABLE "brands" (
+    "brandId" SERIAL NOT NULL,
+    "brandName" TEXT NOT NULL,
+    "brandDesc" TEXT NOT NULL,
+    "isActive" BOOLEAN NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "avatarId" INTEGER NOT NULL,
-    "roleId" INTEGER NOT NULL,
 
-    CONSTRAINT "User_pkey" PRIMARY KEY ("userId")
+    CONSTRAINT "brands_pkey" PRIMARY KEY ("brandId")
 );
 
 -- CreateTable
-CREATE TABLE "_PermissionToRole" (
+CREATE TABLE "users" (
+    "userId" SERIAL NOT NULL,
+    "fullName" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "password" TEXT,
+    "phone" TEXT,
+    "gender" BOOLEAN,
+    "birthday" TIMESTAMP(3),
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "avatarId" INTEGER,
+    "roleId" INTEGER,
+
+    CONSTRAINT "users_pkey" PRIMARY KEY ("userId")
+);
+
+-- CreateTable
+CREATE TABLE "addresses" (
+    "addressId" SERIAL NOT NULL,
+    "addressName" TEXT NOT NULL,
+    "provinceCode" TEXT NOT NULL,
+    "districtCode" TEXT NOT NULL,
+    "wardCode" TEXT NOT NULL,
+    "provinceName" TEXT NOT NULL,
+    "districtName" TEXT NOT NULL,
+    "wardName" TEXT NOT NULL,
+    "detail" TEXT NOT NULL,
+    "isDefault" BOOLEAN NOT NULL,
+    "contactName" TEXT NOT NULL,
+    "contactPhone" TEXT NOT NULL,
+    "userId" INTEGER NOT NULL,
+
+    CONSTRAINT "addresses_pkey" PRIMARY KEY ("addressId")
+);
+
+-- CreateTable
+CREATE TABLE "_permission_roles" (
     "A" INTEGER NOT NULL,
     "B" INTEGER NOT NULL,
 
-    CONSTRAINT "_PermissionToRole_AB_pkey" PRIMARY KEY ("A","B")
+    CONSTRAINT "_permission_roles_AB_pkey" PRIMARY KEY ("A","B")
 );
 
 -- CreateIndex
@@ -159,22 +192,19 @@ CREATE UNIQUE INDEX "blogs_title_key" ON "blogs"("title");
 CREATE UNIQUE INDEX "products_productName_key" ON "products"("productName");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+CREATE UNIQUE INDEX "brands_brandName_key" ON "brands"("brandName");
 
 -- CreateIndex
-CREATE INDEX "_PermissionToRole_B_index" ON "_PermissionToRole"("B");
+CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
+
+-- CreateIndex
+CREATE INDEX "_permission_roles_B_index" ON "_permission_roles"("B");
 
 -- AddForeignKey
-ALTER TABLE "permission_roles" ADD CONSTRAINT "permission_roles_permissionId_fkey" FOREIGN KEY ("permissionId") REFERENCES "permissions"("permissionId") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "conversations" ADD CONSTRAINT "conversations_senderId_fkey" FOREIGN KEY ("senderId") REFERENCES "users"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "permission_roles" ADD CONSTRAINT "permission_roles_roleId_fkey" FOREIGN KEY ("roleId") REFERENCES "roles"("roleId") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "conversations" ADD CONSTRAINT "conversations_senderId_fkey" FOREIGN KEY ("senderId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "conversations" ADD CONSTRAINT "conversations_receiverId_fkey" FOREIGN KEY ("receiverId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "conversations" ADD CONSTRAINT "conversations_receiverId_fkey" FOREIGN KEY ("receiverId") REFERENCES "users"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "banners" ADD CONSTRAINT "banners_imageId_fkey" FOREIGN KEY ("imageId") REFERENCES "upload_images"("uploadImageId") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -195,19 +225,31 @@ ALTER TABLE "blog_images" ADD CONSTRAINT "blog_images_blogId_fkey" FOREIGN KEY (
 ALTER TABLE "blog_images" ADD CONSTRAINT "blog_images_imageId_fkey" FOREIGN KEY ("imageId") REFERENCES "upload_images"("uploadImageId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "product_image_embeddings" ADD CONSTRAINT "product_image_embeddings_imageId_fkey" FOREIGN KEY ("imageId") REFERENCES "upload_images"("uploadImageId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "product_image_embeddings" ADD CONSTRAINT "product_image_embeddings_productId_fkey" FOREIGN KEY ("productId") REFERENCES "products"("productId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "product_images" ADD CONSTRAINT "product_images_imageId_fkey" FOREIGN KEY ("imageId") REFERENCES "upload_images"("uploadImageId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "product_images" ADD CONSTRAINT "product_images_productId_fkey" FOREIGN KEY ("productId") REFERENCES "products"("productId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "User" ADD CONSTRAINT "User_avatarId_fkey" FOREIGN KEY ("avatarId") REFERENCES "upload_images"("uploadImageId") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "products" ADD CONSTRAINT "products_brandId_fkey" FOREIGN KEY ("brandId") REFERENCES "brands"("brandId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "User" ADD CONSTRAINT "User_roleId_fkey" FOREIGN KEY ("roleId") REFERENCES "roles"("roleId") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "users" ADD CONSTRAINT "users_avatarId_fkey" FOREIGN KEY ("avatarId") REFERENCES "upload_images"("uploadImageId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "_PermissionToRole" ADD CONSTRAINT "_PermissionToRole_A_fkey" FOREIGN KEY ("A") REFERENCES "permissions"("permissionId") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "users" ADD CONSTRAINT "users_roleId_fkey" FOREIGN KEY ("roleId") REFERENCES "roles"("roleId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "_PermissionToRole" ADD CONSTRAINT "_PermissionToRole_B_fkey" FOREIGN KEY ("B") REFERENCES "roles"("roleId") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "addresses" ADD CONSTRAINT "addresses_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_permission_roles" ADD CONSTRAINT "_permission_roles_A_fkey" FOREIGN KEY ("A") REFERENCES "permissions"("permissionId") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_permission_roles" ADD CONSTRAINT "_permission_roles_B_fkey" FOREIGN KEY ("B") REFERENCES "roles"("roleId") ON DELETE CASCADE ON UPDATE CASCADE;
