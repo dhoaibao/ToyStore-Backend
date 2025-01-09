@@ -3,7 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import logger from 'morgan';
 import ApiError from './middlewares/api-error.js';
-import { authRoute, userRoute, addressRoute } from './routes/index.js';
+import { authRoute, userRoute, addressRoute, brandRoute, categoryRoute } from './routes/index.js';
 
 const app = express();
 
@@ -22,6 +22,8 @@ const API_VERSION = process.env.API_VERSION || 'v1';
 app.use(`/api/${API_VERSION}/auth`, authRoute);
 app.use(`/api/${API_VERSION}/user`, userRoute);
 app.use(`/api/${API_VERSION}/address`, addressRoute);
+app.use(`/api/${API_VERSION}/brand`, brandRoute);
+app.use(`/api/${API_VERSION}/category`, categoryRoute);
 
 app.get("/", (req, res) => {
     res.json({ message: "Server is running!" });

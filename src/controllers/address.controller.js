@@ -1,35 +1,14 @@
 import prisma from '../config/prismaClient.js'
 
-const addressSelect = {
-    addressId: true,
-    addressName: true,
-    provinceCode: true,
-    districtCode: true,
-    wardCode: true,
-    provinceName: true,
-    districtName: true,
-    wardName: true,
-    detail: true,
-    isDefault: true,
-    contactName: true,
-    contactPhone: true,
-    user: {
-        select: {
-            userId: true,
-            fullName: true,
-            email: true,
-            phone: true,
-        }
-    }
-};
-
 export const getAddressByUser = async (req, res) => {
     try {
         const userId = req.userId;
 
         const addresss = await prisma.address.findMany({
             where: { userId: parseInt(userId) },
-            select: addressSelect,
+            include: {
+                user: true,
+            }
         });
 
         return res.status(200).json({
@@ -49,7 +28,9 @@ export const getAddressByUser = async (req, res) => {
 export const getAllAddreses = async (_, res) => {
     try {
         const addresss = await prisma.address.findMany({
-            select: addressSelect,
+            include: {
+                user: true,
+            }
         });
 
         return res.status(200).json({
@@ -72,7 +53,9 @@ export const getAddressById = async (req, res) => {
 
         const address = await prisma.address.findUnique({
             where: { addressId: parseInt(id) },
-            select: addressSelect,
+            include: {
+                user: true,
+            }
         });
 
         if (!address) {
@@ -116,7 +99,9 @@ export const createAddress = async (req, res) => {
                 contactPhone,
                 userId: parseInt(userId),
             },
-            select: addressSelect,
+            include: {
+                user: true,
+            }
         });
 
         if (isDefault) {
@@ -168,7 +153,9 @@ export const updateAddress = async (req, res) => {
                 contactPhone: contactPhone || address.contactPhone,
                 userId: parseInt(userId) || address.userId,
             },
-            select: addressSelect,
+            include: {
+                user: true,
+            }
         });
 
         if (isDefault) {

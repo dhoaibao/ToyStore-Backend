@@ -12,8 +12,8 @@ model Role {
   roleName String
   roleDesc String
   isActive Boolean
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
 
   users User[]
   permissions Permission[] @relation("permission_roles")
@@ -27,8 +27,8 @@ model Permission {
   apiPath String
   medthod String
   module String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
 
   roles Role[] @relation("permission_roles")
 
@@ -53,8 +53,8 @@ model UploadImage {
   uploadImageId Int @id @default(autoincrement())
   url String
   publicId String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
 
   banners Banner[]
   productImages ProductImage[]
@@ -111,7 +111,7 @@ model Blog {
   slug String
   text String
   published Boolean
-  publishedAt DateTime @default(now())
+  publishedAt DateTime @default(now()) @db.Timestamptz
 
   blogImages BlogImage[]
 
@@ -155,6 +155,16 @@ model ProductImage {
   @@map("product_images")
 }
 
+model ProductEmbedding {
+  productEmbeddingId Int @id @default(autoincrement())
+  embedding Unsupported("vector")
+
+  productId Int @unique
+  product Product @relation(fields: [productId], references: [productId])
+
+  @@map("product_embeddings")
+}
+
 model Product {
   productId Int @id @default(autoincrement())
   productName String @unique
@@ -167,6 +177,22 @@ model Product {
 
   brandId Int?
   brand Brand? @relation(fields: [brandId], references: [brandId])
+
+  categoryId Int?
+  category Category? @relation(fields: [categoryId], references: [categoryId])
+
+  reviews Review[]
+
+  productInformations ProductInformation[]
+
+  cartDetails CartDetail[]
+
+  orderDetails OrderDetail[]
+
+  discounts Discount[] @relation("product_discount")
+
+  productEmbeddingId Int?
+  productEmbedding ProductEmbedding? @relation
   
   @@map("products")
 }
@@ -175,13 +201,53 @@ model Brand {
   brandId Int @id @default(autoincrement())
   brandName String @unique
   brandDesc String
-  isActive Boolean
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
 
   products Product[]
 
   @@map("brands")
+}
+
+model Category {
+  categoryId Int @id @default(autoincrement())
+  categoryName String @unique
+  slug String
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
+
+  products Product[]
+
+  @@map("categories")
+}
+
+model Review {
+  reviewId Int @id @default(autoincrement())
+  comment String
+  rating Float
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
+
+  productId Int?
+  product Product? @relation(fields: [productId], references: [productId])
+
+  parentReviewId Int?
+  parentReview Review? @relation("reply", fields: [parentReviewId], references: [reviewId])
+
+  childrenReviews Review[] @relation("reply")
+
+  @@map("reviews")
+}
+
+model ProductInformation {
+  productInforId Int @id @default(autoincrement())
+  productInfoName String
+  productInfoValue String
+
+  productId Int
+  product Product @relation(fields: [productId], references: [productId])
+
+  @@map("product_informations")
 }
 
 model User {
@@ -191,10 +257,10 @@ model User {
   password  String?
   phone     String?
   gender    Boolean?
-  birthday DateTime?
+  birthday DateTime? 
   isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
 
   addresses Address[]
 
@@ -207,7 +273,38 @@ model User {
   sentConversations     Conversation[] @relation("Sent")
   receivedConversations Conversation[] @relation("Received")
 
+  cartId Int?
+  cart Cart? @relation
+
+  orders Order[]
+
+  vouchers Voucher[] @relation("user_voucher")
+
   @@map("users")
+}
+
+model Cart {
+  cartId Int @id @default(autoincrement())
+
+  userId Int @unique
+  user User @relation(fields: [userId], references: [userId])
+
+  cartDetails CartDetail[]
+
+  @@map("carts")
+}
+
+model CartDetail {
+  quantity Int
+
+  productId Int
+  product Product @relation(fields: [productId], references: [productId])
+
+  cartId Int
+  cart Cart @relation(fields: [cartId], references: [cartId])
+
+  @@id([productId, cartId])
+  @@map("cart_details")
 }
 
 model Address {
@@ -228,4 +325,117 @@ model Address {
   user User @relation(fields: [userId], references: [userId])
 
   @@map("addresses")
+}
+
+model Order {
+  orderId Int @id @default(autoincrement())
+  totalPrice Float
+  totalDiscount Float
+  shippingFee Float
+  finalPrice Float
+  paymentStatus Boolean
+  paidDate DateTime?
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
+
+  userId Int
+  user User @relation(fields: [userId], references: [userId])
+
+  orderDetails OrderDetail[]
+
+  orderAdressId Int?
+  orderAddress OrderAdress? @relation
+
+  orderStatusId Int
+  orderStatus OrderStatus @relation(fields: [orderStatusId], references: [orderStatusId])
+
+  paymentMethodId Int
+  paymentMethod PaymentMethod @relation(fields: [paymentMethodId], references: [paymentMethodId])
+
+  voucherId Int?
+  voucher Voucher? @relation(fields: [voucherId], references: [voucherId])
+
+  @@map("orders")
+}
+
+model OrderDetail {
+  price Float
+  discountPrice Float
+  quantity Int
+
+  orderId Int
+  order Order @relation(fields: [orderId], references: [orderId])
+
+  productId Int
+  product Product @relation(fields: [productId], references: [productId])
+
+  @@id([orderId, productId])
+
+  @@map("order_details")
+}
+
+model OrderAdress {
+  orderAddressId Int @id @default(autoincrement())
+  address String
+  contactName String
+  contactPhone String
+
+  orderId Int @unique
+  order Order @relation(fields: [orderId], references: [orderId])
+
+  @@map("order_addresses")
+}
+
+model OrderStatus {
+  orderStatusId Int @id @default(autoincrement())
+  statusName String
+
+  orders Order[]
+
+  @@map("order_statuses")
+}
+
+model PaymentMethod {
+  paymentMethodId Int @id @default(autoincrement())
+  paymentMethodName String
+
+  order Order[]
+
+  @@map("payment_methods")
+}
+
+model Voucher {
+  voucherId Int @id @default(autoincrement())
+  voucherCode String @unique
+  discountType String
+  discountValue Float
+  minOrderPrice Float
+  maxPriceDiscount Float
+  startDate DateTime
+  endDate DateTime
+  quantity Int
+  colectedQuantity Int
+  currentUsedQuantity Int
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
+
+  orders Order[]
+
+  users User[] @relation("user_voucher")
+
+  @@map("vouchers")
+}
+
+model Discount {
+  discountId Int @id @default(autoincrement())
+  discountType String
+  discountValue Float
+  startDate DateTime
+  endDate DateTime
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
+
+  products Product[] @relation("product_discount")
+
+  @@map("discounts")
 }

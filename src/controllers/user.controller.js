@@ -2,28 +2,15 @@ import prisma from '../config/prismaClient.js'
 import bcrypt from 'bcrypt';
 import { uploadSingleImage } from '../services/upload.service.js';
 
-const userSelect = {
-    userId: true,
-    fullName: true,
-    avatar: {
-        select: {
-            url: true,
-        },
-    },
-    email: true,
-    birthday: true,
-    phone: true,
-    gender: true,
-    isActive: true,
-};
-
 export const getLoggedInUser = async (req, res) => {
     try {
         const userId = req.userId;
 
         const existingUser = await prisma.user.findUnique({
             where: { userId: userId },
-            select: userSelect,
+            include: {
+                avatar: true,
+            }
         });
 
         if (!existingUser) {
@@ -52,7 +39,9 @@ export const getAllUsers = async (req, res) => {
         const users = await prisma.user.findMany({
             skip,
             take,
-            select: userSelect,
+            include: {
+                avatar: true,
+            }
         });
 
         const totalUsers = await prisma.user.count();
@@ -83,7 +72,9 @@ export const getUserById = async (req, res) => {
 
         const user = await prisma.user.findUnique({
             where: { userId: parseInt(id) },
-            select: userSelect,
+            include: {
+                avatar: true,
+            }
         });
 
         if (!user) {
@@ -136,7 +127,9 @@ export const updateUser = async (req, res) => {
                 avatarId: avatarId || user.avatarId,
                 birthday: new Date(birthday) || new Date(user.birthday),
             },
-            select: userSelect,
+            include: {
+                avatar: true,
+            }
         });
 
         return res.status(200).json({
@@ -206,6 +199,12 @@ export const changePassword = async (req, res) => {
 export const deleteUser = async (req, res) => {
     try {
         const { id } = req.params;
+
+        const userExists = await prisma.user.findUnique({ where: { userId: parseInt(id) } });
+
+        if (!userExists) {
+            return res.status(404).json({ message: 'User not found!' });
+        }
 
         await prisma.user.delete({ where: { userId: parseInt(id) } });
 

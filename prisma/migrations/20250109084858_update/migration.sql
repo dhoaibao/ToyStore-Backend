@@ -1,11 +1,13 @@
 -- CreateTable
+CREATE EXTENSION IF NOT EXISTS vector;
+
 CREATE TABLE "roles" (
     "roleId" SERIAL NOT NULL,
     "roleName" TEXT NOT NULL,
     "roleDesc" TEXT NOT NULL,
     "isActive" BOOLEAN NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMPTZ NOT NULL,
 
     CONSTRAINT "roles_pkey" PRIMARY KEY ("roleId")
 );
@@ -17,8 +19,8 @@ CREATE TABLE "permissions" (
     "apiPath" TEXT NOT NULL,
     "medthod" TEXT NOT NULL,
     "module" TEXT NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMPTZ NOT NULL,
 
     CONSTRAINT "permissions_pkey" PRIMARY KEY ("permissionId")
 );
@@ -39,8 +41,8 @@ CREATE TABLE "upload_images" (
     "uploadImageId" SERIAL NOT NULL,
     "url" TEXT NOT NULL,
     "publicId" TEXT NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMPTZ NOT NULL,
 
     CONSTRAINT "upload_images_pkey" PRIMARY KEY ("uploadImageId")
 );
@@ -83,7 +85,7 @@ CREATE TABLE "blogs" (
     "slug" TEXT NOT NULL,
     "text" TEXT NOT NULL,
     "published" BOOLEAN NOT NULL,
-    "publishedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "publishedAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "blogs_pkey" PRIMARY KEY ("blogId")
 );
@@ -100,7 +102,7 @@ CREATE TABLE "blog_images" (
 -- CreateTable
 CREATE TABLE "product_image_embeddings" (
     "productImageEmbeddingId" SERIAL NOT NULL,
-    "embedding" VECTOR(512) NOT NULL,
+    "embedding" VECTOR NOT NULL,
     "imageId" INTEGER NOT NULL,
     "productId" INTEGER NOT NULL,
 
@@ -134,8 +136,8 @@ CREATE TABLE "brands" (
     "brandName" TEXT NOT NULL,
     "brandDesc" TEXT NOT NULL,
     "isActive" BOOLEAN NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMPTZ NOT NULL,
 
     CONSTRAINT "brands_pkey" PRIMARY KEY ("brandId")
 );
@@ -150,8 +152,8 @@ CREATE TABLE "users" (
     "gender" BOOLEAN,
     "birthday" TIMESTAMP(3),
     "isActive" BOOLEAN NOT NULL DEFAULT true,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMPTZ NOT NULL,
     "avatarId" INTEGER,
     "roleId" INTEGER,
 
