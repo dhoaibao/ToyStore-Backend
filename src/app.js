@@ -3,7 +3,10 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import logger from 'morgan';
 import ApiError from './middlewares/api-error.js';
-import { authRoute, userRoute, addressRoute, brandRoute, categoryRoute } from './routes/index.js';
+import {
+    authRoute, userRoute, addressRoute, brandRoute, categoryRoute,
+    productInfoRoute, productInfoValueRoute, productRoute
+} from './routes/index.js';
 
 const app = express();
 
@@ -24,6 +27,9 @@ app.use(`/api/${API_VERSION}/user`, userRoute);
 app.use(`/api/${API_VERSION}/address`, addressRoute);
 app.use(`/api/${API_VERSION}/brand`, brandRoute);
 app.use(`/api/${API_VERSION}/category`, categoryRoute);
+app.use(`/api/${API_VERSION}/product-information`, productInfoRoute);
+app.use(`/api/${API_VERSION}/product-information-value`, productInfoValueRoute);
+app.use(`/api/${API_VERSION}/product`, productRoute);
 
 app.get("/", (req, res) => {
     res.json({ message: "Server is running!" });

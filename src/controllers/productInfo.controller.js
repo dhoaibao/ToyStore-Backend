@@ -1,6 +1,6 @@
 import prisma from '../config/prismaClient.js'
 
-export const getAllProductInfomations = async (_, res) => {
+export const getAllProductInformations = async (_, res) => {
     try {
         const productInformations = await prisma.productInformation.findMany({});
 
@@ -22,17 +22,17 @@ export const getProductInformationById = async (req, res) => {
     try {
         const { id } = req.params;
 
-        const productinformation = await prisma.productInformation.findUnique({
-            where: { productInforId: parseInt(id) }
+        const productInformation = await prisma.productInformation.findUnique({
+            where: { productInfoId: parseInt(id) }
         });
 
-        if (!productinformation) {
-            return res.status(404).json({ message: "ProductInformation not found!" });
+        if (!productInformation) {
+            return res.status(404).json({ message: "Product information not found!" });
         }
 
         return res.status(200).json({
-            message: 'ProductInformation fetched!',
-            data: productinformation,
+            message: 'Product information fetched!',
+            data: productInformation,
         });
     }
     catch (error) {
@@ -46,32 +46,27 @@ export const getProductInformationById = async (req, res) => {
 
 export const createProductInformation = async (req, res) => {
     try {
-        const { productInforName, productInforValue } = req.body;
+        const { productInfoName } = req.body;
 
-        if (!productInforName || !productInforValue) {
+        if (!productInfoName) {
             return res.status(400).json({ message: 'Missing required fields!' });
         }
 
         const productInformationExists = await prisma.productInformation.findFirst({
-            where: { productinformationName }
+            where: { productInfoName }
         });
 
-        if (productinformationExists) {
-            return res.status(400).json({ message: 'ProductInformation already exists!' });
+        if (productInformationExists) {
+            return res.status(400).json({ message: 'Product information already exists!' });
         }
-        
-        const slug = generateSlug(productinformationName);
 
-        const productinformation = await prisma.productinformation.create({
-            data: {
-                productinformationName,
-                slug,
-            }
+        const productInformation = await prisma.productInformation.create({
+            data: { productInfoName }
         });
 
         return res.status(201).json({
-            message: 'ProductInformation created!',
-            data: productinformation,
+            message: 'Product information created!',
+            data: productInformation,
         });
     }
     catch (error) {
@@ -87,22 +82,17 @@ export const updateProductInformation = async (req, res) => {
     try {
         const { id } = req.params;
 
-        const { productinformationName } = req.body;
+        const { productInfoName } = req.body;
 
-        const productinformation = await prisma.productinformation.findUnique({ where: { productinformationId: parseInt(id) } });
+        const productInformation = await prisma.productInformation.findUnique({ where: { productInfoId: parseInt(id) } });
 
-        if (!productinformation) {
-            return res.status(404).json({ message: 'ProductInformation not found!' });
+        if (!productInformation) {
+            return res.status(404).json({ message: 'Product information not found!' });
         }
 
-        const slug = generateSlug(productinformationName);
-
-        const updatedProductInformation = await prisma.productinformation.update({
-            where: { productinformationId: parseInt(id) },
-            data: {
-                productinformationName: productinformationName,
-                slug: slug,
-            }
+        const updatedProductInformation = await prisma.productInformation.update({
+            where: { productInfoId: parseInt(id) },
+            data: { productInfoName }
         });
 
         return res.status(200).json({
@@ -123,15 +113,15 @@ export const deleteProductInformation = async (req, res) => {
     try {
         const { id } = req.params;
 
-        const productinformationExists = await prisma.productinformation.findUnique({ where: { productinformationId: parseInt(id) } });
+        const productInformationExists = await prisma.productInformation.findUnique({ where: { productInfoId: parseInt(id) } });
 
-        if (!productinformationExists) {
-            return res.status(404).json({ message: 'ProductInformation not found!' });
+        if (!productInformationExists) {
+            return res.status(404).json({ message: 'Product information not found!' });
         }
 
-        await prisma.productinformation.delete({ where: { productinformationId: parseInt(id) } });
+        await prisma.productInformation.delete({ where: { productInfoId: parseInt(id) } });
 
-        return res.status(200).json({ message: 'ProductInformation deleted!' });
+        return res.status(200).json({ message: 'Product information deleted!' });
     }
     catch (error) {
         console.error(error);

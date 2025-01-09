@@ -59,7 +59,7 @@ model UploadImage {
   banners Banner[]
   productImages ProductImage[]
   blogImages BlogImage[]
-  productImageEmbeddings productImageEmbedding[]
+  productImageEmbeddings ProductImageEmbedding[]
   avatar User[]
   shopLogo SystemConfiguration[]
 
@@ -130,14 +130,14 @@ model BlogImage {
   @@map("blog_images")
 }
 
-model productImageEmbedding {
+model ProductImageEmbedding {
   productImageEmbeddingId Int @id @default(autoincrement())
   embedding Unsupported("vector")
 
-  imageId Int
-  image UploadImage @relation(fields: [imageId], references: [uploadImageId])
+  uploadImageId Int @map("upload_image_id")
+  uploadImage UploadImage @relation(fields: [uploadImageId], references: [uploadImageId])
 
-  productId Int
+  productId Int @map("product_id")
   product Product @relation(fields: [productId], references: [productId])
 
   @@map("product_image_embeddings")
@@ -146,8 +146,8 @@ model productImageEmbedding {
 model ProductImage {
   productImageId Int @id @default(autoincrement())
 
-  imageId Int
-  image UploadImage @relation(fields: [imageId], references: [uploadImageId])
+  uploadImageId Int
+  uploadImage UploadImage @relation(fields: [uploadImageId], references: [uploadImageId])
 
   productId Int
   product Product @relation(fields: [productId], references: [productId])
@@ -171,9 +171,13 @@ model Product {
   price Float
   slug String
   visible Boolean
+  quantity Int
+  description String
+  soldNumber Int?
+  avgRating Float?
 
   productImages ProductImage[]
-  productImageEmbeddings productImageEmbedding[]
+  productImageEmbeddings ProductImageEmbedding[]
 
   brandId Int?
   brand Brand? @relation(fields: [brandId], references: [brandId])
@@ -183,7 +187,7 @@ model Product {
 
   reviews Review[]
 
-  productInformations ProductInformation[]
+  productInfoDetails ProductInfoValue[]  
 
   cartDetails CartDetail[]
 
@@ -228,8 +232,11 @@ model Review {
   createdAt DateTime @default(now()) @db.Timestamptz
   updatedAt DateTime @updatedAt @db.Timestamptz
 
-  productId Int?
-  product Product? @relation(fields: [productId], references: [productId])
+  userId Int
+  user User @relation(fields: [userId], references: [userId])
+
+  productId Int
+  product Product @relation(fields: [productId], references: [productId])
 
   parentReviewId Int?
   parentReview Review? @relation("reply", fields: [parentReviewId], references: [reviewId])
@@ -240,14 +247,26 @@ model Review {
 }
 
 model ProductInformation {
-  productInforId Int @id @default(autoincrement())
+  productInfoId Int @id @default(autoincrement())
   productInfoName String
-  productInfoValue String
+
+  productInfoDetails ProductInfoValue[]
+
+  @@map("product_informations")
+}
+
+model ProductInfoValue {
+  value String
+
+  productInfoId Int
+  productInfo ProductInformation @relation(fields: [productInfoId], references: [productInfoId])
 
   productId Int
   product Product @relation(fields: [productId], references: [productId])
 
-  @@map("product_informations")
+  @@id([productId, productInfoId])
+
+  @@map("product_info_values")
 }
 
 model User {
@@ -280,6 +299,8 @@ model User {
 
   vouchers Voucher[] @relation("user_voucher")
 
+  reviews Review[]  
+
   @@map("users")
 }
 
@@ -304,6 +325,7 @@ model CartDetail {
   cart Cart @relation(fields: [cartId], references: [cartId])
 
   @@id([productId, cartId])
+
   @@map("cart_details")
 }
 
