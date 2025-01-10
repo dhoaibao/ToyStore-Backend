@@ -108,7 +108,7 @@ model PriceFillter {
 model Blog {
   blogId Int @id @default(autoincrement())
   title String @unique
-  slug String
+  slug String @unique
   text String
   published Boolean
   publishedAt DateTime @default(now()) @db.Timestamptz
@@ -169,7 +169,7 @@ model Product {
   productId Int @id @default(autoincrement())
   productName String @unique
   price Float
-  slug String
+  slug String @unique
   visible Boolean
   quantity Int
   description String
@@ -216,7 +216,7 @@ model Brand {
 model Category {
   categoryId Int @id @default(autoincrement())
   categoryName String @unique
-  slug String
+  slug String @unique
   createdAt DateTime @default(now()) @db.Timestamptz
   updatedAt DateTime @updatedAt @db.Timestamptz
 

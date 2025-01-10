@@ -3,7 +3,7 @@ import { generateSlug } from '../utils/generateSlug.js';
 import { uploadMultipleImages } from '../services/upload.service.js';
 
 const addEmbedding = async (productId, uploadImageId, embedding) => {
-    const embeddingString = `[${embedding.join(',')}]`; 
+    const embeddingString = `[${embedding.join(',')}]`;
     await prisma.$executeRaw`
       INSERT INTO product_image_embeddings (product_id, upload_image_id, embedding)
       VALUES (${productId}, ${uploadImageId}, ${embeddingString}::vector)
@@ -19,6 +19,18 @@ export const getAllProducts = async (req, res) => {
         const products = await prisma.product.findMany({
             skip,
             take,
+            include: {
+                brand: true,
+                productImages: {
+                    select: {
+                        uploadImage: {
+                            select: {
+                                url: true
+                            }
+                        }
+                    }
+                }
+            }
         });
 
         const totalProducts = await prisma.product.count();
@@ -42,12 +54,24 @@ export const getAllProducts = async (req, res) => {
     }
 }
 
-export const getProductById = async (req, res) => {
+export const getProductBySlug = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { slug } = req.params;
 
         const product = await prisma.product.findUnique({
-            where: { productId: parseInt(id) }
+            where: { slug },
+            include: {
+                brand: true,
+                productImages: {
+                    select: {
+                        uploadImage: {
+                            select: {
+                                url: true
+                            }
+                        }
+                    }
+                }
+            }
         });
 
         if (!product) {
@@ -72,7 +96,7 @@ export const createProduct = async (req, res) => {
     try {
         const filePaths = req.files.map(file => file.path);
 
-        const { productName, price, visible, quantity, description } = req.body;
+        const { productName, price, visible, quantity, description, brandId } = req.body;
 
         if (!productName || !price || !visible || !quantity || !description) {
             return res.status(400).json({ message: 'Missing required fields!' });
@@ -96,6 +120,7 @@ export const createProduct = async (req, res) => {
                 visible: visible === 'true',
                 quantity: parseInt(quantity),
                 description,
+                brandId: parseInt(brandId) || null,
             }
         });
 

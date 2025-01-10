@@ -7,7 +7,7 @@ const client = createClient({
     socket: {
         host: process.env.REDIS_HOST,
         port: process.env.REDIS_PORT,
-        reconnectStrategy: 1000,
+        reconnectStrategy: 100,
     }
 });
 

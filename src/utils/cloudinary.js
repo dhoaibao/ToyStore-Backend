@@ -8,13 +8,19 @@ cloudinary.config({
 
 const uploadFile = async (filePath) => {
     try {
+        console.time('Upload Image Time');
+
         const result = await cloudinary.uploader.upload(filePath, {
             folder: "ToyStore",
         });
+
         const optimizeUrl = cloudinary.url(result.public_id, {
             fetch_format: 'auto',
             quality: 'auto'
         });
+
+        console.timeEnd('Upload Image Time');
+
         console.log("Upload successful:", optimizeUrl);
         return { url: optimizeUrl, publicId: result.public_id };
     } catch (error) {

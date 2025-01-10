@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';
 import { generateToken, decodedRefreshToken } from '../utils/token.js';
 import { sendOTPEmail, sendPasswordResetSuccessEmail } from '../utils/sendEmail.js';
 import { setData, getData, verifyData } from '../utils/redis.js';
+import { uploadFromUrl } from '../services/upload.service.js';
 
 export const signUp = async (req, res) => {
     try {
@@ -98,9 +99,14 @@ export const signIn = async (req, res) => {
 
 export const signInWithGoogle = async (req, res) => {
     try {
-        const { email, fullName } = req.body;
+        const { email, fullName, photoUrl, phoneNumber } = req.body;
 
-        console.log(email, fullName);
+        let avatarId = null;
+
+        if (photoUrl) {
+            const result = await uploadFromUrl(photoUrl);
+            avatarId = result.image.uploadImageId;
+        }
 
         let user = await prisma.user.findUnique({ where: { email } });
 
@@ -109,6 +115,8 @@ export const signInWithGoogle = async (req, res) => {
                 data: {
                     email,
                     fullName,
+                    avatarId,
+                    phone: phoneNumber || null,
                 }
             });
         }
