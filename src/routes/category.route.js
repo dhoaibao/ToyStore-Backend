@@ -4,7 +4,7 @@ import { auth } from "../middlewares/authentication.js";
 
 const router = express.Router();
 
-router.get('/', auth, getAllCategories);
+router.get('/', getAllCategories);
 router.post('/', auth, createCategory);
 router.get('/:id', auth, getCategoryById);
 router.put('/:id', auth, updateCategory);

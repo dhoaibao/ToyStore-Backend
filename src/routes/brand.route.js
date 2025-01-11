@@ -4,7 +4,7 @@ import { auth } from "../middlewares/authentication.js";
 
 const router = express.Router();
 
-router.get('/', auth, getAllBrands);
+router.get('/', getAllBrands);
 router.post('/', auth, createBrand);
 router.get('/:id', auth, getBrandById);
 router.put('/:id', auth, updateBrand);

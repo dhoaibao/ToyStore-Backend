@@ -5,10 +5,10 @@ import upload from '../middlewares/multer.js';
 
 const router = express.Router();
 
-router.get('/', auth, getAllProducts);
+router.get('/', getAllProducts);
 router.post('/', upload.array("images", 10), auth, createProduct);
-router.post('/image-search', upload.single("file"), auth, imageSearch);
-router.get('/:slug', auth, getProductBySlug);
+router.post('/image-search', upload.single("file"), imageSearch);
+router.get('/:slug', getProductBySlug);
 router.put('/:id', upload.array("images", 10), auth, updateProduct);
 router.delete('/:id', auth, deleteProduct);
 

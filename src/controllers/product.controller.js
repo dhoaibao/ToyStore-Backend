@@ -324,7 +324,9 @@ export const deleteProduct = async (req, res) => {
 
 export const imageSearch = async (req, res) => {
     try {
-        const { file, url } = req;
+        const { file } = req;
+
+        const { url } = req.body;
 
         if (!file && !url) {
             return res.status(400).json({ message: 'No image uploaded!' });
