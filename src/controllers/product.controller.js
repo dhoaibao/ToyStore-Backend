@@ -1,6 +1,7 @@
 import prisma from '../config/prismaClient.js'
 import { generateSlug } from '../utils/generateSlug.js';
 import { uploadMultipleImages } from '../services/upload.service.js';
+import { generateImageEmbedding } from '../utils/generateEmbeddings.js';
 
 const addEmbedding = async (productId, uploadImageId, embedding) => {
     const embeddingString = `[${embedding.join(',')}]`;
@@ -10,30 +11,133 @@ const addEmbedding = async (productId, uploadImageId, embedding) => {
     `;
 };
 
+const include = {
+    category: {
+        select: {
+            categoryName: true,
+            slug: true
+        }
+    },
+    brand: {
+        select: {
+            brandName: true
+        }
+    },
+    productInfoValues: {
+        select: {
+            value: true,
+            productInfo: {
+                select: {
+                    productInfoName: true
+                }
+            }
+        }
+    },
+    productImages: {
+        select: {
+            uploadImage: {
+                select: {
+                    url: true
+                }
+            }
+        }
+    }
+};
+
 export const getAllProducts = async (req, res) => {
     try {
-        const { page = 1, limit = 10 } = req.query;
+        const { page = 1, limit = 10, brandNames, categoryNames, ageOption, priceOption, sort, sortPrice, keyword } = req.query;
         const skip = (page - 1) * limit;
         const take = parseInt(limit);
+
+        const filters = {};
+
+        if (keyword) {
+            filters.productName = {
+                contains: keyword,
+                mode: 'insensitive'
+            };
+        }
+
+        if (brandNames) {
+            filters.brand = {
+                brandName: {
+                    in: brandNames.split(',').map(name => name.trim()),
+                    mode: 'insensitive'
+                }
+            };
+        }
+
+        if (categoryNames) {
+            filters.category = {
+                categoryName: {
+                    in: categoryNames.split(',').map(name => name.trim()),
+                    mode: 'insensitive'
+                }
+            };
+        }
+
+        if (ageOption) {
+            const [minAge, maxAge] = ageOption.includes('-')
+                ? ageOption.split('-').map(age => age)
+                : [ageOption, '100'];
+            filters.productInfoValues = {
+                some: {
+                    AND: [
+                        {
+                            value: {
+                                gte: minAge,
+                                lte: maxAge
+                            }
+                        },
+                        {
+                            productInfo: {
+                                productInfoName: {
+                                    equals: 'Tuổi',
+                                    mode: 'insensitive'
+                                }
+                            }
+                        }
+                    ]
+                }
+            };
+        }
+
+        if (priceOption) {
+            const [minPrice, maxPrice] = priceOption.includes('-')
+                ? priceOption.split('-').map(price => parseFloat(price))
+                : [parseFloat(priceOption), 100000000000];
+
+            filters.price = {
+                gte: minPrice,
+                lte: maxPrice
+            };
+        }
 
         const products = await prisma.product.findMany({
             skip,
             take,
-            include: {
-                brand: true,
-                productImages: {
-                    select: {
-                        uploadImage: {
-                            select: {
-                                url: true
-                            }
-                        }
-                    }
-                }
-            }
+            where: filters,
+            include,
         });
 
-        const totalProducts = await prisma.product.count();
+        if (sort) {
+            if (sort === 'newest') {
+                products.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            } else if (sort === 'bestseller') {
+                products.sort((a, b) => b.soldNumber - a.soldNumber);
+            }
+        }
+
+        if (sortPrice) {
+            if (sortPrice === 'asc') {
+                products.sort((a, b) => a.price - b.price);
+            } else if (sortPrice === 'desc') {
+                products.sort((a, b) => b.price - a.price);
+            }
+        }
+
+        const totalProducts = products.length;
 
         return res.status(200).json({
             message: 'All products fetched!',
@@ -60,18 +164,7 @@ export const getProductBySlug = async (req, res) => {
 
         const product = await prisma.product.findUnique({
             where: { slug },
-            include: {
-                brand: true,
-                productImages: {
-                    select: {
-                        uploadImage: {
-                            select: {
-                                url: true
-                            }
-                        }
-                    }
-                }
-            }
+            include,
         });
 
         if (!product) {
@@ -96,7 +189,7 @@ export const createProduct = async (req, res) => {
     try {
         const filePaths = req.files.map(file => file.path);
 
-        const { productName, price, visible, quantity, description, brandId } = req.body;
+        const { productName, price, visible, quantity, description, brandId, categoryId, productInfos } = req.body;
 
         if (!productName || !price || !visible || !quantity || !description) {
             return res.status(400).json({ message: 'Missing required fields!' });
@@ -120,9 +213,27 @@ export const createProduct = async (req, res) => {
                 visible: visible === 'true',
                 quantity: parseInt(quantity),
                 description,
-                brandId: parseInt(brandId) || null,
-            }
+                brand: {
+                    connect: { brandId: parseInt(brandId) },
+                },
+                category: {
+                    connect: { categoryId: parseInt(categoryId) },
+                },
+            },
+            include,
         });
+
+        if (productInfos) {
+            const productInfosArray = JSON.parse(productInfos);
+
+            await prisma.productInfoValue.createMany({
+                data: productInfosArray.map(info => ({
+                    productId: product.productId,
+                    productInfoId: info.productInfoId,
+                    value: info.value
+                }))
+            });
+        }
 
         const imageDatas = await uploadMultipleImages(filePaths);
 
@@ -170,7 +281,8 @@ export const updateProduct = async (req, res) => {
             data: {
                 productName: productName || product.productName,
                 productDesc: productDesc || product.productDesc,
-            }
+            },
+            include,
         });
 
         return res.status(200).json({
@@ -202,6 +314,57 @@ export const deleteProduct = async (req, res) => {
         return res.status(200).json({ message: 'Product deleted!' });
     }
     catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            message: 'Internal Server Error',
+            error: error.message
+        });
+    }
+}
+
+export const imageSearch = async (req, res) => {
+    try {
+        const { file, url } = req;
+
+        if (!file && !url) {
+            return res.status(400).json({ message: 'No image uploaded!' });
+        }
+
+        let imageEmbedding;
+        if (file) {
+            imageEmbedding = await generateImageEmbedding(file.path);
+        } else {
+            imageEmbedding = await generateImageEmbedding(url);
+        }
+
+        const imageEmbeddingString = `[${imageEmbedding.join(',')}]`;
+
+        const productImageEmbeddings = await prisma.$queryRaw`
+            SELECT product_id, embedding::text, 
+                   1 - (embedding <=> ${imageEmbeddingString}::vector) AS cosine_similarity
+            FROM product_image_embeddings
+            WHERE 1 - (embedding <=> ${imageEmbeddingString}::vector) > 0.6
+            ORDER BY cosine_similarity DESC
+            LIMIT 1;
+        `;
+        console.log(productImageEmbeddings);
+
+        const products = productImageEmbeddings.map(embedding => embedding.product_id);
+
+        const productsData = await prisma.product.findMany({
+            where: {
+                productId: {
+                    in: products
+                }
+            },
+            include,
+        });
+
+        return res.status(200).json({
+            message: 'Image search results fetched!',
+            data: productsData,
+        });
+    } catch (error) {
         console.error(error);
         return res.status(500).json({
             message: 'Internal Server Error',

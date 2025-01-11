@@ -175,6 +175,8 @@ model Product {
   description String
   soldNumber Int?
   avgRating Float?
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
 
   productImages ProductImage[]
   productImageEmbeddings ProductImageEmbedding[]
@@ -187,7 +189,7 @@ model Product {
 
   reviews Review[]
 
-  productInfoDetails ProductInfoValue[]  
+  productInfoValues ProductInfoValue[]  
 
   cartDetails CartDetail[]
 
