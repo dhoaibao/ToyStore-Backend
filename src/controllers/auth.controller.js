@@ -104,8 +104,8 @@ export const signInWithGoogle = async (req, res) => {
         let avatarId = null;
 
         if (photoUrl) {
-            const result = await uploadFromUrl(photoUrl);
-            avatarId = result.image.uploadImageId;
+            const image = await uploadFromUrl(photoUrl);
+            avatarId = image.uploadImageId;
         }
 
         let user = await prisma.user.findUnique({ where: { email } });

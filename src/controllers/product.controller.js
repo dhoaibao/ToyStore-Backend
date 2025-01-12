@@ -2,6 +2,9 @@ import prisma from '../config/prismaClient.js'
 import { generateSlug } from '../utils/generateSlug.js';
 import { uploadMultipleImages } from '../services/upload.service.js';
 import { generateImageEmbedding } from '../utils/generateEmbeddings.js';
+import { fileURLToPath } from 'url';
+import path from 'path';
+import fs from 'fs/promises';
 
 const addEmbedding = async (productId, uploadImageId, embedding) => {
     const embeddingString = `[${embedding.join(',')}]`;
@@ -187,7 +190,7 @@ export const getProductBySlug = async (req, res) => {
 
 export const createProduct = async (req, res) => {
     try {
-        const filePaths = req.files.map(file => file.path);
+        const files = req.files;
 
         const { productName, price, visible, quantity, description, brandId, categoryId, productInfos } = req.body;
 
@@ -235,19 +238,18 @@ export const createProduct = async (req, res) => {
             });
         }
 
-        const imageDatas = await uploadMultipleImages(filePaths);
-
-        const uploadImageIds = imageDatas.map(imageData => imageData.image.uploadImageId);
+        const images = await uploadMultipleImages(files);
 
         await prisma.productImage.createMany({
-            data: uploadImageIds.map(imageId => ({
+            data: images.map(image => ({
                 productId: product.productId,
-                uploadImageId: imageId,
+                uploadImageId: image.uploadImageId,
             }))
         });
 
-        await Promise.all(imageDatas.map(async ({ image, embeddings }) => {
-            await addEmbedding(product.productId, image.uploadImageId, embeddings);
+        await Promise.all(images.map(async ({ url, uploadImageId }) => {
+            const imageEmbedding = await generateImageEmbedding(url);
+            await addEmbedding(product.productId, uploadImageId, imageEmbedding);
         }));
 
         return res.status(201).json({
@@ -334,7 +336,15 @@ export const imageSearch = async (req, res) => {
 
         let imageEmbedding;
         if (file) {
-            imageEmbedding = await generateImageEmbedding(file.path);
+            const __filename = fileURLToPath(import.meta.url);
+            const __dirname = path.dirname(__filename);
+
+            const tempFilePath = path.join(__dirname, '..', '..', file.originalname);
+            await fs.writeFile(tempFilePath, file.buffer);
+
+            imageEmbedding = await generateImageEmbedding(tempFilePath);
+
+            await fs.unlink(tempFilePath);
         } else {
             imageEmbedding = await generateImageEmbedding(url);
         }

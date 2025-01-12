@@ -1,24 +1,15 @@
 import prisma from '../config/prismaClient.js'
-import uploadFile from '../utils/cloudinary.js';
-import fs from "fs/promises";
-import { generateImageEmbedding } from '../utils/generateEmbeddings.js';
+import uploadFile from '../utils/supabaseStorage.js';
 
-export const uploadSingleImage = async (filePath) => {
+export const uploadSingleImage = async (file) => {
     try {
-        const { url, publicId } = await uploadFile(filePath);
-
-        const embeddings = await generateImageEmbedding(url);
+        const { url } = await uploadFile(file);
 
         const image = await prisma.uploadImage.create({
-            data: {
-                url,
-                publicId,
-            }
+            data: { url: url }
         });
 
-        await fs.unlink(filePath);
-
-        return { image, embeddings };
+        return image;
 
     } catch (error) {
         console.error('Error uploading file:', error);
@@ -26,60 +17,37 @@ export const uploadSingleImage = async (filePath) => {
     }
 }
 
-export const uploadMultipleImages = async (filePaths) => {
+export const uploadMultipleImages = async (files) => {
     try {
-        console.time('Upload Multiple Images Time');
         const uploadResults = await Promise.all(
-            filePaths.map(async (filePath) => {
-                const { url, publicId } = await uploadFile(filePath);
-                const embeddings = await generateImageEmbedding(url);
-                await fs.unlink(filePath);
-                return { url, publicId, embeddings };
+            files.map(async (file) => {
+                const { url } = await uploadFile(file);
+                return url;
             })
         );
 
-        const imageData = uploadResults.map(({ url, publicId }) => ({
-            url,
-            publicId,
-        }));
-
-        const savedImages = await Promise.all(
-            imageData.map(data => prisma.uploadImage.create({ data }))
+        const images = await Promise.all(
+            uploadResults.map(async (url) => {
+                return await prisma.uploadImage.create({
+                    data: { url }
+                });
+            })
         );
 
-        const imageEmbeddings = uploadResults.map((result, index) => ({
-            image: {
-                url: result.url,
-                publicId: result.publicId,
-                uploadImageId: savedImages[index].uploadImageId,
-            },
-            embeddings: result.embeddings,
-        }));
-
-        console.timeEnd('Upload Multiple Images Time');
-
-        return imageEmbeddings;
+        return images;
     } catch (error) {
         console.error('Error uploading files:', error);
         throw new Error('Error uploading files');
     }
 }
 
-export const uploadFromUrl = async (imageUrl) => {
+export const uploadFromUrl = async (url) => {
     try {
-        const { url, publicId } = await uploadFile(imageUrl);
-
-        const embeddings = await generateImageEmbedding(url);
-
         const image = await prisma.uploadImage.create({
-            data: {
-                url,
-                publicId,
-            }
+            data: { url }
         });
 
-        return { image, embeddings };
-
+        return image;
     } catch (error) {
         console.error('Error uploading file:', error);
         throw new Error('Error uploading file');

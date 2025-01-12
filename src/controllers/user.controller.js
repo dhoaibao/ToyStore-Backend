@@ -102,11 +102,11 @@ export const updateUser = async (req, res) => {
         let avatarId = null;
 
         if (req.file) {
-            const filePath = req.file.path;
+            const file = req.file;
 
-            const imageData = await uploadSingleImage(filePath);
+            const image = await uploadSingleImage(file);
 
-            avatarId = imageData.image.uploadImageId;
+            avatarId = image.uploadImageId;
         }
 
         const { fullName, email, phone, gender, birthday } = req.body;

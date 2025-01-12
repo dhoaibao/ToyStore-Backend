@@ -4,9 +4,9 @@ import { auth } from "../middlewares/authentication.js";
 
 const router = express.Router();
 
-router.get('/', auth, getAllProductInformations);
+router.get('/', getAllProductInformations);
 router.post('/', auth, createProductInformation);
-router.get('/:id', auth, getProductInformationById);
+router.get('/:id', getProductInformationById);
 router.put('/:id', auth, updateProductInformation);
 router.delete('/:id', auth, deleteProductInformation);
 
