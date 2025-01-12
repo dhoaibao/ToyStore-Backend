@@ -1,18 +1,26 @@
 import prisma from '../config/prismaClient.js'
 import { generateSlug } from '../utils/generateSlug.js';
 import { uploadMultipleImages } from '../services/upload.service.js';
-import { generateImageEmbedding } from '../utils/generateEmbeddings.js';
+import { generateImageEmbedding, generateTextEmbedding } from '../utils/generateEmbeddings.js';
 import { fileURLToPath } from 'url';
 import path from 'path';
 import fs from 'fs/promises';
 
-const addEmbedding = async (productId, uploadImageId, embedding) => {
+const addImageEmbedding = async (productId, uploadImageId, embedding) => {
     const embeddingString = `[${embedding.join(',')}]`;
     await prisma.$executeRaw`
       INSERT INTO product_image_embeddings (product_id, upload_image_id, embedding)
       VALUES (${productId}, ${uploadImageId}, ${embeddingString}::vector)
     `;
 };
+
+const addEmbedding = async (productId, embedding) => {
+    const embeddingString = `[${embedding.join(',')}]`;
+    await prisma.$executeRaw`
+      INSERT INTO product_embeddings (product_id, embedding)
+      VALUES (${productId}, ${embeddingString}::vector)
+    `;
+}
 
 const include = {
     category: {
@@ -49,11 +57,17 @@ const include = {
 
 export const getAllProducts = async (req, res) => {
     try {
-        const { page = 1, limit = 10, brandNames, categoryNames, ageOption, priceOption, sort, sortPrice, keyword } = req.query;
+        const { page = 1, limit = 10, brandNames, categoryNames, ageOption, priceOption, sort, sortPrice, keyword, ids } = req.query;
         const skip = (page - 1) * limit;
         const take = parseInt(limit);
 
         const filters = {};
+
+        if (ids) {
+            filters.productId = {
+                in: ids.split(',').map(id => parseInt(id))
+            };
+        }
 
         if (keyword) {
             filters.productName = {
@@ -249,12 +263,32 @@ export const createProduct = async (req, res) => {
 
         await Promise.all(images.map(async ({ url, uploadImageId }) => {
             const imageEmbedding = await generateImageEmbedding(url);
-            await addEmbedding(product.productId, uploadImageId, imageEmbedding);
+            await addImageEmbedding(product.productId, uploadImageId, imageEmbedding);
         }));
+
+        const allProductInfo = product.productName + ' ' + product.description + ' ' + product.brand.brandName + ' ' + product.category.categoryName + ' ' + product.productInfoValues.map(info => info.value).join(' ');
+
+        const textEmbedding = await generateTextEmbedding(allProductInfo);
+
+        await addEmbedding(product.productId, textEmbedding);
+
+        const productEmbedding = await prisma.productEmbedding.findFirst({
+            where: {
+                productId: product.productId
+            }
+        });
+
+        const productUpdated = await prisma.product.update({
+            where: { productId: product.productId },
+            data: {
+                productEmbeddingId: productEmbedding.productEmbeddingId
+            },
+            include,
+        });
 
         return res.status(201).json({
             message: 'Product created!',
-            data: product,
+            data: productUpdated,
         });
     }
     catch (error) {
