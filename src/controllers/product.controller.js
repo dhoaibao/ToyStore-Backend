@@ -57,13 +57,14 @@ const include = {
 
 export const getAllProducts = async (req, res) => {
     try {
-        const { page = 1, limit = 10, brandNames, categoryNames, ageOption, priceOption, sort, sortPrice, keyword, ids } = req.query;
+        const { page = 1, limit = 10, brandNames, categoryNames, ageOption, priceOption, sort, sortPrice, keyword, image } = req.query;
         const skip = (page - 1) * limit;
         const take = parseInt(limit);
 
         const filters = {};
 
-        if (ids) {
+        if (image) {
+            const ids = atob(image);
             filters.productId = {
                 in: ids.split(',').map(id => parseInt(id))
             };
@@ -390,8 +391,8 @@ export const imageSearch = async (req, res) => {
                    1 - (embedding <=> ${imageEmbeddingString}::vector) AS cosine_similarity
             FROM product_image_embeddings
             WHERE 1 - (embedding <=> ${imageEmbeddingString}::vector) > 0.6
-            ORDER BY cosine_similarity DESC
-            LIMIT 1;
+            ORDER BY cosine_similarity DESC;
+            -- LIMIT 1;
         `;
         console.log(productImageEmbeddings);
 
