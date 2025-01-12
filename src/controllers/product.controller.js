@@ -64,6 +64,18 @@ export const getAllProducts = async (req, res) => {
         const filters = {};
 
         if (image) {
+            if (image === '-1') {
+                return res.status(200).json({
+                    message: 'No products found!',
+                    data: [],
+                    pagination: {
+                        total: 0,
+                        page: parseInt(page),
+                        limit: take,
+                        totalPages: 0,
+                    }
+                });
+            }
             const ids = atob(image);
             filters.productId = {
                 in: ids.split(',').map(id => parseInt(id))
