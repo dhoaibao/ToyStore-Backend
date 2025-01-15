@@ -125,7 +125,7 @@ export const updateUser = async (req, res) => {
                 phone: phone || user.phone,
                 gender: Boolean(gender) || user.gender,
                 avatarId: avatarId || user.avatarId,
-                birthday: new Date(birthday) || new Date(user.birthday),
+                birthday: birthday ? new Date(birthday) : user.birthday,
             },
             include: {
                 avatar: true,

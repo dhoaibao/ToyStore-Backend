@@ -274,7 +274,13 @@ export const refreshToken = async (req, res) => {
             return res.status(400).json({ message: 'Refresh token is required!' });
         }
 
-        const userId = decodedRefreshToken(refreshToken);
+        const { userId, iat } = decodedRefreshToken(refreshToken);
+
+        getData(`blocklist:${userId}-${iat}`).then((result) => {
+            if (result === refreshToken) {
+                return res.status(401).json({ message: 'Token expired!' });
+            }
+        });
 
         const existingUser = await prisma.user.findUnique({ where: { userId } });
 
@@ -288,6 +294,27 @@ export const refreshToken = async (req, res) => {
             message: 'Token refreshed!',
             token: tokens,
         });
+    }
+    catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            message: 'Internal Server Error',
+            error: error.message
+        });
+    }
+}
+
+export const signOut = async (req, res) => {
+    try {
+        const { refreshToken } = req.body;
+
+        const { userId, iat, exp } = decodedRefreshToken(refreshToken);
+
+        const expTime = exp - Math.floor(Date.now() / 1000);
+
+        setData(`blocklist:${userId}-${iat}`, `${expTime}s`, refreshToken);
+
+        return res.status(200).json({ message: 'User logged out!' });
     }
     catch (error) {
         console.error(error);

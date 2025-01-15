@@ -22,15 +22,10 @@ const decodedRefreshToken = (refreshToken) => {
 
   try {
     const decoded = jwt.verify(refreshToken, secret);
-    return decoded.userId;
+    return decoded;
   } catch (verificationError) {
-    if (verificationError.name === 'TokenExpiredError') {
-      return res.status(403).json({ message: 'Token has expired' });
-    }
-    if (verificationError.name === 'JsonWebTokenError') {
-      return res.status(403).json({ message: 'Invalid token' });
-    }
-    return res.status(403).json({ message: 'Failed to verify token' });
+    console.error('Error verifying token:', verificationError);
+    return null;
   }
 
 }

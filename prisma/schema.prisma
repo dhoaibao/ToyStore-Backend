@@ -39,6 +39,10 @@ model Conversation {
   conversationid Int @id @default(autoincrement())
   text String
   isRead Boolean
+  createdAt DateTime @default(now()) @db.Timestamptz
+
+  imageId Int
+  image UploadImage @relation(fields: [imageId], references: [uploadImageId])
 
   senderId       Int
   sender         User   @relation("Sent", fields: [senderId], references: [userId])
@@ -60,6 +64,9 @@ model UploadImage {
   blogImages BlogImage[]
   productImageEmbeddings ProductImageEmbedding[]
   avatar User[]
+  discountThumbnail Discount[]
+  categoryThumbnail Category[]
+  imageMessages Conversation[]
   shopLogo SystemConfiguration[]
 
   @@map("upload_images")
@@ -220,6 +227,9 @@ model Category {
   slug String @unique
   createdAt DateTime @default(now()) @db.Timestamptz
   updatedAt DateTime @updatedAt @db.Timestamptz
+
+  categoryThumbnailId Int
+  categoryThumbnail UploadImage @relation(fields: [categoryThumbnailId], references: [uploadImageId])
 
   products Product[]
 
@@ -451,12 +461,17 @@ model Voucher {
 
 model Discount {
   discountId Int @id @default(autoincrement())
-  discountType String
+  discountName String
+  description String
+  discountType String  // "percentage", "fixed_amount", "buy_x_get_y",
   discountValue Float
   startDate DateTime
   endDate DateTime
   createdAt DateTime @default(now()) @db.Timestamptz
   updatedAt DateTime @updatedAt @db.Timestamptz
+
+  discountThumbnailId Int
+  discountThumbnail UploadImage @relation(fields: [discountThumbnailId], references: [uploadImageId])
 
   products Product[] @relation("product_discount")
 

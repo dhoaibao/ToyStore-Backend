@@ -13,7 +13,8 @@ const include = {
                                 }
                             }
                         }
-                    }
+                    },
+                    discounts: true 
                 }
             }
         }

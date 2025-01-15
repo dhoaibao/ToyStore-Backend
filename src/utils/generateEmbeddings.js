@@ -22,3 +22,11 @@ export const generateTextEmbedding = async (text) => {
         console.error('Error generating text embeddings:', error);
     }
 }
+
+// const test = async (text) => {
+//     const pipe = await pipeline('sentiment-analysis', 'Xenova/distilbert-base-uncased-finetuned-sst-2-english');
+//     const result = await pipe(text, { topk: null });
+//     return result;
+// }
+
+// test('This product is terrible. I hate it!').then(console.log);

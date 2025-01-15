@@ -1,9 +1,18 @@
 import prisma from '../config/prismaClient.js'
 import { generateSlug } from '../utils/generateSlug.js';
+import { uploadSingleImage } from '../services/upload.service.js';
+
+const include = {
+    categoryThumbnail: {
+        select: {
+            url: true
+        }
+    }
+}
 
 export const getAllCategories = async (_, res) => {
     try {
-        const categories = await prisma.category.findMany({});
+        const categories = await prisma.category.findMany({ include });
 
         return res.status(200).json({
             message: 'All categories fetched!',
@@ -24,7 +33,8 @@ export const getCategoryById = async (req, res) => {
         const { id } = req.params;
 
         const category = await prisma.category.findUnique({
-            where: { categoryId: parseInt(id) }
+            where: { categoryId: parseInt(id) },
+            include
         });
 
         if (!category) {
@@ -49,7 +59,9 @@ export const createCategory = async (req, res) => {
     try {
         const { categoryName } = req.body;
 
-        if (!categoryName) {
+        const file = req.file;
+
+        if (!categoryName || !file) {
             return res.status(400).json({ message: 'Missing required fields!' });
         }
 
@@ -60,14 +72,19 @@ export const createCategory = async (req, res) => {
         if (categoryExists) {
             return res.status(400).json({ message: 'Category already exists!' });
         }
-        
+
+        const image = await uploadSingleImage(file);
+        const categoryThumbnailId = image.uploadImageId;
+
         const slug = generateSlug(categoryName);
 
         const category = await prisma.category.create({
             data: {
                 categoryName,
+                categoryThumbnailId,
                 slug,
-            }
+            },
+            include
         });
 
         return res.status(201).json({
@@ -90,20 +107,30 @@ export const updateCategory = async (req, res) => {
 
         const { categoryName } = req.body;
 
-        const category = await prisma.category.findUnique({ where: { categoryId: parseInt(id) } });
+        const file = req.file;
 
-        if (!category) {
+        const existingCategory = await prisma.category.findUnique({ where: { categoryId: parseInt(id) } });
+
+        if (!existingCategory) {
             return res.status(404).json({ message: 'Category not found!' });
         }
 
         const slug = generateSlug(categoryName);
 
+        let categoryThumbnailId = null;
+        if (file) {
+            const image = await uploadSingleImage(file);
+            categoryThumbnailId = image.uploadImageId;
+        }
+
         const updatedCategory = await prisma.category.update({
             where: { categoryId: parseInt(id) },
             data: {
-                categoryName: categoryName,
+                categoryName: categoryName || existingCategory.categoryName,
+                categoryThumbnailId: categoryThumbnailId || existingCategory.categoryThumbnailId,
                 slug: slug,
-            }
+            },
+            include
         });
 
         return res.status(200).json({

@@ -52,33 +52,31 @@ const include = {
                 }
             }
         }
-    }
+    },
+    discounts: {
+        include: {
+            discountThumbnail: {
+                select: {
+                    url: true
+                }
+            }
+        }
+    },
 };
 
 export const getAllProducts = async (req, res) => {
     try {
-        const { page = 1, limit = 10, brandNames, categoryNames, ageOption, priceOption, sort, sortPrice, keyword, image } = req.query;
+        const { page = 1, limit = 10, brandNames, categoryNames, ageOption, priceOption, sort, sortPrice, keyword, discount } = req.query;
         const skip = (page - 1) * limit;
         const take = parseInt(limit);
 
         const filters = {};
 
-        if (image) {
-            if (image === '-1') {
-                return res.status(200).json({
-                    message: 'No products found!',
-                    data: [],
-                    pagination: {
-                        total: 0,
-                        page: parseInt(page),
-                        limit: take,
-                        totalPages: 0,
-                    }
-                });
-            }
-            const ids = atob(image);
-            filters.productId = {
-                in: ids.split(',').map(id => parseInt(id))
+        if (discount) {
+            filters.discounts = {
+                some: {
+                    discountId: parseInt(discount)
+                }
             };
         }
 
@@ -403,10 +401,9 @@ export const imageSearch = async (req, res) => {
                    1 - (embedding <=> ${imageEmbeddingString}::vector) AS cosine_similarity
             FROM product_image_embeddings
             WHERE 1 - (embedding <=> ${imageEmbeddingString}::vector) > 0.6
-            ORDER BY cosine_similarity DESC;
-            -- LIMIT 1;
+            ORDER BY cosine_similarity DESC
+            LIMIT 10;
         `;
-        console.log(productImageEmbeddings);
 
         const products = productImageEmbeddings.map(embedding => embedding.product_id);
 
@@ -422,6 +419,10 @@ export const imageSearch = async (req, res) => {
         return res.status(200).json({
             message: 'Image search results fetched!',
             data: productsData,
+            pagination: {
+                total: productsData.length,
+                totalPages: 1,
+            }
         });
     } catch (error) {
         console.error(error);
