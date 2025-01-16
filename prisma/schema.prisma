@@ -393,7 +393,7 @@ model Order {
 
 model OrderDetail {
   price Float
-  discountPrice Float
+  discountedPrice Float
   quantity Int
 
   orderId Int
