@@ -343,8 +343,8 @@ model CartDetail {
 model Address {
   addressId Int @id @default(autoincrement())
   addressName String
-  provinceCode String
-  districtCode String
+  provinceId Int
+  districtId Int
   wardCode String
   provinceName String
   districtName String

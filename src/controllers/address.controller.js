@@ -4,16 +4,18 @@ export const getAddressByUser = async (req, res) => {
     try {
         const userId = req.userId;
 
-        const addresss = await prisma.address.findMany({
+        const addresses = await prisma.address.findMany({
             where: { userId: parseInt(userId) },
             include: {
                 user: true,
             }
         });
 
+
+
         return res.status(200).json({
-            message: 'All addresss fetched!',
-            data: addresss,
+            message: 'All addresses fetched!',
+            data: addresses,
         });
     }
     catch (error) {
@@ -25,17 +27,17 @@ export const getAddressByUser = async (req, res) => {
     }
 }
 
-export const getAllAddreses = async (_, res) => {
+export const getAllAddresses = async (_, res) => {
     try {
-        const addresss = await prisma.address.findMany({
+        const addresses = await prisma.address.findMany({
             include: {
                 user: true,
             }
         });
 
         return res.status(200).json({
-            message: 'All addresss fetched!',
-            data: addresss,
+            message: 'All addresses fetched!',
+            data: addresses,
         });
     }
     catch (error) {
@@ -78,19 +80,27 @@ export const getAddressById = async (req, res) => {
 
 export const createAddress = async (req, res) => {
     try {
-        const { addressName, provinceCode, districtCode, wardCode, provinceName, districtName, wardName, detail, isDefault, contactName, contactPhone, userId } = req.body;
+        const { provinceId, districtId, wardCode, addressName, provinceName, districtName, wardName, detail, isDefault, contactName, contactPhone, userId } = req.body;
 
-        if (!addressName || !provinceCode || !districtCode || !wardCode || !provinceName || !districtName || !wardName || !detail || !contactName || !contactPhone) {
+        if (!provinceId || !districtId || !wardCode || !addressName || !provinceName || !districtName || !wardName || !detail || !contactName || !contactPhone) {
             return res.status(400).json({ message: 'Missing required fields!' });
+        }
+
+        const existingAddress = await prisma.address.findFirst({
+            where: {addressName}
+        });
+
+        if (existingAddress) {
+            return res.status(400).json({ message: 'Address name already exists!' });
         }
 
         const address = await prisma.address.create({
             data: {
                 addressName,
-                provinceCode: String(provinceCode),
-                districtCode: String(districtCode),
-                wardCode: String(wardCode),
-                provinceName,
+                provinceId: parseInt(provinceId),
+                districtId: parseInt(districtId),
+                wardCode: wardCode,
+                provinceName,   
                 districtName,
                 wardName,
                 detail,
@@ -129,7 +139,7 @@ export const updateAddress = async (req, res) => {
     try {
         const { id } = req.params;
 
-        const { addressName, provinceCode, districtCode, wardCode, provinceName, districtName, wardName, detail, isDefault, contactName, contactPhone, userId } = req.body;
+        const { provinceId, districtId, wardCode, addressName, provinceName, districtName, wardName, detail, isDefault, contactName, contactPhone, userId } = req.body;
 
         const address = await prisma.address.findUnique({ where: { addressId: parseInt(id) } });
 
@@ -141,14 +151,14 @@ export const updateAddress = async (req, res) => {
             where: { addressId: parseInt(id) },
             data: {
                 addressName: addressName || address.addressName,
-                provinceCode: String(provinceCode) || address.provinceCode,
-                districtCode: String(districtCode) || address.districtCode,
-                wardCode: String(wardCode) || address.wardCode,
+                provinceId: provinceId || address.provinceId,
+                districtId: districtId || address.districtId,
+                wardCode: wardCode || address.wardCode,
                 provinceName: provinceName || address.provinceName,
                 districtName: districtName || address.districtName,
                 wardName: wardName || address.wardName,
                 detail: detail || address.detail,
-                isDefault: isDefault || address.isDefault,
+                isDefault: isDefault,
                 contactName: contactName || address.contactName,
                 contactPhone: contactPhone || address.contactPhone,
                 userId: parseInt(userId) || address.userId,
