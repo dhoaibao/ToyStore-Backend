@@ -9,4 +9,4 @@ router.get('/', auth, getCartByUser);
 router.put('/', auth, updateCartItem);
 router.delete('/:id', auth, removeFromCart);
 
-export default router;
+export const cartRoute = router;

@@ -12,4 +12,4 @@ router.get('/:slug', getProductBySlug);
 router.put('/:id', upload.array("images", 10), auth, updateProduct);
 router.delete('/:id', auth, deleteProduct);
 
-export default router;
+export const productRoute = router;

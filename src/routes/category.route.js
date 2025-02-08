@@ -11,4 +11,4 @@ router.get('/:id', auth, getCategoryById);
 router.put('/:id', auth, upload.single("file"), updateCategory);
 router.delete('/:id', auth, deleteCategory);
 
-export default router;
+export const categoryRoute = router;

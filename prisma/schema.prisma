@@ -25,7 +25,7 @@ model Permission {
   permissionId Int @id @default(autoincrement())
   permissionName String
   apiPath String
-  medthod String
+  method String
   module String
   createdAt DateTime @default(now()) @db.Timestamptz
   updatedAt DateTime @updatedAt @db.Timestamptz
@@ -36,7 +36,7 @@ model Permission {
 }
 
 model Conversation {
-  conversationid Int @id @default(autoincrement())
+  conversationId Int @id @default(autoincrement())
   text String
   isRead Boolean
   createdAt DateTime @default(now()) @db.Timestamptz
@@ -92,7 +92,7 @@ model SystemConfiguration {
   shopPhone String
 
   banners Banner[]
-  priceFillters PriceFillter[]
+  priceFilters PriceFilter[]
 
   shopLogoId Int
   shopLogo UploadImage @relation(fields: [shopLogoId], references: [uploadImageId])
@@ -100,15 +100,15 @@ model SystemConfiguration {
   @@map("system_configurations")
 }
 
-model PriceFillter {
-  priceFillterId Int @id @default(autoincrement())
+model PriceFilter {
+  priceFilterId Int @id @default(autoincrement())
   minPrice Float
   maxPrice Float
 
   systemConfigId Int
   systemConfig SystemConfiguration @relation(fields: [systemConfigId], references: [systemConfigId])
 
-  @@map("price_fillters")
+  @@map("price_filters")
 }
 
 model Blog {
@@ -376,8 +376,8 @@ model Order {
 
   orderDetails OrderDetail[]
 
-  orderAdressId Int?
-  orderAddress OrderAdress? @relation
+  orderAddressId Int?
+  orderAddress OrderAddress? @relation
 
   orderStatusId Int
   orderStatus OrderStatus @relation(fields: [orderStatusId], references: [orderStatusId])
@@ -407,7 +407,7 @@ model OrderDetail {
   @@map("order_details")
 }
 
-model OrderAdress {
+model OrderAddress {
   orderAddressId Int @id @default(autoincrement())
   address String
   contactName String
@@ -447,7 +447,7 @@ model Voucher {
   startDate DateTime
   endDate DateTime
   quantity Int
-  colectedQuantity Int
+  collectedQuantity Int
   currentUsedQuantity Int
   createdAt DateTime @default(now()) @db.Timestamptz
   updatedAt DateTime @updatedAt @db.Timestamptz

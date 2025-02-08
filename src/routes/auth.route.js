@@ -13,4 +13,4 @@ router.post('/verify-reset-password', verifyResetPassword);
 router.post('/sign-in-with-google', signInWithGoogle);
 router.post('/sign-out', signOut);
 
-export default router;
+export const authRoute = router;

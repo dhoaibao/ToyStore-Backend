@@ -11,4 +11,4 @@ router.get('/:id', auth, getAddressById);
 router.put('/:id', auth, updateAddress);
 router.delete('/:id', auth, deleteAddress);
 
-export default router;
+export const addressRoute = router;

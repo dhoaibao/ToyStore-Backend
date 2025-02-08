@@ -11,4 +11,4 @@ router.get('/:id', getDiscountById);
 router.put('/:id', auth, upload.single("file"), updateDiscount);
 router.delete('/:id', auth, deleteDiscount);
 
-export default router;
+export const discountRoute = router;

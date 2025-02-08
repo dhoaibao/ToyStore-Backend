@@ -10,4 +10,4 @@ router.get('/:productId/:productInfoId', getProductInfoValueById);
 router.put('/:productId/:productInfoId', auth, updateProductInfoValue);
 router.delete('/:productId/:productInfoId', auth, deleteProductInfoValue);
 
-export default router;
+export const productInfoValueRoute = router;

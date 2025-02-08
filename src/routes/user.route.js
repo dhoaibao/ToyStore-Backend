@@ -14,4 +14,4 @@ router.put('/change-password', auth, changePassword);
 router.put('/:id', upload.single("avatar"), auth, updateUser);
 router.delete('/:id', auth, deleteUser);
 
-export default router;
+export const userRoute = router;

@@ -10,4 +10,4 @@ router.get('/:id', auth, getBrandById);
 router.put('/:id', auth, updateBrand);
 router.delete('/:id', auth, deleteBrand);
 
-export default router;
+export const brandRoute = router;

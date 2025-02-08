@@ -109,7 +109,6 @@ export const removeFromCart = async (req, res) => {
     try {
         const userId = req.userId;
         const { id: productId } = req.params;
-        console.log(productId);
 
         const existingCart = await prisma.cart.findFirst({
             where: { userId: userId }
