@@ -9,3 +9,4 @@ export * from './product.route.js';
 export * from './cart.route.js';
 export * from './discount.route.js';
 export * from './order.route.js'
+export * from './orderStatus.route.js'

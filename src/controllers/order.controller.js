@@ -1,13 +1,70 @@
 import prisma from '../config/prismaClient.js'
 import moment from 'moment';
 
-export const getAllOrders = async (_, res) => {
+const include = {
+    orderStatus: true,
+    paymentMethod: true,
+    orderDetails: {
+        include: {
+            product: {
+                include: {
+                    productImages: {
+                        select: {
+                            uploadImage: {
+                                select: {
+                                    url: true
+                                }
+                            }
+                        }
+                    },
+                    discounts: true
+                }
+            }
+        }
+    }
+}
+
+export const getAllOrders = async (req, res) => {
     try {
-        const orders = await prisma.order.findMany({});
+        const { page = 1, limit = 10, orderStatusId, orderId } = req.query;
+        const skip = (page - 1) * limit;
+        const take = parseInt(limit);
+
+        const filters = {};
+
+        if (orderStatusId && orderStatusId !== '0') {
+            filters.orderStatus = {
+                orderStatusId: parseInt(orderStatusId)
+            };
+        }
+
+        if (orderId) {
+            filters.orderId = parseInt(orderId);
+        }
+
+        const orders = await prisma.order.findMany({
+            skip: orderId ? undefined : skip,
+            take: orderId ? undefined : take,
+            where: filters,
+            orderBy: {
+                createdAt: 'desc'
+            },
+            include
+        });
+
+        const totalOrders = await prisma.order.count({
+            where: filters
+        });
 
         return res.status(200).json({
             message: 'All orders fetched!',
             data: orders,
+            pagination: {
+                total: totalOrders,
+                page: parseInt(page),
+                limit: take,
+                totalPages: Math.ceil(totalOrders / take),
+            }
         });
     }
     catch (error) {
@@ -22,14 +79,47 @@ export const getAllOrders = async (_, res) => {
 export const getOrderByUser = async (req, res) => {
     try {
         const userId = req.userId;
+        const { page = 1, limit = 10, orderStatusId, orderId } = req.query;
+        const skip = (page - 1) * limit;
+        const take = parseInt(limit);
 
-        const order = await prisma.order.findMany({
-            where: { userId: userId },
+        const filters = {};
+
+        filters.userId = userId;
+
+        if (orderStatusId && orderStatusId !== '0') {
+            filters.orderStatus = {
+                orderStatusId: parseInt(orderStatusId)
+            };
+        }
+
+        if (orderId) {
+            filters.orderId = parseInt(orderId);
+        }
+ 
+        const orders = await prisma.order.findMany({
+            skip: orderId ? undefined : skip,
+            take: orderId ? undefined : take,
+            where: filters,
+            orderBy: {
+                createdAt: 'desc'
+            },
+            include
+        });
+
+        const totalOrders = await prisma.order.count({
+            where: filters
         });
 
         return res.status(200).json({
             message: 'Order fetched!',
-            data: order,
+            data: orders,
+            pagination: {
+                total: totalOrders,
+                page: parseInt(page),
+                limit: take,
+                totalPages: Math.ceil(totalOrders / take),
+            }
         });
     } catch (error) {
         console.error(error);
@@ -46,6 +136,7 @@ export const getOrderById = async (req, res) => {
 
         const order = await prisma.order.findUnique({
             where: { orderId: parseInt(id) },
+            include
         });
 
         return res.status(200).json({
@@ -66,7 +157,7 @@ export const createOrder = async (req, res) => {
         const userId = req.userId;
         const { totalPrice, totalDiscount, shippingFee, finalPrice, paymentMethodId, paymentStatus = false, orderItems, addressString, contactName, contactPhone } = req.body;
 
-        if (!totalPrice || !totalDiscount || !shippingFee || !finalPrice || !paymentMethodId || !orderItems || !addressString || !contactName || !contactPhone) {
+        if (!totalPrice || !shippingFee || !finalPrice || !paymentMethodId || !orderItems || !addressString || !contactName || !contactPhone) {
             return res.status(400).json({ message: 'Missing required fields!' });
         }
 
@@ -116,7 +207,8 @@ export const createOrder = async (req, res) => {
 
             const updatedOrder = await tx.order.update({
                 where: { orderId: order.orderId },
-                data: dataUpdate
+                data: dataUpdate,
+                include
             });
 
 

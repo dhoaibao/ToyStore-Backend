@@ -6,7 +6,7 @@ import ApiError from './middlewares/api-error.js';
 import {
     authRoute, userRoute, addressRoute, brandRoute, categoryRoute,
     productInfoRoute, productInfoValueRoute, productRoute, cartRoute,
-    discountRoute, orderRoute
+    discountRoute, orderRoute, orderStatusRoute
 } from './routes/index.js';
 
 const app = express();
@@ -34,6 +34,7 @@ app.use(`/api/${API_VERSION}/product`, productRoute);
 app.use(`/api/${API_VERSION}/cart`, cartRoute);
 app.use(`/api/${API_VERSION}/discount`, discountRoute);
 app.use(`/api/${API_VERSION}/order`, orderRoute);
+app.use(`/api/${API_VERSION}/order-status`, orderStatusRoute);
 
 app.get("/", (req, res) => {
     res.json({ message: "Server is running!" });

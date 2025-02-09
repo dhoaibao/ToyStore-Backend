@@ -165,7 +165,9 @@ export const getAllProducts = async (req, res) => {
             }
         }
 
-        const totalProducts = products.length;
+        const totalProducts = await prisma.product.count({
+            where: filters,
+        });
 
         return res.status(200).json({
             message: 'All products fetched!',
