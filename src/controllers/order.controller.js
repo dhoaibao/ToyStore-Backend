@@ -4,6 +4,7 @@ import moment from 'moment';
 const include = {
     orderStatus: true,
     paymentMethod: true,
+    orderAddress: true,
     orderDetails: {
         include: {
             product: {
