@@ -97,7 +97,7 @@ export const getOrderByUser = async (req, res) => {
         if (orderId) {
             filters.orderId = parseInt(orderId);
         }
- 
+
         const orders = await prisma.order.findMany({
             skip: orderId ? undefined : skip,
             take: orderId ? undefined : take,
@@ -220,6 +220,80 @@ export const createOrder = async (req, res) => {
             message: 'Order created!',
             data: result,
         });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            message: 'Internal Server Error',
+            error: error.message
+        });
+    }
+}
+
+export const cancelOrder = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const userId = req.userId;
+
+        const existingOrder = await prisma.order.findUnique({
+            where: { orderId: parseInt(id) },
+        });
+
+        if (!existingOrder) {
+            return res.status(404).json({ message: 'Order not found!' });
+        }
+
+        if (existingOrder.orderStatusId !== 1) {
+            return res.status(400).json({ message: 'Order cannot be cancelled!' });
+        }
+
+        const result = await prisma.order.update({
+            where: { orderId: parseInt(id), userId: parseInt(userId) },
+            data: {
+                orderStatusId: 5
+            },
+            include
+        });
+
+        return res.status(200).json({
+            message: 'Order cancelled!',
+            data: result,
+        });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            message: 'Internal Server Error',
+            error: error.message
+        });
+    }
+}
+
+export const updateOrderStatus = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { orderStatusId } = req.body;
+
+        const existingOrder = await prisma.order.findUnique({
+            where: { orderId: parseInt(id) },
+        });
+
+        if (!existingOrder) {
+            return res.status(404).json({ message: 'Order not found!' });
+        }
+
+        const result = await prisma.order.update({
+            where: { orderId: parseInt(id) },
+            data: {
+                orderStatusId
+            },
+            include
+        });
+
+        return res.status(200).json({
+            message: 'Order status updated!',
+            data: result,
+        });
+
     } catch (error) {
         console.error(error);
         return res.status(500).json({
