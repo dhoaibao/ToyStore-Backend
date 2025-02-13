@@ -80,7 +80,7 @@ export const getAllOrders = async (req, res) => {
 export const getOrderByUser = async (req, res) => {
     try {
         const userId = req.userId;
-        const { page = 1, limit = 10, orderStatusId, orderId } = req.query;
+        const { page = 1, limit = 10, orderStatusId, orderId, startDate, endDate } = req.query;
         const skip = (page - 1) * limit;
         const take = parseInt(limit);
 
@@ -91,6 +91,13 @@ export const getOrderByUser = async (req, res) => {
         if (orderStatusId && orderStatusId !== '0') {
             filters.orderStatus = {
                 orderStatusId: parseInt(orderStatusId)
+            };
+        }
+
+        if (startDate && endDate) {
+            filters.createdAt = {
+                gte: new Date(`${startDate}T00:00:00.000Z`),
+                lte: new Date(`${endDate}T23:59:59.999Z`),
             };
         }
 
