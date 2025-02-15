@@ -14,7 +14,7 @@ const include = {
                             }
                         }
                     },
-                    discounts: true 
+                    promotions: true 
                 }
             }
         }
