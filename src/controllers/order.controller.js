@@ -3,26 +3,6 @@ import moment from 'moment';
 
 const include = {
     orderStatus: true,
-    paymentMethod: true,
-    orderAddress: true,
-    orderDetails: {
-        include: {
-            product: {
-                include: {
-                    productImages: {
-                        select: {
-                            uploadImage: {
-                                select: {
-                                    url: true
-                                }
-                            }
-                        }
-                    },
-                    discounts: true
-                }
-            }
-        }
-    }
 }
 
 export const getAllOrders = async (req, res) => {
@@ -144,8 +124,34 @@ export const getOrderById = async (req, res) => {
 
         const order = await prisma.order.findUnique({
             where: { orderId: parseInt(id) },
-            include
+            include: {
+                orderStatus: true,
+                paymentMethod: true,
+                orderAddress: true,
+                orderDetails: {
+                    include: {
+                        product: {
+                            include: {
+                                productImages: {
+                                    select: {
+                                        uploadImage: {
+                                            select: {
+                                                url: true
+                                            }
+                                        }
+                                    }
+                                },
+                                discounts: true
+                            }
+                        }
+                    }
+                }
+            }
         });
+
+        if (!order) {
+            return res.status(404).json({ message: 'Order not found!' });
+        }
 
         return res.status(200).json({
             message: 'Order fetched!',
