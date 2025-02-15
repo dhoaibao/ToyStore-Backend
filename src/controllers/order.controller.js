@@ -90,7 +90,7 @@ export const getOrderByUser = async (req, res) => {
             take: orderId ? undefined : take,
             where: filters,
             orderBy: {
-                createdAt: 'desc'
+                updatedAt: 'desc'
             },
             include
         });
