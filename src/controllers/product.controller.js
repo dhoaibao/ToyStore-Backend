@@ -66,16 +66,16 @@ const include = {
 
 export const getAllProducts = async (req, res) => {
     try {
-        const { page = 1, limit = 10, brandNames, categoryNames, ageOption, priceOption, sort, sortPrice, keyword, discount } = req.query;
+        const { page = 1, limit = 10, brandNames, categoryNames, ageOption, priceOption, sort, sortPrice, keyword, promotion } = req.query;
         const skip = (page - 1) * limit;
         const take = parseInt(limit);
 
         const filters = {};
 
         if (discount) {
-            filters.discounts = {
+            filters.promotions = {
                 some: {
-                    discountId: parseInt(discount)
+                    promotionId: parseInt(promotion)
                 }
             };
         }
