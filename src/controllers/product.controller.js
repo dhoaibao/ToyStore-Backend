@@ -53,9 +53,9 @@ const include = {
             }
         }
     },
-    discounts: {
+    promotions: {
         include: {
-            discountThumbnail: {
+            promotionThumbnail: {
                 select: {
                     url: true
                 }
