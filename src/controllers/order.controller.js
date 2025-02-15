@@ -13,8 +13,6 @@ export const getAllOrders = async (req, res) => {
 
         const filters = {};
 
-        filters.userId = userId;
-
         if (orderStatusId && orderStatusId !== '0') {
             filters.orderStatus = {
                 orderStatusId: parseInt(orderStatusId)
@@ -32,19 +30,21 @@ export const getAllOrders = async (req, res) => {
             filters.orderId = parseInt(orderId);
         }
 
-        const orders = await prisma.order.findMany({
-            skip: orderId ? undefined : skip,
-            take: orderId ? undefined : take,
-            where: filters,
-            orderBy: {
-                updatedAt: 'desc'
-            },
-            include
-        });
+        const [orders, totalOrders] = await Promise.all([
+            prisma.order.findMany({
+                skip: orderId ? undefined : skip,
+                take: orderId ? undefined : take,
+                where: filters,
+                orderBy: {
+                    updatedAt: 'desc'
+                },
+                include
+            }),
 
-        const totalOrders = await prisma.order.count({
-            where: filters
-        });
+            prisma.order.count({
+                where: filters
+            })
+        ]);
 
         return res.status(200).json({
             message: 'All orders fetched!',
@@ -94,19 +94,21 @@ export const getOrderByUser = async (req, res) => {
             filters.orderId = parseInt(orderId);
         }
 
-        const orders = await prisma.order.findMany({
-            skip: orderId ? undefined : skip,
-            take: orderId ? undefined : take,
-            where: filters,
-            orderBy: {
-                updatedAt: 'desc'
-            },
-            include
-        });
+        const [orders, totalOrders] = await Promise.all([
+            prisma.order.findMany({
+                skip: orderId ? undefined : skip,
+                take: orderId ? undefined : take,
+                where: filters,
+                orderBy: {
+                    updatedAt: 'desc'
+                },
+                include
+            }),
 
-        const totalOrders = await prisma.order.count({
-            where: filters
-        });
+            prisma.order.count({
+                where: filters
+            })
+        ]);
 
         return res.status(200).json({
             message: 'Order fetched!',

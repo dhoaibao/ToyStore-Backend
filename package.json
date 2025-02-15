@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "start": "nodemon server.js",
-    "db": "npx prisma migrate dev --name update"
+    "db": "bun x prisma migrate dev --name update"
   },
   "devDependencies": {
     "@types/bun": "latest"
