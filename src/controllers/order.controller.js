@@ -152,7 +152,7 @@ export const getOrderById = async (req, res) => {
                                         }
                                     }
                                 },
-                                discounts: true
+                                promotions: true
                             }
                         }
                     }
