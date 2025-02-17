@@ -1,6 +1,6 @@
 import prisma from '../config/prismaClient.js'
 import { generateSlug } from '../utils/generateSlug.js';
-import { uploadSingleImage } from '../services/upload.service.js';
+import { uploadSingleImage, deleteImage } from '../services/upload.service.js';
 
 const include = {
     categoryThumbnail: {
@@ -121,6 +121,9 @@ export const updateCategory = async (req, res) => {
         if (file) {
             const image = await uploadSingleImage(file);
             categoryThumbnailId = image.uploadImageId;
+            if (existingCategory.categoryThumbnailId) {
+                await deleteImage(existingCategory.categoryThumbnailId);
+            }
         }
 
         const updatedCategory = await prisma.category.update({

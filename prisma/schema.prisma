@@ -56,6 +56,7 @@ model Conversation {
 model UploadImage {
   uploadImageId Int      @id @default(autoincrement())
   url           String
+  filePath      String
   createdAt     DateTime @default(now()) @db.Timestamptz
   updatedAt     DateTime @updatedAt @db.Timestamptz
 
@@ -115,7 +116,7 @@ model News {
   newsId      Int      @id @default(autoincrement())
   title       String   @unique
   slug        String   @unique
-  content        String
+  content     String
   published   Boolean
   publishedAt DateTime @default(now()) @db.Timestamptz
 
@@ -128,7 +129,7 @@ model NewsImage {
   newsImageId Int @id @default(autoincrement())
 
   newsId Int
-  new   News @relation(fields: [newsId], references: [newsId])
+  new    News @relation(fields: [newsId], references: [newsId])
 
   imageId Int
   image   UploadImage @relation(fields: [imageId], references: [uploadImageId])

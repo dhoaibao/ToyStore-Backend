@@ -1,6 +1,6 @@
 import prisma from '../config/prismaClient.js'
 import bcrypt from 'bcrypt';
-import { uploadSingleImage } from '../services/upload.service.js';
+import { uploadSingleImage, deleteImage } from '../services/upload.service.js';
 
 export const getLoggedInUser = async (req, res) => {
     try {
@@ -99,6 +99,14 @@ export const updateUser = async (req, res) => {
     try {
         const { id } = req.params;
 
+        const { fullName, email, phone, gender, birthday } = req.body;
+
+        const user = await prisma.user.findUnique({ where: { userId: parseInt(id) } });
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found!' });
+        }
+
         let avatarId = null;
 
         if (req.file) {
@@ -107,14 +115,10 @@ export const updateUser = async (req, res) => {
             const image = await uploadSingleImage(file);
 
             avatarId = image.uploadImageId;
-        }
 
-        const { fullName, email, phone, gender, birthday } = req.body;
-
-        const user = await prisma.user.findUnique({ where: { userId: parseInt(id) } });
-
-        if (!user) {
-            return res.status(404).json({ message: 'User not found!' });
+            if (user.avatarId) {
+                await deleteImage(user.avatarId);
+            }
         }
 
         const updatedUser = await prisma.user.update({

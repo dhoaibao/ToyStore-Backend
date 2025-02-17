@@ -1,7 +1,7 @@
 import supabase from "../config/supabaseConfig.js";
 import { decode } from "base64-arraybuffer";
 
-const uploadFile = async (file) => {
+export const uploadFile = async (file) => {
     try {
         const filePath = 'images/' + file.originalname + '-' + Date.now();
 
@@ -19,10 +19,22 @@ const uploadFile = async (file) => {
 
         const { data: image } = supabase.storage.from('ToyStore').getPublicUrl(data.path);
 
-        return { url: image.publicUrl };
+        return { url: image.publicUrl, filePath: data.path };
     } catch (error) {
         throw error;
     }
 }
 
-export default uploadFile;
+export const deleteFile = async (filePath) => {
+    try {
+        const { error } = await supabase.storage
+            .from('ToyStore')
+            .remove([filePath]);
+
+        if (error) {
+            throw error;
+        }
+    } catch (error) {
+        throw error;
+    }
+}
