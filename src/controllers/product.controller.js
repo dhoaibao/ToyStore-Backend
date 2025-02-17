@@ -407,20 +407,23 @@ export const imageSearch = async (req, res) => {
             LIMIT 10;
         `;
 
-        const products = productImageEmbeddings.map(embedding => embedding.product_id);
+        const productIds = productImageEmbeddings.map(embedding => embedding.product_id);
+        const uniqueProductIds = [...new Set(productIds)];
 
         const productsData = await prisma.product.findMany({
             where: {
                 productId: {
-                    in: products
+                    in: uniqueProductIds
                 }
             },
             include,
         });
 
+        const sortedProductsData = uniqueProductIds.map(id => productsData.find(product => product.productId === id));
+
         return res.status(200).json({
             message: 'Image search results fetched!',
-            data: productsData,
+            data: sortedProductsData,
             pagination: {
                 total: productsData.length,
                 totalPages: 1,
