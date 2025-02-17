@@ -115,10 +115,6 @@ export const updateUser = async (req, res) => {
             const image = await uploadSingleImage(file);
 
             avatarId = image.uploadImageId;
-
-            if (user.avatarId) {
-                await deleteImage(user.avatarId);
-            }
         }
 
         const updatedUser = await prisma.user.update({
@@ -135,6 +131,10 @@ export const updateUser = async (req, res) => {
                 avatar: true,
             }
         });
+
+        if (avatarId && user.avatarId) {
+            await deleteImage(user.avatarId);
+        }
 
         return res.status(200).json({
             message: 'User updated!',

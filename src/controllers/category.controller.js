@@ -121,9 +121,6 @@ export const updateCategory = async (req, res) => {
         if (file) {
             const image = await uploadSingleImage(file);
             categoryThumbnailId = image.uploadImageId;
-            if (existingCategory.categoryThumbnailId) {
-                await deleteImage(existingCategory.categoryThumbnailId);
-            }
         }
 
         const updatedCategory = await prisma.category.update({
@@ -135,6 +132,10 @@ export const updateCategory = async (req, res) => {
             },
             include
         });
+
+        if (categoryThumbnailId && existingCategory.categoryThumbnailId) {
+            await deleteImage(existingCategory.categoryThumbnailId);
+        }
 
         return res.status(200).json({
             message: 'Category updated!',
