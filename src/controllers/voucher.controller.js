@@ -36,12 +36,11 @@ export const getAllVouchers = async (req, res) => {
 export const collectVoucher = async (req, res) => {
     try {
         const userId = req.userId;
-        const { voucherId } = req.body;
+        const { id } = req.params;
+        const voucherId = parseInt(id);
 
-        const existingVoucher = await prisma.voucher.findFirst({
-            where: {
-                voucherId: voucherId
-            }
+        const existingVoucher = await prisma.voucher.findUnique({
+            where: { voucherId },
         });
 
         if (!existingVoucher) {
@@ -50,29 +49,36 @@ export const collectVoucher = async (req, res) => {
             });
         }
 
-        const userVoucher = await prisma._user_voucher.findFirst({
+        const isVoucherCollected = await prisma.user.findFirst({
             where: {
-                userId: userId,
-                voucherId: existingVoucher.voucherId
+                userId,
+                vouchers: {
+                    some: {
+                        voucherId
+                    }
+                }
             }
         });
 
-        if (userVoucher) {
+        if (isVoucherCollected) {
             return res.status(400).json({
                 message: 'Voucher already collected!'
             });
         }
 
-        const voucher = await prisma.userVoucher.create({
+        const result = await prisma.voucher.update({
+            where: { voucherId },
             data: {
-                userId: userId,
-                voucherId: existingVoucher.voucherId
+                users: {
+                    connect: { userId }
+                },
+                collectedQuantity: { increment: 1 }
             }
         });
 
         return res.status(200).json({
             message: 'Voucher collected!',
-            data: voucher
+            data: result
         });
     }
     catch (error) {
