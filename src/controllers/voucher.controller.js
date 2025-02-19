@@ -150,7 +150,7 @@ export const createVoucher = async (req, res) => {
     try {
         const { voucherCode, discountType, discountValue, minOrderPrice, maxPriceDiscount, startDate, endDate, quantity } = req.body;
 
-        if (!voucherCode || !discountType || !discountValue || !minOrderPrice || !maxPriceDiscount || !startDate || !endDate || !quantity) {
+        if (!voucherCode || !discountType || !discountValue || !maxPriceDiscount || !startDate || !endDate || !quantity) {
             return res.status(400).json({
                 message: 'Missing required fields!'
             });
@@ -206,8 +206,8 @@ export const updateVoucher = async (req, res) => {
                 discountValue: parseFloat(discountValue) || existingVoucher.discountValue,
                 minOrderPrice: parseFloat(minOrderPrice) || existingVoucher.minOrderPrice,
                 maxPriceDiscount: parseFloat(maxPriceDiscount) || existingVoucher.maxPriceDiscount,
-                startDate: new Date(startDate) || existingVoucher.startDate,
-                endDate: new Date(endDate) || existingVoucher.endDate,
+                startDate: startDate ? new Date(startDate) : existingVoucher.startDate,
+                endDate: endDate ? new Date(endDate) : existingVoucher.endDate,
                 quantity: parseInt(quantity) || existingVoucher.quantity,
             }
         });
