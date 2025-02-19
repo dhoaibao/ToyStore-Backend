@@ -2,23 +2,40 @@ import prisma from '../config/prismaClient.js'
 
 export const getAllVouchers = async (req, res) => {
     try {
-        const { page = 1, limit = 10 } = req.query;
+        const { page = 1, limit = 10, current } = req.query;
         const skip = (page - 1) * limit;
         const take = parseInt(limit);
 
-        const [vouchers, totalVouchers] = await Promise.all([
-            prisma.voucher.findMany({
-                skip,
-                take,
-                include: {
-                    users: {
-                        select: {
-                            userId: true,
-                        }
+        const filters = {};
+
+        if (current) {
+            filters.startDate = {
+                lte: new Date()
+            };
+            filters.endDate = {
+                gte: new Date()
+            };
+        }
+
+        const queryOptions = {
+            where: filters,
+            include: {
+                users: {
+                    select: {
+                        userId: true,
                     }
                 }
-            }),
-            prisma.voucher.count()
+            }
+        };
+
+        if (take !== -1) {
+            queryOptions.skip = skip;
+            queryOptions.take = take;
+        }
+
+        const [vouchers, totalVouchers] = await Promise.all([
+            prisma.voucher.findMany(queryOptions),
+            prisma.voucher.count({ where: filters })
         ]);
 
         return res.status(200).json({
@@ -28,7 +45,7 @@ export const getAllVouchers = async (req, res) => {
                 total: totalVouchers,
                 page: parseInt(page),
                 limit: take,
-                totalPages: Math.ceil(totalVouchers / take),
+                totalPages: take === -1 ? 1 : Math.ceil(totalVouchers / take),
             }
         });
     } catch (error) {
