@@ -9,7 +9,14 @@ export const getAllVouchers = async (req, res) => {
         const [vouchers, totalVouchers] = await Promise.all([
             prisma.voucher.findMany({
                 skip,
-                take
+                take,
+                include: {
+                    users: {
+                        select: {
+                            userId: true,
+                        }
+                    }
+                }
             }),
             prisma.voucher.count()
         ]);
