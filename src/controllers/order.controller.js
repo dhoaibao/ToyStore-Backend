@@ -180,7 +180,7 @@ export const getOrderById = async (req, res) => {
 export const createOrder = async (req, res) => {
     try {
         const userId = req.userId;
-        const { totalPrice, totalDiscount, shippingFee, finalPrice, paymentMethodId, paymentStatus = false, orderItems, addressString, contactName, contactPhone } = req.body;
+        const { totalPrice, totalDiscount, shippingFee, finalPrice, paymentMethodId, paymentStatus = false, orderItems, cartId, addressString, contactName, contactPhone, voucherId } = req.body;
 
         if (!totalPrice || !shippingFee || !finalPrice || !paymentMethodId || !orderItems || !addressString || !contactName || !contactPhone) {
             return res.status(400).json({ message: 'Missing required fields!' });
@@ -197,6 +197,7 @@ export const createOrder = async (req, res) => {
                     userId,
                     orderStatusId: 1,
                     paymentMethodId,
+                    voucherId
                 }
             });
 
@@ -236,6 +237,14 @@ export const createOrder = async (req, res) => {
                 include
             });
 
+            await tx.cartDetail.deleteMany({
+                where: {
+                  OR: orderItems.map((item) => ({
+                    productId: item.product.productId,
+                    cartId
+                  }))
+                }
+              });              
 
             return updatedOrder;
         });
