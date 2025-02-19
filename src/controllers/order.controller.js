@@ -239,12 +239,25 @@ export const createOrder = async (req, res) => {
 
             await tx.cartDetail.deleteMany({
                 where: {
-                  OR: orderItems.map((item) => ({
-                    productId: item.product.productId,
-                    cartId
-                  }))
+                    OR: orderItems.map((item) => ({
+                        productId: item.product.productId,
+                        cartId
+                    }))
                 }
-              });              
+            });
+
+            if (voucherId) {
+                await tx.voucher.update({
+                    where: {
+                        voucherId: voucherId
+                    },
+                    data: {
+                        currentUsedQuantity: {
+                            increment: 1
+                        }
+                    }
+                });
+            }
 
             return updatedOrder;
         });
