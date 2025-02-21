@@ -1,12 +1,44 @@
 import prisma from '../config/prismaClient.js'
 
-export const getAllBrands = async (_, res) => {
+export const getAllBrands = async (req, res) => {
     try {
-        const brands = await prisma.brand.findMany({});
+        const { page = 1, limit = 10, keyword = '', sort = '', order = '' } = req.query;
+        const skip = (page - 1) * limit;
+        const take = parseInt(limit);
+
+        const filters = {};
+
+        if (keyword) {
+            filters.brandName = {
+                contains: keyword,
+                mode: 'insensitive'
+            }
+        }
+
+        const sortOrder = {};
+
+        if (sort && order) {
+            sortOrder[sort] = order;
+        }
+
+        const brands = await prisma.brand.findMany({
+            where: filters,
+            skip,
+            take,
+            orderBy: sortOrder
+        });
+
+        const totalBrands = await prisma.brand.count({ where: filters });
 
         return res.status(200).json({
             message: 'All brands fetched!',
             data: brands,
+            pagination: {
+                total: totalBrands,
+                page: parseInt(page),
+                limit: take,
+                totalPages: Math.ceil(totalBrands / take),
+            }
         });
     }
     catch (error) {
@@ -85,7 +117,7 @@ export const updateBrand = async (req, res) => {
     try {
         const { id } = req.params;
 
-        const { brandName, brandDesc} = req.body;
+        const { brandName, brandDesc } = req.body;
 
         const brand = await prisma.brand.findUnique({ where: { brandId: parseInt(id) } });
 

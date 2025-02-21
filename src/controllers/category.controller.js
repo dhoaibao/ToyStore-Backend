@@ -10,13 +10,46 @@ const include = {
     }
 }
 
-export const getAllCategories = async (_, res) => {
+export const getAllCategories = async (req, res) => {
     try {
-        const categories = await prisma.category.findMany({ include });
+        const { page = 1, limit = 10, keyword = '', sort = '', order = '' } = req.query;
+        const skip = (page - 1) * limit;
+        const take = parseInt(limit);
+
+        const filters = {};
+
+        if (keyword) {
+            filters.categoryName = {
+                contains: keyword,
+                mode: 'insensitive'
+            }
+        }
+
+        const sortOrder = {};
+
+        if (sort && order) {
+            sortOrder[sort] = order;
+        }
+
+        const categories = await prisma.category.findMany({
+            where: filters,
+            include,
+            skip,
+            take,
+            orderBy: sortOrder
+        });
+
+        const totalCategories = await prisma.category.count({ where: filters });
 
         return res.status(200).json({
             message: 'All categories fetched!',
             data: categories,
+            pagination: {
+                total: totalCategories,
+                page: parseInt(page),
+                limit: take,
+                totalPages: Math.ceil(totalCategories / take),
+            }
         });
     }
     catch (error) {
