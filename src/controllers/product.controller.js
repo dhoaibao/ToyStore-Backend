@@ -66,7 +66,7 @@ const include = {
 
 export const getAllProducts = async (req, res) => {
     try {
-        const { page = 1, limit = 10, brandNames, categoryNames, ageOption, priceOption, sort, sortPrice, keyword, promotion } = req.query;
+        const { page = 1, limit = 10, brandNames, categoryNames, ageOption, priceOption, sort, order, sortPrice, keyword, promotion } = req.query;
         const skip = (page - 1) * limit;
         const take = parseInt(limit);
 
@@ -142,6 +142,10 @@ export const getAllProducts = async (req, res) => {
             };
         }
 
+        if (sort && order) {
+            sortOrder[sort] = order;
+        }
+
         const products = await prisma.product.findMany({
             skip,
             take,
@@ -149,13 +153,13 @@ export const getAllProducts = async (req, res) => {
             include,
         });
 
-        if (sort) {
-            if (sort === 'newest') {
-                products.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-            } else if (sort === 'bestseller') {
-                products.sort((a, b) => b.soldNumber - a.soldNumber);
-            }
-        }
+        // if (sort) {
+        //     if (sort === 'newest') {
+        //         products.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        //     } else if (sort === 'bestseller') {
+        //         products.sort((a, b) => b.soldNumber - a.soldNumber);
+        //     }
+        // }
 
         if (sortPrice) {
             if (sortPrice === 'asc') {

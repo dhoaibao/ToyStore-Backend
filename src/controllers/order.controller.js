@@ -8,15 +8,15 @@ const include = {
 
 export const getAllOrders = async (req, res) => {
     try {
-        const { page = 1, limit = 10, orderStatusId, orderId, startDate, endDate, keyword = '', sort = '', order = '' } = req.query;
+        const { page = 1, limit = 10, orderStatus, paymentStatus, startDate, endDate, keyword = '', sort = '', order = '' } = req.query;
         const skip = (page - 1) * limit;
         const take = parseInt(limit);
 
         const filters = {};
 
-        if (orderStatusId && orderStatusId !== '0') {
+        if (orderStatus && orderStatus !== '0') {
             filters.orderStatus = {
-                orderStatusId: parseInt(orderStatusId)
+                orderStatusId: parseInt(orderStatus)
             };
         }
 
@@ -27,16 +27,22 @@ export const getAllOrders = async (req, res) => {
             };
         }
 
-        if (orderId) {
-            filters.orderId = parseInt(orderId);
+        if (paymentStatus) {
+            filters.paymentStatus = paymentStatus === 'true';
         }
 
-        // if (keyword) {
-        //     filters.brandName = {
-        //         contains: keyword,
-        //         mode: 'insensitive'
-        //     }
-        // }
+        if (keyword) {
+            if (/[a-zA-Z]/.test(keyword)) {
+                filters.user = {
+                    fullName: {
+                        contains: keyword,
+                        mode: 'insensitive'
+                    }
+                }
+            } else {
+                filters.orderId = parseInt(keyword);
+            }
+        }
 
         const sortOrder = {};
 
@@ -46,8 +52,8 @@ export const getAllOrders = async (req, res) => {
 
         const [orders, totalOrders] = await Promise.all([
             prisma.order.findMany({
-                skip: orderId ? undefined : skip,
-                take: orderId ? undefined : take,
+                skip: skip,
+                take: take,
                 where: filters,
                 orderBy: sortOrder,
                 include
@@ -222,6 +228,20 @@ export const createOrder = async (req, res) => {
                     productId: item.product.productId
                 }))
             });
+
+            await Promise.all(orderItems.map(async (item) => {
+                console.log(`Updating product ${item.product.productId} with quantity ${item.quantity}`);
+                await tx.product.update({
+                    where: {
+                        productId: item.product.productId
+                    },
+                    data: {
+                        soldNumber: {
+                            increment: item.quantity
+                        }
+                    }
+                });
+            }));
 
             const orderAddress = await tx.orderAddress.create({
                 data: {
