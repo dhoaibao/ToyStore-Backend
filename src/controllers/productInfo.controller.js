@@ -1,12 +1,44 @@
 import prisma from '../config/prismaClient.js'
 
-export const getAllProductInformations = async (_, res) => {
+export const getAllProductsInformation = async (req, res) => {
     try {
-        const productInformations = await prisma.productInformation.findMany({});
+        const { page = 1, limit = 10, keyword = '', sort = '', order = '' } = req.query;
+        const skip = (page - 1) * limit;
+        const take = parseInt(limit);
+
+        const filters = {};
+
+        if (keyword) {
+            filters.productInfoName = {
+                contains: keyword,
+                mode: 'insensitive'
+            }
+        }
+
+        const sortOrder = {};
+
+        if (sort && order) {
+            sortOrder[sort] = order;
+        }
+
+        const productsInformation = await prisma.productInformation.findMany({
+            where: filters,
+            skip,
+            take,
+            orderBy: sortOrder
+        });
+
+        const totalProductsInfo = await prisma.productInformation.count({ where: filters });
 
         return res.status(200).json({
-            message: 'All product informations fetched!',
-            data: productInformations,
+            message: 'All products information fetched!',
+            data: productsInformation,
+            pagination: {
+                total: totalProductsInfo,
+                page: parseInt(page),
+                limit: take,
+                totalPages: Math.ceil(totalProductsInfo / take),
+            }
         });
     }
     catch (error) {

@@ -3,11 +3,12 @@ import moment from 'moment';
 
 const include = {
     orderStatus: true,
+    user: true,
 }
 
 export const getAllOrders = async (req, res) => {
     try {
-        const { page = 1, limit = 10, orderStatusId, orderId, startDate, endDate } = req.query;
+        const { page = 1, limit = 10, orderStatusId, orderId, startDate, endDate, keyword = '', sort = '', order = '' } = req.query;
         const skip = (page - 1) * limit;
         const take = parseInt(limit);
 
@@ -30,14 +31,25 @@ export const getAllOrders = async (req, res) => {
             filters.orderId = parseInt(orderId);
         }
 
+        // if (keyword) {
+        //     filters.brandName = {
+        //         contains: keyword,
+        //         mode: 'insensitive'
+        //     }
+        // }
+
+        const sortOrder = {};
+
+        if (sort && order) {
+            sortOrder[sort] = order;
+        }
+
         const [orders, totalOrders] = await Promise.all([
             prisma.order.findMany({
                 skip: orderId ? undefined : skip,
                 take: orderId ? undefined : take,
                 where: filters,
-                orderBy: {
-                    updatedAt: 'desc'
-                },
+                orderBy: sortOrder,
                 include
             }),
 
