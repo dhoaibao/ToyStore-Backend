@@ -180,8 +180,8 @@ model Product {
   visible     Boolean
   quantity    Int
   description String
-  soldNumber  Int?
-  avgRating   Float?
+  soldNumber  Int @default(0)
+  avgRating   Float @default(0)
   createdAt   DateTime @default(now()) @db.Timestamptz
   updatedAt   DateTime @updatedAt @db.Timestamptz
 
