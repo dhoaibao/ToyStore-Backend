@@ -142,14 +142,25 @@ export const getAllProducts = async (req, res) => {
             };
         }
 
+        const sortOrder = {};
+
         if (sort && order) {
-            sortOrder[sort] = order;
+            if (sort === 'newest') {
+                sortOrder.createdAt = order;
+            } else if (sort === 'bestseller') {
+                sortOrder.soldNumber = order;
+            } else if (sort === 'soldNumber') {
+                sortOrder.soldNumber = order === 'asc' ? 'desc' : 'asc';
+            } else {
+                sortOrder[sort] = order;
+            }
         }
 
         const products = await prisma.product.findMany({
             skip,
             take,
             where: filters,
+            orderBy: sortOrder,
             include,
         });
 

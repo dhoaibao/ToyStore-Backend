@@ -230,7 +230,6 @@ export const createOrder = async (req, res) => {
             });
 
             await Promise.all(orderItems.map(async (item) => {
-                console.log(`Updating product ${item.product.productId} with quantity ${item.quantity}`);
                 await tx.product.update({
                     where: {
                         productId: item.product.productId
