@@ -1,13 +1,14 @@
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import logger from 'morgan';
+import dotenv from 'dotenv';
 import ApiError from './middlewares/api-error.js';
 import {
     authRoute, userRoute, addressRoute, brandRoute, categoryRoute,
     productInfoRoute, productInfoValueRoute, productRoute, cartRoute,
     promotionRoute, orderRoute, orderStatusRoute, voucherRoute
 } from './routes/index.js';
+import { dot } from '@xenova/transformers';
 
 const app = express();
 
@@ -19,8 +20,8 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(logger('dev'));
-
 dotenv.config();
+
 const API_VERSION = process.env.API_VERSION || 'v1';
 
 app.use(`/api/${API_VERSION}/auth`, authRoute);

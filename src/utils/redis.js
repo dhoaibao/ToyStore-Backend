@@ -1,15 +1,8 @@
 import { createClient } from 'redis';
 import convertTimeToSeconds from './convertTimeToSeconds.js';
+import config from '../config/index.js';
 
-const client = createClient({
-    username: process.env.REDIS_USERNAME,
-    password: process.env.REDIS_PASSWORD,
-    socket: {
-        host: process.env.REDIS_HOST,
-        port: process.env.REDIS_PORT,
-        reconnectStrategy: 100,
-    }
-});
+const client = createClient(config.redis);
 
 client.on('error', (err) => {
     console.error('Redis client error:', err);
@@ -40,7 +33,7 @@ export const setData = async (key, time, value) => {
 export const getData = async (key) => {
     try {
         const value = await client.get(key);
-        
+
         const parsedValue = (() => {
             try {
                 return JSON.parse(value);
