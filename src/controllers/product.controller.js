@@ -306,7 +306,7 @@ export const createProduct = async (req, res) => {
             }
         });
 
-        const productUpdated = await prisma.product.update({
+        await prisma.product.update({
             where: { productId: product.productId },
             data: {
                 productEmbeddingId: productEmbedding.productEmbeddingId
@@ -332,26 +332,109 @@ export const updateProduct = async (req, res) => {
     try {
         const { id } = req.params;
 
-        const { productName, productDesc } = req.body;
+        const files = req.files;
 
-        const product = await prisma.product.findUnique({ where: { productId: parseInt(id) } });
+        const { productName, price, visible, quantity, description, brandId, categoryId, productInfos } = req.body;
 
-        if (!product) {
+        const existingProduct = await prisma.product.findUnique({ where: { productId: parseInt(id) } });
+
+        if (!existingProduct) {
             return res.status(404).json({ message: 'Product not found!' });
         }
 
-        const updatedProduct = await prisma.product.update({
+        const product = await prisma.product.update({
             where: { productId: parseInt(id) },
             data: {
-                productName: productName || product.productName,
-                productDesc: productDesc || product.productDesc,
+                productName,
+                price: parseFloat(price),
+                visible: visible === 'true',
+                quantity: parseInt(quantity),
+                description,
+                brand: {
+                    connect: { brandId: parseInt(brandId) },
+                },
+                category: {
+                    connect: { categoryId: parseInt(categoryId) },
+                },
+            },
+            include,
+        });
+
+        if (productInfos) {
+            const productInfosArray = JSON.parse(productInfos);
+
+            await prisma.productInfoValue.deleteMany({
+                where: {
+                    productId: product.productId
+                }
+            });
+
+            await prisma.productInfoValue.createMany({
+                data: productInfosArray.map(info => ({
+                    productId: product.productId,
+                    productInfoId: info.productInfoId,
+                    value: info.value
+                }))
+            });
+        }
+
+        if (files) {
+            await prisma.productImage.deleteMany({
+                where: {
+                    productId: product.productId
+                }
+            });
+
+            await prisma.productImageEmbedding.deleteMany({
+                where: {
+                    productId: product.productId
+                }
+            });
+
+            await prisma.productEmbedding.deleteMany({
+                where: {
+                    productId: product.productId
+                }
+            });
+        }
+
+        const images = await uploadMultipleImages(files);
+
+        await prisma.productImage.createMany({
+            data: images.map(image => ({
+                productId: product.productId,
+                uploadImageId: image.uploadImageId,
+            }))
+        });
+
+        await Promise.all(images.map(async ({ url, uploadImageId }) => {
+            const imageEmbedding = await generateImageEmbedding(url);
+            await addImageEmbedding(product.productId, uploadImageId, imageEmbedding);
+        }));
+
+        const allProductInfo = product.productName + ' ' + product.description + ' ' + product.brand.brandName + ' ' + product.category.categoryName + ' ' + product.productInfoValues.map(info => info.value).join(' ');
+
+        const textEmbedding = await generateTextEmbedding(allProductInfo);
+
+        await addEmbedding(product.productId, textEmbedding);
+
+        const productEmbedding = await prisma.productEmbedding.findFirst({
+            where: {
+                productId: product.productId
+            }
+        });
+
+        const productUpdated = await prisma.product.update({
+            where: { productId: product.productId },
+            data: {
+                productEmbeddingId: productEmbedding.productEmbeddingId
             },
             include,
         });
 
         return res.status(200).json({
             message: 'Product updated!',
-            data: updatedProduct,
+            data: productUpdated,
         });
     }
     catch (error) {
