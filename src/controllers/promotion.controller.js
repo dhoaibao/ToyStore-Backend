@@ -147,8 +147,6 @@ export const updatePromotion = async (req, res) => {
             return res.status(404).json({ message: "Promotion not found!" });
         }
 
-        console.log('endDate', endDate);
-
         let promotionThumbnailId = null;
         if (file) {
             const image = await uploadSingleImage(file);
