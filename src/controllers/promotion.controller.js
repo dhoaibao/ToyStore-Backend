@@ -1,5 +1,5 @@
 import prisma from '../config/prismaClient.js'
-import { uploadSingleImage } from '../services/upload.service.js';
+import { uploadSingleImage, deleteImage } from '../services/upload.service.js';
 
 const include = {
     promotionThumbnail: {
@@ -11,17 +11,38 @@ const include = {
 
 export const getAllPromotions = async (req, res) => {
     try {
-        const { page = 1, limit = 10 } = req.query;
+        const { page = 1, limit = 10, keyword = '', sort = '', order = '', discountType } = req.query;
         const skip = (page - 1) * limit;
         const take = parseInt(limit);
+
+        const filters = {};
+
+        if (keyword) {
+            filters.promotionName = {
+                contains: keyword,
+                mode: 'insensitive'
+            }
+        }
+
+        if (discountType) {
+            filters.discountType = discountType;
+        }
+
+        const sortOrder = {};
+
+        if (sort && order) {
+            sortOrder[sort] = order;
+        }
 
         const [promotions, totalPromotions] = await Promise.all([
             prisma.promotion.findMany({
                 skip,
                 take,
+                where: filters,
+                orderBy: sortOrder,
                 include,
             }),
-            prisma.promotion.count()
+            prisma.promotion.count({ where: filters })
         ]);
 
         return res.status(200).json({
@@ -126,7 +147,9 @@ export const updatePromotion = async (req, res) => {
             return res.status(404).json({ message: "Promotion not found!" });
         }
 
-        let promotionThumbnailId = existingPromotion.promotionThumbnailId;
+        console.log('endDate', endDate);
+
+        let promotionThumbnailId = null;
         if (file) {
             const image = await uploadSingleImage(file);
             promotionThumbnailId = image.uploadImageId;
@@ -141,10 +164,14 @@ export const updatePromotion = async (req, res) => {
                 discountValue: parseFloat(discountValue) || existingPromotion.discountValue,
                 startDate: startDate ? new Date(startDate) : existingPromotion.startDate,
                 endDate: endDate ? new Date(endDate) : existingPromotion.endDate,
-                promotionThumbnailId
+                promotionThumbnailId: promotionThumbnailId || existingPromotion.promotionThumbnailId
             },
             include
         });
+
+        if (promotionThumbnailId && existingPromotion.promotionThumbnailId) {
+            await deleteImage(existingPromotion.promotionThumbnailId);
+        }
 
         return res.status(200).json({
             message: 'Promotion updated!',
