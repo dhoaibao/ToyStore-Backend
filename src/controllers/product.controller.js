@@ -66,7 +66,7 @@ const include = {
 
 export const getAllProducts = async (req, res) => {
     try {
-        const { page = 1, limit = 10, brandNames, categoryNames, ageOption, priceOption, sort, order, sortPrice, keyword, promotion } = req.query;
+        const { page = 1, limit = 10, brandNames, categoryNames, ageOption, priceOption, sort, order, sortPrice, keyword, promotion, visible } = req.query;
         const skip = (page - 1) * limit;
         const take = parseInt(limit);
 
@@ -78,6 +78,10 @@ export const getAllProducts = async (req, res) => {
                     promotionId: parseInt(promotion)
                 }
             };
+        }
+
+        if (visible) {
+            filters.visible = visible === 'true';
         }
 
         if (keyword) {
