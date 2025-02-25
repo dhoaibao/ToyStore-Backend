@@ -32,19 +32,40 @@ export const getLoggedInUser = async (req, res) => {
 
 export const getAllUsers = async (req, res) => {
     try {
-        const { page = 1, limit = 10 } = req.query;
+        const { page = 1, limit = 10, keyword = '', sort = '', order = '', isActive } = req.query;
         const skip = (page - 1) * limit;
         const take = parseInt(limit);
+
+        const filters = {};
+
+        if (keyword) {
+            filters.fullName = {
+                contains: keyword,
+                mode: 'insensitive'
+            }
+        }
+
+        if (isActive) {
+            filters.isActive = isActive === 'true';
+        }
+
+        const sortOrder = {};
+
+        if (sort && order) {
+            sortOrder[sort] = order;
+        }
 
         const users = await prisma.user.findMany({
             skip,
             take,
             include: {
                 avatar: true,
-            }
+            },
+            where: filters,
+            orderBy: sortOrder,
         });
 
-        const totalUsers = await prisma.user.count();
+        const totalUsers = await prisma.user.count({ where: filters });
 
         return res.status(200).json({
             message: 'All users fetched!',
