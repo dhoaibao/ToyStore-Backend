@@ -2,11 +2,22 @@ import prisma from '../config/prismaClient.js'
 
 export const getAllVouchers = async (req, res) => {
     try {
-        const { page = 1, limit = 10, status } = req.query;
+        const { page = 1, limit = 10, status, keyword = '', sort = '', order = '', discountType } = req.query;
         const skip = (page - 1) * limit;
         const take = parseInt(limit);
 
         const filters = {};
+
+        if (keyword) {
+            filters.voucherCode = {
+                contains: keyword,
+                mode: 'insensitive'
+            }
+        }
+
+        if (discountType) {
+            filters.discountType = discountType;
+        }
 
         if (status === 'valid') {
             filters.startDate = {
@@ -20,13 +31,10 @@ export const getAllVouchers = async (req, res) => {
             };
         }
 
-        if (status === 'expired') {
-            filters.endDate = {
-                lt: new Date()
-            };
-            filters.quantity = {
-                equals: prisma.voucher.collectedQuantity
-            };
+        const sortOrder = {};
+
+        if (sort && order) {
+            sortOrder[sort] = order;
         }
 
         const queryOptions = {
@@ -37,7 +45,8 @@ export const getAllVouchers = async (req, res) => {
                         userId: true,
                     }
                 }
-            }
+            },
+            orderBy: sortOrder,
         };
 
         if (take !== -1) {
@@ -138,11 +147,23 @@ export const getVoucherById = async (req, res) => {
 
 export const createVoucher = async (req, res) => {
     try {
-        const { voucherCode, discountType, discountValue, minOrderPrice, maxPriceDiscount, startDate, endDate, quantity } = req.body;
+        const { voucherCode, discountType, discountValue, minOrderPrice = 0, maxPriceDiscount = 0, startDate, endDate, quantity } = req.body;
 
-        if (!voucherCode || !discountType || !discountValue || !maxPriceDiscount || !startDate || !endDate || !quantity) {
+        if (!voucherCode || !discountType || !discountValue || !startDate || !endDate || !quantity) {
             return res.status(400).json({
                 message: 'Missing required fields!'
+            });
+        }
+
+        const existingVoucher = await prisma.voucher.findFirst({
+            where: {
+                voucherCode
+            }
+        });
+
+        if (existingVoucher) {
+            return res.status(400).json({
+                message: 'Voucher code already exists!'
             });
         }
 
@@ -176,7 +197,7 @@ export const createVoucher = async (req, res) => {
 export const updateVoucher = async (req, res) => {
     try {
         const { id } = req.params;
-        const { voucherCode, discountType, discountValue, minOrderPrice, maxPriceDiscount, startDate, endDate, quantity } = req.body;
+        const { voucherCode, discountType, discountValue, minOrderPrice = 0, maxPriceDiscount = 0, startDate, endDate, quantity } = req.body;
 
         const existingVoucher = await prisma.voucher.findUnique({
             where: { voucherId: parseInt(id) }
