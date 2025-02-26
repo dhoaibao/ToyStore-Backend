@@ -8,7 +8,6 @@ import {
     productInfoRoute, productInfoValueRoute, productRoute, cartRoute,
     promotionRoute, orderRoute, orderStatusRoute, voucherRoute
 } from './routes/index.js';
-import { dot } from '@xenova/transformers';
 
 const app = express();
 
