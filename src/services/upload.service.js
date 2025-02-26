@@ -1,7 +1,5 @@
 import prisma from '../config/prismaClient.js'
 import { uploadFile, deleteFile } from '../utils/supabaseStorage.js';
-import axios from 'axios';
-import fs from 'fs';
 import path from 'path';
 
 export const uploadSingleImage = async (file) => {
@@ -47,29 +45,26 @@ export const uploadMultipleImages = async (files) => {
 export const uploadFromUrl = async (url) => {
     try {
         const fileName = path.basename(url);
-        const tempFilePath = path.join('/tmp', fileName);
 
-        const response = await axios({
-            url,
+        const response = await fetch(url, {
             method: 'GET',
-            responseType: 'stream'
         });
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
 
-        await new Promise((resolve, reject) => {
-            const writer = fs.createWriteStream(tempFilePath);
-            response.data.pipe(writer);
-            writer.on('finish', resolve);
-            writer.on('error', reject);
+        const arrayBuffer = await response.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+
+        const { url: uploadedUrl, filePath } = await uploadFile({
+            buffer,
+            originalname: fileName,
+            mimetype: response.headers.get('content-type'),
         });
-
-        const file = fs.readFileSync(tempFilePath);
-        const { url: uploadedUrl, filePath } = await uploadFile({ buffer: file, originalname: fileName, mimetype: response.headers['content-type'] });
 
         const image = await prisma.uploadImage.create({
             data: { url: uploadedUrl, filePath }
         });
-
-        fs.unlinkSync(tempFilePath);
 
         return image;
     } catch (error) {
