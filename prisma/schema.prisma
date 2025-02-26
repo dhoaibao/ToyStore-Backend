@@ -12,8 +12,6 @@ model Role {
   roleName  String
   roleDesc  String
   isActive  Boolean
-  createdAt DateTime @default(now()) @db.Timestamptz
-  updatedAt DateTime @updatedAt @db.Timestamptz
 
   users       User[]
   permissions Permission[] @relation("permission_roles")
@@ -27,8 +25,6 @@ model Permission {
   apiPath        String
   method         String
   module         String
-  createdAt      DateTime @default(now()) @db.Timestamptz
-  updatedAt      DateTime @updatedAt @db.Timestamptz
 
   roles Role[] @relation("permission_roles")
 
@@ -41,14 +37,14 @@ model Conversation {
   isRead         Boolean
   createdAt      DateTime @default(now()) @db.Timestamptz
 
-  imageId Int
-  image   UploadImage @relation(fields: [imageId], references: [uploadImageId])
+  uploadImageId Int @unique
+  uploadImage   UploadImage @relation(fields: [uploadImageId], references: [uploadImageId])
 
   senderId Int
-  sender   User @relation("Sent", fields: [senderId], references: [userId])
+  sender   User @relation("sent", fields: [senderId], references: [userId])
 
   receiverId Int
-  receiver   User @relation("Received", fields: [receiverId], references: [userId])
+  receiver   User @relation("received", fields: [receiverId], references: [userId])
 
   @@map("conversations")
 }
@@ -57,18 +53,30 @@ model UploadImage {
   uploadImageId Int      @id @default(autoincrement())
   url           String
   filePath      String
-  createdAt     DateTime @default(now()) @db.Timestamptz
-  updatedAt     DateTime @updatedAt @db.Timestamptz
 
-  banners                Banner[]
-  productImages          ProductImage[]
-  newsImages             NewsImage[]
-  productImageEmbeddings ProductImageEmbedding[]
-  avatar                 User[]
-  promotionThumbnail     Promotion[]
-  categoryThumbnail      Category[]
-  imageMessages          Conversation[]
-  shopLogo               SystemConfiguration[]
+  bannerId Int?
+  banner   Banner? @relation
+
+  productId Int?
+  product   Product? @relation(fields: [productId], references: [productId])
+
+  productImageEmbeddingId Int?
+  productImageEmbedding   ProductImageEmbedding? @relation
+
+  userId Int?
+  user   User? @relation
+
+  promotionId Int?
+  promotion   Promotion? @relation
+
+  conversationId Int?
+  conversation   Conversation? @relation
+
+  systemConfigId Int?
+  systemConfig   SystemConfiguration? @relation
+
+  categoryId Int?
+  category   Category? @relation
 
   @@map("upload_images")
 }
@@ -77,8 +85,9 @@ model Banner {
   bannerId Int     @id @default(autoincrement())
   isActive Boolean
 
-  imageId Int
-  image   UploadImage @relation(fields: [imageId], references: [uploadImageId])
+  uploadImageId Int @unique
+  uploadImage   UploadImage @relation(fields: [uploadImageId], references: [uploadImageId])
+
 
   systemConfigId Int
   systemConfig   SystemConfiguration @relation(fields: [systemConfigId], references: [systemConfigId])
@@ -93,10 +102,10 @@ model SystemConfiguration {
   shopPhone      String
 
   banners      Banner[]
-  priceFilters PriceFilter[]
+  priceFilters PriceFilter[]  
 
-  shopLogoId Int
-  shopLogo   UploadImage @relation(fields: [shopLogoId], references: [uploadImageId])
+  uploadImageId Int @unique
+  uploadImage   UploadImage @relation(fields: [uploadImageId], references: [uploadImageId])
 
   @@map("system_configurations")
 }
@@ -115,51 +124,25 @@ model PriceFilter {
 model News {
   newsId      Int      @id @default(autoincrement())
   title       String   @unique
-  slug        String   @unique
+  slug        String   
   content     String
-  published   Boolean
-  publishedAt DateTime @default(now()) @db.Timestamptz
-
-  blogImages NewsImage[]
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
 
   @@map("newses")
-}
-
-model NewsImage {
-  newsImageId Int @id @default(autoincrement())
-
-  newsId Int
-  new    News @relation(fields: [newsId], references: [newsId])
-
-  imageId Int
-  image   UploadImage @relation(fields: [imageId], references: [uploadImageId])
-
-  @@map("blog_images")
 }
 
 model ProductImageEmbedding {
   productImageEmbeddingId Int                   @id @default(autoincrement())
   embedding               Unsupported("vector")
 
-  uploadImageId Int         @map("upload_image_id")
+  uploadImageId Int         @map("upload_image_id") @unique
   uploadImage   UploadImage @relation(fields: [uploadImageId], references: [uploadImageId])
 
   productId Int     @map("product_id")
   product   Product @relation(fields: [productId], references: [productId])
 
   @@map("product_image_embeddings")
-}
-
-model ProductImage {
-  productImageId Int @id @default(autoincrement())
-
-  uploadImageId Int
-  uploadImage   UploadImage @relation(fields: [uploadImageId], references: [uploadImageId])
-
-  productId Int
-  product   Product @relation(fields: [productId], references: [productId])
-
-  @@map("product_images")
 }
 
 model ProductEmbedding {
@@ -177,22 +160,22 @@ model Product {
   productName String   @unique
   price       Float
   slug        String   @unique
-  visible     Boolean
   quantity    Int
   description String
   soldNumber  Int @default(0)
   avgRating   Float @default(0)
+  isActive     Boolean
   createdAt   DateTime @default(now()) @db.Timestamptz
   updatedAt   DateTime @updatedAt @db.Timestamptz
 
-  productImages          ProductImage[]
+  productImages          UploadImage[]
   productImageEmbeddings ProductImageEmbedding[]
 
-  brandId Int?
-  brand   Brand? @relation(fields: [brandId], references: [brandId])
+  brandId Int
+  brand   Brand @relation(fields: [brandId], references: [brandId])
 
-  categoryId Int?
-  category   Category? @relation(fields: [categoryId], references: [categoryId])
+  categoryId Int
+  category   Category @relation(fields: [categoryId], references: [categoryId])
 
   reviews Review[]
 
@@ -202,10 +185,10 @@ model Product {
 
   orderDetails OrderDetail[]
 
-  promotions Promotion[] @relation("product_promotion")
+  promotionId Int?
+  promotion   Promotion? @relation(fields: [promotionId], references: [promotionId])
 
-  productEmbeddingId Int?
-  productEmbedding   ProductEmbedding? @relation
+  productEmbeddings ProductEmbedding[]
 
   @@map("products")
 }
@@ -214,8 +197,6 @@ model Brand {
   brandId   Int      @id @default(autoincrement())
   brandName String   @unique
   brandDesc String
-  createdAt DateTime @default(now()) @db.Timestamptz
-  updatedAt DateTime @updatedAt @db.Timestamptz
 
   products Product[]
 
@@ -226,10 +207,8 @@ model Category {
   categoryId   Int      @id @default(autoincrement())
   categoryName String   @unique
   slug         String   @unique
-  createdAt    DateTime @default(now()) @db.Timestamptz
-  updatedAt    DateTime @updatedAt @db.Timestamptz
 
-  categoryThumbnailId Int
+  categoryThumbnailId Int @unique
   categoryThumbnail   UploadImage @relation(fields: [categoryThumbnailId], references: [uploadImageId])
 
   products Product[]
@@ -242,7 +221,6 @@ model Review {
   comment   String
   rating    Float
   createdAt DateTime @default(now()) @db.Timestamptz
-  updatedAt DateTime @updatedAt @db.Timestamptz
 
   userId Int
   user   User @relation(fields: [userId], references: [userId])
@@ -294,14 +272,15 @@ model User {
 
   addresses Address[]
 
+  avatarId Int? @unique
   avatar   UploadImage? @relation(fields: [avatarId], references: [uploadImageId])
-  avatarId Int?
+  
 
   roleId Int?
   role   Role? @relation(fields: [roleId], references: [roleId])
 
-  sentConversations     Conversation[] @relation("Sent")
-  receivedConversations Conversation[] @relation("Received")
+  sentConversations     Conversation[] @relation("sent")
+  receivedConversations Conversation[] @relation("received")
 
   cartId Int?
   cart   Cart? @relation
@@ -349,9 +328,9 @@ model Address {
   districtName String
   wardName     String
   detail       String
-  isDefault    Boolean
   contactName  String
   contactPhone String
+  isDefault    Boolean
 
   userId Int
   user   User @relation(fields: [userId], references: [userId])
@@ -368,18 +347,16 @@ model Order {
   paymentStatus Boolean
   paidDate      DateTime?
   createdAt     DateTime  @default(now()) @db.Timestamptz
-  updatedAt     DateTime  @updatedAt @db.Timestamptz
 
   userId Int
   user   User @relation(fields: [userId], references: [userId])
 
   orderDetails OrderDetail[]
 
-  orderAddressId Int?
-  orderAddress   OrderAddress? @relation
+  orderAddressId Int @unique
+  orderAddress   OrderAddress @relation(fields: [orderAddressId], references: [orderAddressId])
 
-  orderStatusId Int
-  orderStatus   OrderStatus @relation(fields: [orderStatusId], references: [orderStatusId])
+  orderTrackings OrderTracking[]
 
   paymentMethodId Int
   paymentMethod   PaymentMethod @relation(fields: [paymentMethodId], references: [paymentMethodId])
@@ -390,9 +367,32 @@ model Order {
   @@map("orders")
 }
 
+model OrderTracking {
+  time DateTime @default(now()) @db.Timestamptz
+
+  orderId    Int
+  order      Order @relation(fields: [orderId], references: [orderId])
+
+  orderStatusId Int
+  orderStatus   OrderStatus @relation(fields: [orderStatusId], references: [orderStatusId])
+
+  @@id([orderId, orderStatusId])
+
+  @@map("order_trackings")
+}
+
+model OrderStatus {
+  orderStatusId Int    @id @default(autoincrement())
+  statusName    String
+
+  orderTrackings OrderTracking[]
+
+  @@map("order_statuses")
+}
+
 model OrderDetail {
   price           Float
-  discountedPrice Float
+  totalDiscount Float
   quantity        Int
 
   orderId Int
@@ -411,19 +411,10 @@ model OrderAddress {
   contactName    String
   contactPhone   String
 
-  orderId Int   @unique
-  order   Order @relation(fields: [orderId], references: [orderId])
+  orderId Int?   @unique
+  order   Order? @relation
 
   @@map("order_addresses")
-}
-
-model OrderStatus {
-  orderStatusId Int    @id @default(autoincrement())
-  statusName    String
-
-  orders Order[]
-
-  @@map("order_statuses")
 }
 
 model PaymentMethod {
@@ -461,17 +452,17 @@ model Promotion {
   promotionId   Int      @id @default(autoincrement())
   promotionName String
   description   String
-  discountType  String // "percentage", "fixed_amount", "buy_x_get_y",
+  discountType  String // "percentage", "fixed_amount"
   discountValue Float
   startDate     DateTime
   endDate       DateTime
   createdAt     DateTime @default(now()) @db.Timestamptz
   updatedAt     DateTime @updatedAt @db.Timestamptz
 
-  promotionThumbnailId Int
+  promotionThumbnailId Int @unique
   promotionThumbnail   UploadImage @relation(fields: [promotionThumbnailId], references: [uploadImageId])
 
-  products Product[] @relation("product_promotion")
+  products Product[]
 
   @@map("promotions")
 }
