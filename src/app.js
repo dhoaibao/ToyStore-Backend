@@ -1,7 +1,6 @@
 import express from 'express';
 import cors from 'cors';
 import logger from 'morgan';
-import ApiError from './middlewares/api-error.js';
 import {
     authRoute, userRoute, addressRoute, brandRoute, categoryRoute,
     productInfoRoute, productInfoValueRoute, productRoute, cartRoute,
@@ -35,12 +34,15 @@ app.use(`/api/${API_VERSION}/order`, orderRoute);
 app.use(`/api/${API_VERSION}/order-status`, orderStatusRoute);
 app.use(`/api/${API_VERSION}/voucher`, voucherRoute);
 
-app.get("/", (req, res) => {
+app.get("/", (_, res) => {
     res.json({ message: "Server is running!" });
 });
 
-app.use((_, __, next) => {
-    next(new ApiError(404, 'Not Found Route!'));
+app.use((_, res) => {
+    res.status(404).json({
+        status: 404,
+        message: 'Route Not Found',
+    });
 });
 
 app.use((err, _, res, __) => {

@@ -25,6 +25,48 @@ export const uploadFile = async (file) => {
     }
 }
 
+export const uploadMultipleFiles = async (files) => {
+    try {
+        const uploadResults = await Promise.all(
+            files.map(async (file) => {
+                const { url, filePath } = await uploadFile(file);
+                return { url, filePath };
+            })
+        );
+
+        return uploadResults;
+    } catch (error) {
+        throw error;
+    }
+}
+
+export const uploadFileFromUrl = async (url) => {
+    try {
+        const fileName = path.basename(url);
+
+        const response = await fetch(url, {
+            method: 'GET',
+        });
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const arrayBuffer = await response.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+
+        const { url: uploadedUrl, filePath } = await uploadFile({
+            buffer,
+            originalname: fileName,
+            mimetype: response.headers.get('content-type'),
+        });
+
+
+        return { url: uploadedUrl, filePath };
+    } catch (error) {
+        throw error;
+    }
+};
+
 export const deleteFile = async (filePath) => {
     try {
         const { error } = await supabase.storage

@@ -1,6 +1,6 @@
 import prisma from '../config/prismaClient.js'
 import bcrypt from 'bcrypt';
-import { uploadSingleImage, deleteImage } from '../services/upload.service.js';
+import { uploadFile, deleteFile } from '../utils/supabaseStorage.js';
 
 export const getLoggedInUser = async (req, res) => {
     try {
@@ -128,14 +128,14 @@ export const updateUser = async (req, res) => {
             return res.status(404).json({ message: 'User not found!' });
         }
 
-        let avatarId = null;
+        let url = null;
+        let filePath = null;
 
         if (req.file) {
             const file = req.file;
-
-            const image = await uploadSingleImage(file);
-
-            avatarId = image.uploadImageId;
+            const result = await uploadFile(file);
+            url = result.url;
+            filePath = result.filePath;
         }
 
         const updatedUser = await prisma.user.update({
@@ -145,8 +145,13 @@ export const updateUser = async (req, res) => {
                 email: email || user.email,
                 phone: phone || user.phone,
                 gender: Boolean(gender) || user.gender,
-                avatarId: avatarId || user.avatarId,
                 birthday: birthday ? new Date(birthday) : user.birthday,
+                avatar: {
+                    update: {
+                        url,
+                        filePath,
+                    }
+                }
             },
             include: {
                 avatar: true,
@@ -154,7 +159,7 @@ export const updateUser = async (req, res) => {
         });
 
         if (avatarId && user.avatarId) {
-            await deleteImage(user.avatarId);
+            await deleteFile(user.avatarId);
         }
 
         return res.status(200).json({

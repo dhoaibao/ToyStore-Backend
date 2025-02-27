@@ -1,8 +1,5 @@
-import { createClient } from 'redis';
+import client from '../config/redisConfig.js';
 import convertTimeToSeconds from './convertTimeToSeconds.js';
-import config from '../config/index.js';
-
-const client = createClient(config.redis);
 
 client.on('error', (err) => {
     console.error('Redis client error:', err);
@@ -22,7 +19,6 @@ export const setData = async (key, time, value) => {
             await client.set(key, valueToStore);
         }
 
-        console.log("Data saved for:", key);
         return true;
     } catch (err) {
         console.error("Error saving data:", err);
@@ -42,7 +38,6 @@ export const getData = async (key) => {
             }
         })();
 
-        console.log("Data fetched:", parsedValue);
         return parsedValue;
     } catch (err) {
         console.error('Error fetching data:', err);

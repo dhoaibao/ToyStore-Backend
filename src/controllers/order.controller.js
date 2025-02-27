@@ -161,15 +161,7 @@ export const getOrderById = async (req, res) => {
                     include: {
                         product: {
                             include: {
-                                productImages: {
-                                    select: {
-                                        uploadImage: {
-                                            select: {
-                                                url: true
-                                            }
-                                        }
-                                    }
-                                },
+                                productImages: true,
                                 promotions: true
                             }
                         }
@@ -213,9 +205,15 @@ export const createOrder = async (req, res) => {
                     finalPrice,
                     paymentStatus,
                     userId,
-                    orderStatusId: 1,
                     paymentMethodId,
                     voucherId
+                }
+            });
+
+            await tx.orderTracking.create({
+                data: {
+                    orderStatusId: 1,
+                    orderId: order.orderId
                 }
             });
 
@@ -309,31 +307,33 @@ export const createOrder = async (req, res) => {
 export const cancelOrder = async (req, res) => {
     try {
         const { id } = req.params;
-        const userId = req.userId;
 
         const existingOrder = await prisma.order.findUnique({
             where: { orderId: parseInt(id) },
+            include: {
+                orderTracking: true
+            }
         });
 
         if (!existingOrder) {
             return res.status(404).json({ message: 'Order not found!' });
         }
 
-        if (existingOrder.orderStatusId !== 1) {
+        const length = existingOrder.orderTracking.length;
+
+        if (existingOrder.orderTracking[length].orderStatusId !== 1) {
             return res.status(400).json({ message: 'Order cannot be cancelled!' });
         }
 
-        const result = await prisma.order.update({
-            where: { orderId: parseInt(id), userId: parseInt(userId) },
+        await prisma.orderTracking.create({
             data: {
-                orderStatusId: 5
-            },
-            include
+                orderStatusId: 5,
+                orderId: existingOrder.orderId
+            }
         });
 
         return res.status(200).json({
-            message: 'Order cancelled!',
-            data: result,
+            message: 'Order cancelled!'
         });
 
     } catch (error) {

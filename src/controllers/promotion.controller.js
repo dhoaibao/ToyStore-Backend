@@ -1,5 +1,5 @@
 import prisma from '../config/prismaClient.js'
-import { uploadSingleImage, deleteImage } from '../services/upload.service.js';
+import { uploadFile, deleteFile } from '../utils/supabaseStorage.js';
 
 const include = {
     promotionThumbnail: {
@@ -101,7 +101,7 @@ export const createPromotion = async (req, res) => {
             return res.status(400).json({ message: 'Missing required fields!' });
         }
 
-        const image = await uploadSingleImage(file);
+        const image = await uploadFile(file);
         const promotionThumbnailId = image.uploadImageId;
 
         const promotion = await prisma.promotion.create({
@@ -149,7 +149,7 @@ export const updatePromotion = async (req, res) => {
 
         let promotionThumbnailId = null;
         if (file) {
-            const image = await uploadSingleImage(file);
+            const image = await uploadFile(file);
             promotionThumbnailId = image.uploadImageId;
         }
 
@@ -168,7 +168,7 @@ export const updatePromotion = async (req, res) => {
         });
 
         if (promotionThumbnailId && existingPromotion.promotionThumbnailId) {
-            await deleteImage(existingPromotion.promotionThumbnailId);
+            await deleteFile(existingPromotion.promotionThumbnailId);
         }
 
         return res.status(200).json({

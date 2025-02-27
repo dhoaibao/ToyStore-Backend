@@ -11,8 +11,6 @@ export const getAddressByUser = async (req, res) => {
             }
         });
 
-
-
         return res.status(200).json({
             message: 'All addresses fetched!',
             data: addresses,

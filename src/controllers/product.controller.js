@@ -1,6 +1,6 @@
 import prisma from '../config/prismaClient.js'
 import { generateSlug } from '../utils/generateSlug.js';
-import { uploadMultipleImages } from '../services/upload.service.js';
+import { uploadMultipleFiles } from '../utils/supabaseStorage.js';
 import { generateImageEmbedding, generateTextEmbedding } from '../utils/generateEmbeddings.js';
 import { fileURLToPath } from 'url';
 import path from 'path';
@@ -44,15 +44,7 @@ const include = {
             }
         }
     },
-    productImages: {
-        select: {
-            uploadImage: {
-                select: {
-                    url: true
-                }
-            }
-        }
-    },
+    productImages: true,
     promotions: {
         include: {
             promotionThumbnail: {
@@ -66,7 +58,7 @@ const include = {
 
 export const getAllProducts = async (req, res) => {
     try {
-        const { page = 1, limit = 10, brandNames, categoryNames, ageOption, priceOption, sort, order, sortPrice, keyword, promotion, visible } = req.query;
+        const { page = 1, limit = 10, brandNames, categoryNames, ageOption, priceOption, sort, order, sortPrice, keyword, promotion, isActive } = req.query;
         const skip = (page - 1) * limit;
         const take = parseInt(limit);
 
@@ -80,8 +72,8 @@ export const getAllProducts = async (req, res) => {
             };
         }
 
-        if (visible) {
-            filters.visible = visible === 'true';
+        if (isActive) {
+            filters.isActive = isActive === 'true';
         }
 
         if (keyword) {
@@ -238,9 +230,9 @@ export const createProduct = async (req, res) => {
     try {
         const files = req.files;
 
-        const { productName, price, visible, quantity, description, brandId, categoryId, productInfos } = req.body;
+        const { productName, price, isActive, quantity, description, brandId, categoryId, productInfos } = req.body;
 
-        if (!productName || !price || !visible || !quantity || !description) {
+        if (!productName || !price || !isActive || !quantity || !description) {
             return res.status(400).json({ message: 'Missing required fields!' });
         }
 
@@ -254,73 +246,78 @@ export const createProduct = async (req, res) => {
 
         const slug = generateSlug(productName);
 
-        const product = await prisma.product.create({
-            data: {
-                productName,
-                slug,
-                price: parseFloat(price),
-                visible: visible === 'true',
-                quantity: parseInt(quantity),
-                description,
-                brand: {
-                    connect: { brandId: parseInt(brandId) },
+        const result = await prisma.$transaction(async (tx) => {
+            const product = await tx.product.create({
+                data: {
+                    productName,
+                    slug,
+                    price: parseFloat(price),
+                    isActive: isActive === 'true',
+                    quantity: parseInt(quantity),
+                    description,
+                    brand: {
+                        connect: { brandId: parseInt(brandId) },
+                    },
+                    category: {
+                        connect: { categoryId: parseInt(categoryId) },
+                    },
                 },
-                category: {
-                    connect: { categoryId: parseInt(categoryId) },
-                },
-            },
-            include,
-        });
+                include,
+            });
 
-        if (productInfos) {
-            const productInfosArray = JSON.parse(productInfos);
+            if (productInfos) {
+                const productInfosArray = JSON.parse(productInfos);
 
-            await prisma.productInfoValue.createMany({
-                data: productInfosArray.map(info => ({
+                await tx.productInfoValue.createMany({
+                    data: productInfosArray.map(info => ({
+                        productId: product.productId,
+                        productInfoId: info.productInfoId,
+                        value: info.value
+                    }))
+                });
+            }
+
+            const images = await uploadMultipleFiles(files);
+
+            await tx.productImage.createMany({
+                data: images.map(image => ({
                     productId: product.productId,
-                    productInfoId: info.productInfoId,
-                    value: info.value
+                    uploadImageId: image.uploadImageId,
                 }))
             });
-        }
 
-        const images = await uploadMultipleImages(files);
+            await Promise.all(images.map(async ({ url, uploadImageId }) => {
+                const imageEmbedding = await generateImageEmbedding(url);
+                await addImageEmbedding(product.productId, uploadImageId, imageEmbedding);
+            }));
 
-        await prisma.productImage.createMany({
-            data: images.map(image => ({
-                productId: product.productId,
-                uploadImageId: image.uploadImageId,
-            }))
+            const allProductInfo = product.productName + ' ' + product.description + ' ' + product.brand.brandName + ' ' + product.category.categoryName + ' ' + product.productInfoValues.map(info => info.value).join(' ');
+
+            const textEmbedding = await generateTextEmbedding(allProductInfo);
+
+            await addEmbedding(product.productId, textEmbedding);
+
+            const productEmbedding = await tx.productEmbedding.findFirst({
+                where: {
+                    productId: product.productId
+                }
+            });
+
+            await tx.product.update({
+                where: { productId: product.productId },
+                data: {
+                    productEmbeddingId: productEmbedding.productEmbeddingId
+                },
+                include,
+            });
+
+            return product;
         });
 
-        await Promise.all(images.map(async ({ url, uploadImageId }) => {
-            const imageEmbedding = await generateImageEmbedding(url);
-            await addImageEmbedding(product.productId, uploadImageId, imageEmbedding);
-        }));
-
-        const allProductInfo = product.productName + ' ' + product.description + ' ' + product.brand.brandName + ' ' + product.category.categoryName + ' ' + product.productInfoValues.map(info => info.value).join(' ');
-
-        const textEmbedding = await generateTextEmbedding(allProductInfo);
-
-        await addEmbedding(product.productId, textEmbedding);
-
-        const productEmbedding = await prisma.productEmbedding.findFirst({
-            where: {
-                productId: product.productId
-            }
-        });
-
-        await prisma.product.update({
-            where: { productId: product.productId },
-            data: {
-                productEmbeddingId: productEmbedding.productEmbeddingId
-            },
-            include,
-        });
 
         return res.status(201).json({
             message: 'Product created!',
-            data: productUpdated,
+            data: result,
         });
     }
     catch (error) {
@@ -338,7 +335,7 @@ export const updateProduct = async (req, res) => {
 
         const files = req.files;
 
-        const { productName, price, visible, quantity, description, brandId, categoryId, productInfos } = req.body;
+        const { productName, price, isActive, quantity, description, brandId, categoryId, productInfos } = req.body;
 
         const existingProduct = await prisma.product.findUnique({ where: { productId: parseInt(id) } });
 
@@ -351,7 +348,7 @@ export const updateProduct = async (req, res) => {
             data: {
                 productName,
                 price: parseFloat(price),
-                visible: visible === 'true',
+                isActive: isActive === 'true',
                 quantity: parseInt(quantity),
                 description,
                 brand: {
@@ -402,7 +399,7 @@ export const updateProduct = async (req, res) => {
             });
         }
 
-        const images = await uploadMultipleImages(files);
+        const images = await uploadMultipleFiles(files);
 
         await prisma.productImage.createMany({
             data: images.map(image => ({

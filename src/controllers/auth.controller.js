@@ -3,7 +3,7 @@ import bcrypt from 'bcrypt';
 import { generateToken, decodedRefreshToken } from '../utils/token.js';
 import { sendOTPEmail, sendPasswordResetSuccessEmail } from '../utils/sendEmail.js';
 import { setData, getData, verifyData } from '../utils/redis.js';
-import { uploadFromUrl } from '../services/upload.service.js';
+import { uploadFileFromUrl } from '../utils/supabaseStorage.js';
 
 export const signUp = async (req, res) => {
     try {
@@ -46,7 +46,7 @@ export const signUp = async (req, res) => {
             birthday: new Date(birthday),
         };
 
-        await setData(`user:${email}`, '1d', user);
+        await setData(`user:${email}`, '1h', user);
 
         return res.status(201).json({
             message: 'Done! Please verify your email with the OTP sent.',
@@ -75,7 +75,7 @@ export const signIn = async (req, res) => {
         if (!existingUser) {
             return res.status(404).json({ message: "User not found!" });
         }
-        console.log(password, existingUser.password);
+
         const isPasswordValid = await bcrypt.compare(password, existingUser.password);
 
         if (!isPasswordValid) {
@@ -101,11 +101,12 @@ export const signInWithGoogle = async (req, res) => {
     try {
         const { email, fullName, photoUrl, phoneNumber } = req.body;
 
-        let avatarId = null;
-
+        let url = null;
+        let filePath = null;
         if (photoUrl) {
-            const image = await uploadFromUrl(photoUrl);
-            avatarId = image.uploadImageId;
+            const result = await uploadFileFromUrl(photoUrl);
+            url = result.url;
+            filePath = result.filePath;
         }
 
         let user = await prisma.user.findUnique({ where: { email } });
@@ -115,8 +116,13 @@ export const signInWithGoogle = async (req, res) => {
                 data: {
                     email,
                     fullName,
-                    avatarId,
                     phone: phoneNumber || null,
+                    avatar: {
+                        create: {
+                            url,
+                            filePath,
+                        }
+                    }
                 }
             });
         }
@@ -143,7 +149,6 @@ export const verifyEmail = async (req, res) => {
         const isOtpValid = await verifyData(`otp:${email}`, otp);
 
         if (isOtpValid) {
-            console.log('OTP verified successfully!');
             const user = await getData(`user:${email}`);
             const { fullName, email: userEmail, password, birthday } = user;
             await prisma.user.create({
@@ -243,8 +248,6 @@ export const verifyResetPassword = async (req, res) => {
 
         if (isOtpValid) {
             const password = await getData(`pass:${email}`);
-
-            console.log('Password:', password)
 
             await prisma.user.update({
                 where: { email },
