@@ -35,6 +35,8 @@ export const getAllVouchers = async (req, res) => {
 
         if (sort && order) {
             sortOrder[sort] = order;
+        } else {
+            sortOrder.updatedAt = 'desc';
         }
 
         const queryOptions = {

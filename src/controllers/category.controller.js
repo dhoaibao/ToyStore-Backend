@@ -29,6 +29,8 @@ export const getAllCategories = async (req, res) => {
 
         if (sort && order) {
             sortOrder[sort] = order;
+        } else {
+            sortOrder.updatedAt = 'desc';
         }
 
         const categories = await prisma.category.findMany({

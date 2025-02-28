@@ -53,6 +53,8 @@ export const getAllUsers = async (req, res) => {
 
         if (sort && order) {
             sortOrder[sort] = order;
+        } else {
+            sortOrder.updatedAt = 'desc';
         }
 
         const users = await prisma.user.findMany({
@@ -116,50 +118,142 @@ export const getUserById = async (req, res) => {
     }
 }
 
+export const createUser = async (req, res) => {
+    try {
+        const { fullName, email, phone, gender, birthday, password, confirmPassword, isActive } = req.body;
+
+        if (!fullName || !email || !password || !confirmPassword || !birthday || !gender || !phone) {
+            return res.status(400).json({ message: 'Missing required fields!' });
+        }
+
+        if (password.length < 8) {
+            return res.status(400).json({
+                error: 'Password must be at least 8 characters!',
+            });
+        }
+
+        if (password !== confirmPassword) {
+            return res.status(400).json({
+                error: 'Passwords do not match!',
+            });
+        }
+
+        const existingUser = await prisma.user.findUnique({ where: { email } });
+
+        if (existingUser) {
+            return res.status(400).json({
+                error: 'User already exists!',
+            });
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const user = await prisma.user.create({
+            data: {
+                fullName,
+                email,
+                phone,
+                isActive: isActive === 'true',
+                gender: Boolean(gender),
+                birthday: new Date(birthday),
+                password: hashedPassword,
+            },
+        });
+
+        if (req.file) {
+            const file = req.file;
+            const { url, filePath } = await uploadFile(file);
+            await prisma.user.update({
+                where: { userId: user.userId },
+                data: {
+                    avatar: {
+                        create: {
+                            url,
+                            filePath
+                        }
+                    }
+                }
+            })
+        }
+
+        return res.status(200).json({
+            message: 'User updated!',
+            data: user,
+        });
+    }
+    catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            message: 'Internal Server Error',
+            error: error.message
+        });
+    }
+}
+
 export const updateUser = async (req, res) => {
     try {
         const { id } = req.params;
 
-        const { fullName, email, phone, gender, birthday } = req.body;
+        const { fullName, email, phone, gender, birthday, isActive } = req.body;
 
-        const user = await prisma.user.findUnique({ where: { userId: parseInt(id) } });
+        const existingUser = await prisma.user.findUnique({
+            where: { userId: parseInt(id) }
+        });
 
-        if (!user) {
+        if (!existingUser) {
             return res.status(404).json({ message: 'User not found!' });
         }
 
-        let url = null;
-        let filePath = null;
-
-        if (req.file) {
-            const file = req.file;
-            const result = await uploadFile(file);
-            url = result.url;
-            filePath = result.filePath;
-        }
-
-        const updatedUser = await prisma.user.update({
+        const user = await prisma.user.update({
             where: { userId: parseInt(id) },
             data: {
                 fullName: fullName || user.fullName,
                 email: email || user.email,
                 phone: phone || user.phone,
+                isActive: isActive === 'true',
                 gender: Boolean(gender) || user.gender,
                 birthday: birthday ? new Date(birthday) : user.birthday,
-                avatar: {
-                    update: {
-                        url,
-                        filePath,
-                    }
-                }
             },
             include: {
-                avatar: true,
+                avatar: {
+                    select: {
+                        filePath: true,
+                    },
+                },
             }
         });
 
-        if (avatarId && user.avatarId) {
-            await deleteFile(user.avatarId);
+        let updatedUser = user;
+
+        if (req.file) {
+            if (user.avatar.filePath) await deleteFile(user.avatar.filePath);
+
+            const file = req.file;
+            const { url, filePath } = await uploadFile(file);
+            updatedUser = await prisma.user.update({
+                where: { userId: user.userId },
+                data: {
+                    avatar: {
+                        upsert: {
+                            update: {
+                                url,
+                                filePath,
+                            },
+                            create: {
+                                url,
+                                filePath,
+                            }
+                        }
+                    }
+                },
+                include: {
+                    avatar: {
+                        select: {
+                            url: true,
+                        },
+                    },
+                }
+            })
         }
 
         return res.status(200).json({

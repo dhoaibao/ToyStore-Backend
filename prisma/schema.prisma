@@ -12,6 +12,8 @@ model Role {
   roleName String
   roleDesc String
   isActive Boolean
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
 
   users       User[]
   permissions Permission[] @relation("permission_roles")
@@ -25,6 +27,8 @@ model Permission {
   apiPath        String
   method         String
   module         String
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
 
   roles Role[] @relation("permission_roles")
 
@@ -54,29 +58,16 @@ model UploadImage {
   url           String
   filePath      String
 
-  bannerId Int?
-  banner   Banner? @relation
-
   productId Int?
   product   Product? @relation(fields: [productId], references: [productId])
 
-  productImageEmbeddingId Int?
-  productImageEmbedding   ProductImageEmbedding? @relation
-
-  userId Int?
-  user   User? @relation
-
-  promotionId Int?
-  promotion   Promotion? @relation
-
-  conversationId Int?
-  conversation   Conversation? @relation
-
-  systemConfigId Int?
-  systemConfig   SystemConfiguration? @relation
-
-  categoryId Int?
-  category   Category? @relation
+  banner   Banner?
+  productImageEmbedding   ProductImageEmbedding?
+  user   User?
+  promotion   Promotion?
+  conversation   Conversation? 
+  systemConfig   SystemConfiguration? 
+  category   Category? 
 
   @@map("upload_images")
 }
@@ -84,6 +75,8 @@ model UploadImage {
 model Banner {
   bannerId Int     @id @default(autoincrement())
   isActive Boolean
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
 
   uploadImageId Int         @unique
   uploadImage   UploadImage @relation(fields: [uploadImageId], references: [uploadImageId])
@@ -99,6 +92,8 @@ model SystemConfiguration {
   shopName       String
   shopEmail      String
   shopPhone      String
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
 
   banners      Banner[]
   priceFilters PriceFilter[]
@@ -113,6 +108,8 @@ model PriceFilter {
   priceFilterId Int   @id @default(autoincrement())
   minPrice      Float
   maxPrice      Float
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
 
   systemConfigId Int
   systemConfig   SystemConfiguration @relation(fields: [systemConfigId], references: [systemConfigId])
@@ -196,6 +193,8 @@ model Brand {
   brandId   Int    @id @default(autoincrement())
   brandName String @unique
   brandDesc String
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
 
   products Product[]
 
@@ -206,6 +205,8 @@ model Category {
   categoryId   Int    @id @default(autoincrement())
   categoryName String @unique
   slug         String @unique
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
 
   categoryThumbnailId Int         @unique
   categoryThumbnail   UploadImage @relation(fields: [categoryThumbnailId], references: [uploadImageId])
@@ -238,6 +239,8 @@ model Review {
 model ProductInformation {
   productInfoId   Int    @id @default(autoincrement())
   productInfoName String
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
 
   productInfoDetails ProductInfoValue[]
 
@@ -280,8 +283,7 @@ model User {
   sentConversations     Conversation[] @relation("sent")
   receivedConversations Conversation[] @relation("received")
 
-  cartId Int?
-  cart   Cart? @relation
+  cart   Cart?
 
   orders Order[]
 
@@ -345,6 +347,7 @@ model Order {
   paymentStatus Boolean
   paidDate      DateTime?
   createdAt     DateTime  @default(now()) @db.Timestamptz
+  updatedAt     DateTime  @updatedAt @db.Timestamptz
 
   userId Int
   user   User @relation(fields: [userId], references: [userId])
@@ -389,7 +392,7 @@ model OrderStatus {
 
 model OrderDetail {
   price         Float
-  totalDiscount Float
+  discountedPrice Float
   quantity      Int
 
   orderId Int
@@ -408,8 +411,7 @@ model OrderAddress {
   contactName    String
   contactPhone   String
 
-  orderId Int?   @unique
-  order   Order? @relation
+  order   Order? 
 
   @@map("order_addresses")
 }

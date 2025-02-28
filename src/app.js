@@ -4,7 +4,7 @@ import logger from 'morgan';
 import {
     authRoute, userRoute, addressRoute, brandRoute, categoryRoute,
     productInfoRoute, productInfoValueRoute, productRoute, cartRoute,
-    promotionRoute, orderRoute, orderStatusRoute, voucherRoute
+    promotionRoute, orderRoute, voucherRoute
 } from './routes/index.js';
 
 const app = express();
@@ -31,7 +31,6 @@ app.use(`/api/${API_VERSION}/product`, productRoute);
 app.use(`/api/${API_VERSION}/cart`, cartRoute);
 app.use(`/api/${API_VERSION}/promotion`, promotionRoute);
 app.use(`/api/${API_VERSION}/order`, orderRoute);
-app.use(`/api/${API_VERSION}/order-status`, orderStatusRoute);
 app.use(`/api/${API_VERSION}/voucher`, voucherRoute);
 
 app.get("/", (_, res) => {

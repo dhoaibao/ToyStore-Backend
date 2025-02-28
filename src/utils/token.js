@@ -24,7 +24,7 @@ const decodedRefreshToken = (refreshToken) => {
     const decoded = jwt.verify(refreshToken, secret);
     return decoded;
   } catch (verificationError) {
-    console.error('Error verifying token:', verificationError);
+    console.error('Error verifying refresh token:', verificationError.name);
     return null;
   }
 

@@ -32,6 +32,8 @@ export const getAllPromotions = async (req, res) => {
 
         if (sort && order) {
             sortOrder[sort] = order;
+        } else {
+            sortOrder.updatedAt = 'desc';
         }
 
         const [promotions, totalPromotions] = await Promise.all([
@@ -102,8 +104,6 @@ export const createPromotion = async (req, res) => {
         }
 
         const image = await uploadFile(file);
-        const promotionThumbnailId = image.uploadImageId;
-
         const promotion = await prisma.promotion.create({
             data: {
                 promotionName,
@@ -112,7 +112,12 @@ export const createPromotion = async (req, res) => {
                 discountValue: parseFloat(discountValue),
                 startDate: new Date(startDate),
                 endDate: new Date(endDate),
-                promotionThumbnailId
+                promotionThumbnail: {
+                    create: {
+                        url: image.url,
+                        filePath: image.filePath
+                    }
+                }
             },
             include
         });
@@ -140,18 +145,23 @@ export const updatePromotion = async (req, res) => {
         const file = req.file;
 
         const existingPromotion = await prisma.promotion.findUnique({
-            where: { promotionId: parseInt(id) }
+            where: { promotionId: parseInt(id) },
+            include: {
+                promotionThumbnail: {
+                    select: {
+                        filePath: true
+                    }
+                }
+            }
         });
 
         if (!existingPromotion) {
             return res.status(404).json({ message: "Promotion not found!" });
         }
 
-        let promotionThumbnailId = null;
-        if (file) {
-            const image = await uploadFile(file);
-            promotionThumbnailId = image.uploadImageId;
-        }
+        const image = await uploadFile(file);
+
+        await deleteFile(existingPromotion.promotionThumbnail.filePath);
 
         const promotion = await prisma.promotion.update({
             where: { promotionId: parseInt(id) },
@@ -162,14 +172,15 @@ export const updatePromotion = async (req, res) => {
                 discountValue: parseFloat(discountValue) || existingPromotion.discountValue,
                 startDate: startDate ? new Date(startDate) : existingPromotion.startDate,
                 endDate: endDate ? new Date(endDate) : existingPromotion.endDate,
-                promotionThumbnailId: promotionThumbnailId || existingPromotion.promotionThumbnailId
+                promotionThumbnail: {
+                    update: {
+                        url: image.url,
+                        filePath: image.filePath
+                    }
+                }
             },
             include
-        });
-
-        if (promotionThumbnailId && existingPromotion.promotionThumbnailId) {
-            await deleteFile(existingPromotion.promotionThumbnailId);
-        }
+        }); 
 
         return res.status(200).json({
             message: 'Promotion updated!',

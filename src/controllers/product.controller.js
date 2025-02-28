@@ -1,26 +1,7 @@
 import prisma from '../config/prismaClient.js'
 import { generateSlug } from '../utils/generateSlug.js';
-import { uploadMultipleFiles } from '../utils/supabaseStorage.js';
+import { uploadMultipleFiles, deleteFile } from '../utils/supabaseStorage.js';
 import { generateImageEmbedding, generateTextEmbedding } from '../utils/generateEmbeddings.js';
-import { fileURLToPath } from 'url';
-import path from 'path';
-import fs from 'fs/promises';
-
-const addImageEmbedding = async (productId, uploadImageId, embedding) => {
-    const embeddingString = `[${embedding.join(',')}]`;
-    await prisma.$executeRaw`
-      INSERT INTO product_image_embeddings (product_id, upload_image_id, embedding)
-      VALUES (${productId}, ${uploadImageId}, ${embeddingString}::vector)
-    `;
-};
-
-const addEmbedding = async (productId, embedding) => {
-    const embeddingString = `[${embedding.join(',')}]`;
-    await prisma.$executeRaw`
-      INSERT INTO product_embeddings (product_id, embedding)
-      VALUES (${productId}, ${embeddingString}::vector)
-    `;
-}
 
 const include = {
     category: {
@@ -44,8 +25,12 @@ const include = {
             }
         }
     },
-    productImages: true,
-    promotions: {
+    productImages: {
+        select: {
+            url: true
+        }
+    },
+    promotion: {
         include: {
             promotionThumbnail: {
                 select: {
@@ -150,6 +135,8 @@ export const getAllProducts = async (req, res) => {
             } else {
                 sortOrder[sort] = order;
             }
+        } else {
+            sortOrder.updatedAt = 'desc';
         }
 
         const products = await prisma.product.findMany({
@@ -159,14 +146,6 @@ export const getAllProducts = async (req, res) => {
             orderBy: sortOrder,
             include,
         });
-
-        // if (sort) {
-        //     if (sort === 'newest') {
-        //         products.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        //     } else if (sort === 'bestseller') {
-        //         products.sort((a, b) => b.soldNumber - a.soldNumber);
-        //     }
-        // }
 
         if (sortPrice) {
             if (sortPrice === 'asc') {
@@ -236,34 +215,32 @@ export const createProduct = async (req, res) => {
             return res.status(400).json({ message: 'Missing required fields!' });
         }
 
-        const productExists = await prisma.product.findFirst({
-            where: { productName }
-        });
-
-        if (productExists) {
-            return res.status(400).json({ message: 'Product already exists!' });
-        }
-
         const slug = generateSlug(productName);
 
         const result = await prisma.$transaction(async (tx) => {
-            const product = await tx.product.create({
-                data: {
-                    productName,
-                    slug,
-                    price: parseFloat(price),
-                    isActive: isActive === 'true',
-                    quantity: parseInt(quantity),
-                    description,
-                    brand: {
-                        connect: { brandId: parseInt(brandId) },
+            const [product, images] = await Promise.all([
+                tx.product.create({
+                    data: {
+                        productName,
+                        slug,
+                        price: parseFloat(price),
+                        isActive: isActive === 'true',
+                        quantity: parseInt(quantity),
+                        description,
+                        brandId: parseInt(brandId),
+                        categoryId: parseInt(categoryId),
                     },
-                    category: {
-                        connect: { categoryId: parseInt(categoryId) },
-                    },
-                },
-                include,
+                    include,
+                }),
+                files && uploadMultipleFiles(files)
+            ]);
+
+            const productExists = await tx.product.findFirst({
+                where: { productName },
             });
+            if (productExists) {
+                throw new Error('Product already exists!');
+            }
 
             if (productInfos) {
                 const productInfosArray = JSON.parse(productInfos);
@@ -277,39 +254,40 @@ export const createProduct = async (req, res) => {
                 });
             }
 
-            const images = await uploadMultipleFiles(files);
+            const productImages = await Promise.all(images.map(async ({ url, filePath }) => {
+                const uploadImage = await tx.uploadImage.create({
+                    data: {
+                        url,
+                        filePath,
+                        productId: product.productId
+                    }
+                });
 
-            await tx.productImage.createMany({
-                data: images.map(image => ({
-                    productId: product.productId,
-                    uploadImageId: image.uploadImageId,
-                }))
-            });
+                const formData = new FormData();
+                formData.append('url', url);
 
-            await Promise.all(images.map(async ({ url, uploadImageId }) => {
-                const imageEmbedding = await generateImageEmbedding(url);
-                await addImageEmbedding(product.productId, uploadImageId, imageEmbedding);
+                const imageEmbedding = await generateImageEmbedding(formData);
+
+                return { uploadImageId: uploadImage.uploadImageId, imageEmbedding };
+            }));
+
+            await Promise.all(productImages.map(async ({ uploadImageId, imageEmbedding }) => {
+                const embeddingString = `[${imageEmbedding.join(',')}]`;
+                await tx.$executeRaw`
+                  INSERT INTO product_image_embeddings (product_id, upload_image_id, embedding)
+                  VALUES (${product.productId}, ${uploadImageId}, ${embeddingString}::vector)
+                `;
             }));
 
             const allProductInfo = product.productName + ' ' + product.description + ' ' + product.brand.brandName + ' ' + product.category.categoryName + ' ' + product.productInfoValues.map(info => info.value).join(' ');
 
             const textEmbedding = await generateTextEmbedding(allProductInfo);
 
-            await addEmbedding(product.productId, textEmbedding);
-
-            const productEmbedding = await tx.productEmbedding.findFirst({
-                where: {
-                    productId: product.productId
-                }
-            });
-
-            await tx.product.update({
-                where: { productId: product.productId },
-                data: {
-                    productEmbeddingId: productEmbedding.productEmbeddingId
-                },
-                include,
-            });
+            const embeddingString = `[${textEmbedding.join(',')}]`;
+            await tx.$executeRaw`
+              INSERT INTO product_embeddings (product_id, embedding)
+              VALUES (${product.productId}, ${embeddingString}::vector)
+            `;
 
             return product;
         });
@@ -337,105 +315,106 @@ export const updateProduct = async (req, res) => {
 
         const { productName, price, isActive, quantity, description, brandId, categoryId, productInfos } = req.body;
 
-        const existingProduct = await prisma.product.findUnique({ where: { productId: parseInt(id) } });
+        const slug = generateSlug(productName);
 
-        if (!existingProduct) {
-            return res.status(404).json({ message: 'Product not found!' });
-        }
+        const result = await prisma.$transaction(async (tx) => {
+            const [product, images] = await Promise.all([
+                tx.product.update({
+                    where: { productId: parseInt(id) },
+                    data: {
+                        productName,
+                        slug,
+                        price: parseFloat(price),
+                        isActive: isActive === 'true',
+                        quantity: parseInt(quantity),
+                        description,
+                        brandId: parseInt(brandId),
+                        categoryId: parseInt(categoryId),
+                    },
+                    include,
+                }),
+                files && uploadMultipleFiles(files)
+            ]);
 
-        const product = await prisma.product.update({
-            where: { productId: parseInt(id) },
-            data: {
-                productName,
-                price: parseFloat(price),
-                isActive: isActive === 'true',
-                quantity: parseInt(quantity),
-                description,
-                brand: {
-                    connect: { brandId: parseInt(brandId) },
-                },
-                category: {
-                    connect: { categoryId: parseInt(categoryId) },
-                },
-            },
-            include,
-        });
-
-        if (productInfos) {
-            const productInfosArray = JSON.parse(productInfos);
-
-            await prisma.productInfoValue.deleteMany({
-                where: {
-                    productId: product.productId
-                }
-            });
-
-            await prisma.productInfoValue.createMany({
-                data: productInfosArray.map(info => ({
-                    productId: product.productId,
-                    productInfoId: info.productInfoId,
-                    value: info.value
-                }))
-            });
-        }
-
-        if (files) {
-            await prisma.productImage.deleteMany({
-                where: {
-                    productId: product.productId
-                }
-            });
-
-            await prisma.productImageEmbedding.deleteMany({
-                where: {
-                    productId: product.productId
-                }
-            });
-
-            await prisma.productEmbedding.deleteMany({
-                where: {
-                    productId: product.productId
-                }
-            });
-        }
-
-        const images = await uploadMultipleFiles(files);
-
-        await prisma.productImage.createMany({
-            data: images.map(image => ({
-                productId: product.productId,
-                uploadImageId: image.uploadImageId,
-            }))
-        });
-
-        await Promise.all(images.map(async ({ url, uploadImageId }) => {
-            const imageEmbedding = await generateImageEmbedding(url);
-            await addImageEmbedding(product.productId, uploadImageId, imageEmbedding);
-        }));
-
-        const allProductInfo = product.productName + ' ' + product.description + ' ' + product.brand.brandName + ' ' + product.category.categoryName + ' ' + product.productInfoValues.map(info => info.value).join(' ');
-
-        const textEmbedding = await generateTextEmbedding(allProductInfo);
-
-        await addEmbedding(product.productId, textEmbedding);
-
-        const productEmbedding = await prisma.productEmbedding.findFirst({
-            where: {
-                productId: product.productId
+            if (!product) {
+                throw new Error('Product not found!');
             }
-        });
 
-        const productUpdated = await prisma.product.update({
-            where: { productId: product.productId },
-            data: {
-                productEmbeddingId: productEmbedding.productEmbeddingId
-            },
-            include,
-        });
+            if (productInfos) {
+                const productInfosArray = JSON.parse(productInfos);
+
+                await Promise.all(productInfosArray.map(async (info) => {
+                    await tx.productInfoValue.upsert({
+                        where: { productId_productInfoId: { productId: product.productId, productInfoId: info.productInfoId } },
+                        update: { value: info.value },
+                        create: { productId: product.productId, productInfoId: info.productInfoId, value: info.value }
+                    });
+                }));
+
+            }
+
+            if (files) {
+                const productImages = await tx.uploadImage.findMany({
+                    where: { productId: product.productId },
+                    select: { filePath: true },
+                });
+
+                await Promise.all([
+                    deleteFile(productImages.map(image => image.filePath)),
+                    tx.productImageEmbedding.deleteMany({ where: { productId: product.productId } }),
+                    tx.uploadImage.deleteMany({ where: { productId: product.productId } }),
+                ]);
+            }
+
+            const productImages = await Promise.all(images.map(async ({ url, filePath }) => {
+                const uploadImage = await tx.uploadImage.create({
+                    data: {
+                        url,
+                        filePath,
+                        productId: product.productId
+                    }
+                });
+
+                return uploadImage;
+            }));
+
+            await Promise.all(productImages.map(async ({ url, uploadImageId }) => {
+                const formData = new FormData();
+                formData.append('url', url);
+                const imageEmbedding = await generateImageEmbedding(formData);
+                const embeddingString = `[${imageEmbedding.join(',')}]`;
+                await tx.$executeRaw`
+                  INSERT INTO product_image_embeddings (product_id, upload_image_id, embedding)
+                  VALUES (${product.productId}, ${uploadImageId}, ${embeddingString}::vector)
+                `;
+            }));
+
+            const allProductInfo = product.productName + ' ' + product.description + ' ' + product.brand.brandName + ' ' + product.category.categoryName + ' ' + product.productInfoValues.map(info => info.value).join(' ');
+
+            const textEmbedding = await generateTextEmbedding(allProductInfo);
+
+            const embeddingString = `[${textEmbedding.join(',')}]`;
+
+            const existingEmbedding = await tx.productEmbedding.findFirst({
+                where: {
+                    productId: product.productId
+                }
+            });
+
+            if (!existingEmbedding || existingEmbedding !== embeddingString) {
+                await tx.$executeRaw`
+                  UPDATE product_embeddings
+                  SET embedding = ${embeddingString}::vector
+                  WHERE product_id = ${product.productId}
+                `;
+            }
+
+            return product;
+        })
 
         return res.status(200).json({
             message: 'Product updated!',
-            data: productUpdated,
+            data: result,
         });
     }
     catch (error) {
@@ -457,7 +436,13 @@ export const deleteProduct = async (req, res) => {
             return res.status(404).json({ message: 'Product not found!' });
         }
 
-        await prisma.product.delete({ where: { productId: parseInt(id) } });
+        await prisma.$transaction(async (tx) => {
+            await tx.productImageEmbedding.deleteMany({ where: { productId: parseInt(id) } });
+            await tx.productEmbedding.deleteMany({ where: { productId: parseInt(id) } });
+            await tx.uploadImage.deleteMany({ where: { productId: parseInt(id) } });
+            await tx.productInfoValue.deleteMany({ where: { productId: parseInt(id) } });
+            await tx.product.delete({ where: { productId: parseInt(id) } });
+        });
 
         return res.status(200).json({ message: 'Product deleted!' });
     }
@@ -480,20 +465,16 @@ export const imageSearch = async (req, res) => {
             return res.status(400).json({ message: 'No image uploaded!' });
         }
 
-        let imageEmbedding;
+        const formData = new FormData();
         if (file) {
-            const __filename = fileURLToPath(import.meta.url);
-            const __dirname = path.dirname(__filename);
-
-            const tempFilePath = path.join(__dirname, '..', '..', file.originalname);
-            await fs.writeFile(tempFilePath, file.buffer);
-
-            imageEmbedding = await generateImageEmbedding(tempFilePath);
-
-            await fs.unlink(tempFilePath);
-        } else {
-            imageEmbedding = await generateImageEmbedding(url);
+            const blob = new Blob([file.buffer], { type: file.mimetype });
+            formData.append('file', blob, file.originalname);
         }
+        if (url) {
+            formData.append('url', url);
+        }
+
+        const imageEmbedding = await generateImageEmbedding(formData);
 
         const imageEmbeddingString = `[${imageEmbedding.join(',')}]`;
 

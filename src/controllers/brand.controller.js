@@ -19,6 +19,8 @@ export const getAllBrands = async (req, res) => {
 
         if (sort && order) {
             sortOrder[sort] = order;
+        } else {
+            sortOrder.updatedAt = 'desc';
         }
 
         const brands = await prisma.brand.findMany({

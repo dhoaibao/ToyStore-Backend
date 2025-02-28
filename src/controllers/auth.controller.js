@@ -277,7 +277,13 @@ export const refreshToken = async (req, res) => {
             return res.status(400).json({ message: 'Refresh token is required!' });
         }
 
-        const { userId, iat } = decodedRefreshToken(refreshToken);
+        const result = decodedRefreshToken(refreshToken);
+
+        if (!result) {
+            return res.status(400).json({ message: 'Invalid token!' });
+        }
+
+        const { userId, iat } = result;
 
         getData(`blocklist:${userId}-${iat}`).then((result) => {
             if (result === refreshToken) {

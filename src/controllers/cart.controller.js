@@ -7,14 +7,10 @@ const include = {
                 include: {
                     productImages: {
                         select: {
-                            uploadImage: {
-                                select: {
-                                    url: true
-                                }
-                            }
+                            url: true
                         }
                     },
-                    promotions: true 
+                    promotion: true
                 }
             }
         }
@@ -56,6 +52,14 @@ export const addToCart = async (req, res) => {
                 }
             });
         } else {
+            const productExists = await prisma.product.findFirst({
+                where: { productId: parseInt(productId) }
+            });
+
+            if (!productExists) {
+                return res.status(404).json({ message: 'Product not found!' });
+            }
+
             await prisma.cartDetail.create({
                 data: {
                     cartId: existingCart.cartId,

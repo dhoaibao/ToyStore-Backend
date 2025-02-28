@@ -1,8 +1,12 @@
 import prisma from '../config/prismaClient.js'
-import moment from 'moment';
 
 const include = {
-    orderStatus: true,
+    orderTrackings: {
+        select: {
+            orderStatus: true,
+            time: true
+        }
+    },
     user: true,
 }
 
@@ -14,9 +18,13 @@ export const getAllOrders = async (req, res) => {
 
         const filters = {};
 
-        if (orderStatus && orderStatus !== '0') {
-            filters.orderStatus = {
-                orderStatusId: parseInt(orderStatus)
+        if (orderStatus) {
+            filters.orderTrackings = {
+                some: {
+                    orderStatus: {
+                        statusName: orderStatus
+                    }
+                }
             };
         }
 
@@ -48,6 +56,8 @@ export const getAllOrders = async (req, res) => {
 
         if (sort && order) {
             sortOrder[sort] = order;
+        } else {
+            sortOrder.updatedAt = 'desc';
         }
 
         const [orders, totalOrders] = await Promise.all([
@@ -204,9 +214,24 @@ export const createOrder = async (req, res) => {
                     shippingFee,
                     finalPrice,
                     paymentStatus,
-                    userId,
-                    paymentMethodId,
-                    voucherId
+                    user: {
+                        connect: {
+                            userId
+                        }
+                    },
+                    paymentMethod: {
+                        connect: {
+                            paymentMethodId
+                        }
+                    },
+                    voucherId,
+                    orderAddress: {
+                        create: {
+                            address: addressString,
+                            contactName,
+                            contactPhone,
+                        }
+                    }
                 }
             });
 
@@ -217,15 +242,15 @@ export const createOrder = async (req, res) => {
                 }
             });
 
-            await tx.orderDetail.createMany({
-                data: orderItems.map((item) => ({
-                    price: item.product.price,
-                    discountedPrice: item.product.discountedPrice || 0,
-                    quantity: item.quantity,
-                    orderId: order.orderId,
-                    productId: item.product.productId
-                }))
-            });
+            const orderDetails = orderItems.map((item) => ({
+                price: item.product.price,
+                discountedPrice: item.product.discountedPrice || 0,
+                quantity: item.quantity,
+                orderId: order.orderId,
+                productId: item.product.productId
+            }));
+
+            await tx.orderDetail.createMany({ data: orderDetails });
 
             await Promise.all(orderItems.map(async (item) => {
                 await tx.product.update({
@@ -240,46 +265,21 @@ export const createOrder = async (req, res) => {
                 });
             }));
 
-            const orderAddress = await tx.orderAddress.create({
-                data: {
-                    address: addressString,
-                    contactName,
-                    contactPhone,
-                    orderId: order.orderId,
-                }
-            });
-
-            let dataUpdate = {
-                orderAddressId: orderAddress.orderAddressId,
-            }
-
-            if (paymentStatus) {
-                dataUpdate = {
-                    ...dataUpdate,
-                    paidDate: moment().toDate()
-                }
-            }
+            let updateData = paymentStatus ? { paidDate: new Date() } : {};
 
             const updatedOrder = await tx.order.update({
                 where: { orderId: order.orderId },
-                data: dataUpdate,
+                data: updateData,
                 include
             });
 
             await tx.cartDetail.deleteMany({
-                where: {
-                    OR: orderItems.map((item) => ({
-                        productId: item.product.productId,
-                        cartId
-                    }))
-                }
+                where: { cartId, productId: { in: orderItems.map(item => item.product.productId) } }
             });
 
             if (voucherId) {
                 await tx.voucher.update({
-                    where: {
-                        voucherId: voucherId
-                    },
+                    where: { voucherId },
                     data: {
                         currentUsedQuantity: {
                             increment: 1
@@ -311,7 +311,7 @@ export const cancelOrder = async (req, res) => {
         const existingOrder = await prisma.order.findUnique({
             where: { orderId: parseInt(id) },
             include: {
-                orderTracking: true
+                orderTrackings: true
             }
         });
 
@@ -319,9 +319,11 @@ export const cancelOrder = async (req, res) => {
             return res.status(404).json({ message: 'Order not found!' });
         }
 
-        const length = existingOrder.orderTracking.length;
+        const length = existingOrder.orderTrackings.length;
 
-        if (existingOrder.orderTracking[length].orderStatusId !== 1) {
+        console.log(existingOrder.orderTrackings[length - 1]);
+
+        if (existingOrder.orderTrackings[length - 1].orderStatusId !== 1) {
             return res.status(400).json({ message: 'Order cannot be cancelled!' });
         }
 
@@ -358,12 +360,11 @@ export const updateOrderStatus = async (req, res) => {
             return res.status(404).json({ message: 'Order not found!' });
         }
 
-        const result = await prisma.order.update({
-            where: { orderId: parseInt(id) },
+        await tx.orderTracking.create({
             data: {
-                orderStatusId
-            },
-            include
+                orderStatusId: 5,
+                orderId: existingOrder.orderId
+            }
         });
 
         return res.status(200).json({
