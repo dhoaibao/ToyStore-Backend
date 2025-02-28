@@ -384,16 +384,26 @@ export const updateOrderStatus = async (req, res) => {
             return res.status(404).json({ message: 'Order not found!' });
         }
 
-        await tx.orderTracking.create({
-            data: {
-                orderStatusId: 5,
-                orderId: existingOrder.orderId
+        const existingTracking = await prisma.orderTracking.findUnique({
+            where: {
+                orderId_orderStatusId: {
+                    orderId: existingOrder.orderId,
+                    orderStatusId: parseInt(orderStatusId)
+                }
             }
         });
 
+        if (!existingTracking) {
+            await prisma.orderTracking.create({
+                data: {
+                    orderStatusId: parseInt(orderStatusId),
+                    orderId: existingOrder.orderId
+                }
+            });
+        }
+
         return res.status(200).json({
             message: 'Order status updated!',
-            data: result,
         });
 
     } catch (error) {
