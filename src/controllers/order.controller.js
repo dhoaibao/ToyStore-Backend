@@ -7,7 +7,31 @@ const include = {
             time: true
         }
     },
-    user: true,
+    user: {
+        select: {
+            fullName: true,
+        }
+    },
+    orderAddress: true,
+    paymentMethod: true,
+    orderDetails: {
+        select: {
+            quantity: true,
+            price: true,
+            discountedPrice: true,
+            product: {
+                select: {
+                    productName: true,
+                    slug: true,
+                    productImages: {
+                        select: {
+                            url: true
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 export const getAllOrders = async (req, res) => {
