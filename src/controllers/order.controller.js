@@ -343,14 +343,6 @@ export const cancelOrder = async (req, res) => {
             return res.status(404).json({ message: 'Order not found!' });
         }
 
-        const length = existingOrder.orderTrackings.length;
-
-        console.log(existingOrder.orderTrackings[length - 1]);
-
-        if (existingOrder.orderTrackings[length - 1].orderStatusId !== 1) {
-            return res.status(400).json({ message: 'Order cannot be cancelled!' });
-        }
-
         await prisma.orderTracking.create({
             data: {
                 orderStatusId: 5,
