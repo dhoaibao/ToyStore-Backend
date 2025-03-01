@@ -127,6 +127,16 @@ export const updateProductInformation = async (req, res) => {
             return res.status(404).json({ message: 'Product information not found!' });
         }
 
+        if (productInfoName && productInfoName !== productInformation.productInfoName) {
+            const productInformationName = await prisma.productInformation.findFirst({
+                where: { productInfoName }
+            });
+
+            if (productInformationName) {
+                return res.status(400).json({ message: 'Product information already exists!' });
+            }
+        }
+
         const updatedProductInformation = await prisma.productInformation.update({
             where: { productInfoId: parseInt(id) },
             data: { productInfoName }

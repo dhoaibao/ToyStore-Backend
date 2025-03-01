@@ -159,28 +159,37 @@ export const updatePromotion = async (req, res) => {
             return res.status(404).json({ message: "Promotion not found!" });
         }
 
-        const image = await uploadFile(file);
+        const fields = {
+            promotionName,
+            description,
+            discountType,
+            discountValue: discountValue ? parseFloat(discountValue) : null,
+            startDate: startDate ? new Date(startDate) : null,
+            endDate: endDate ? new Date(endDate) : null,
+        };
 
-        await deleteFile(existingPromotion.promotionThumbnail.filePath);
+        const data = Object.entries(fields).reduce((acc, [key, value]) => {
+            if (value != null && value !== existingPromotion[key]) {
+                acc[key] = value;
+            }
+            return acc;
+        }, {});
+
+        if (file) {
+            const { url, filePath } = await uploadFile(file);
+            data.promotionThumbnail = {
+                update: {
+                    url,
+                    filePath
+                }
+            }
+        }
 
         const promotion = await prisma.promotion.update({
             where: { promotionId: parseInt(id) },
-            data: {
-                promotionName: promotionName || existingPromotion.promotionName,
-                description: description || existingPromotion.description,
-                discountType: discountType || existingPromotion.discountType,
-                discountValue: parseFloat(discountValue) || existingPromotion.discountValue,
-                startDate: startDate ? new Date(startDate) : existingPromotion.startDate,
-                endDate: endDate ? new Date(endDate) : existingPromotion.endDate,
-                promotionThumbnail: {
-                    update: {
-                        url: image.url,
-                        filePath: image.filePath
-                    }
-                }
-            },
+            data,
             include
-        }); 
+        });
 
         return res.status(200).json({
             message: 'Promotion updated!',

@@ -142,7 +142,7 @@ export const createUser = async (req, res) => {
 
         if (existingUser) {
             return res.status(400).json({
-                error: 'User already exists!',
+                message: 'Email already exists!',
             });
         }
 
@@ -204,16 +204,35 @@ export const updateUser = async (req, res) => {
             return res.status(404).json({ message: 'User not found!' });
         }
 
+        if (email && email !== existingUser.email) {
+            const existingUserEmail = await prisma.user.findUnique({
+                where: { email }
+            });
+
+            if (existingUserEmail) {
+                return res.status(400).json({ message: 'Email already exists!' });
+            }
+        }
+
+        const fields = {
+            fullName,
+            email,
+            phone,
+            isActive: isActive ? isActive === 'true' : null,
+            gender: gender ? Boolean(gender) : null,
+            birthday: birthday ? new Date(birthday) : null,
+        };
+
+        const data = Object.entries(fields).reduce((acc, [key, value]) => {
+            if (value != null && value !== existingUser[key]) {
+                acc[key] = value;
+            }
+            return acc;
+        }, {});
+
         const user = await prisma.user.update({
             where: { userId: parseInt(id) },
-            data: {
-                fullName: fullName || user.fullName,
-                email: email || user.email,
-                phone: phone || user.phone,
-                isActive: isActive === 'true',
-                gender: Boolean(gender) || user.gender,
-                birthday: birthday ? new Date(birthday) : user.birthday,
-            },
+            data,
             include: {
                 avatar: {
                     select: {
@@ -226,7 +245,7 @@ export const updateUser = async (req, res) => {
         let updatedUser = user;
 
         if (req.file) {
-            if (user.avatar.filePath) await deleteFile(user.avatar.filePath);
+            if (user.avatar?.filePath) await deleteFile(user.avatar.filePath);
 
             const file = req.file;
             const { url, filePath } = await uploadFile(file);

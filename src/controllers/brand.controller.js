@@ -121,18 +121,37 @@ export const updateBrand = async (req, res) => {
 
         const { brandName, brandDesc } = req.body;
 
-        const brand = await prisma.brand.findUnique({ where: { brandId: parseInt(id) } });
+        const existingBrand = await prisma.brand.findUnique({ where: { brandId: parseInt(id) } });
 
-        if (!brand) {
+        if (!existingBrand) {
             return res.status(404).json({ message: 'Brand not found!' });
         }
 
+        if (brandName && brandName !== existingBrand.brandName) {
+            const existingBrandName = await prisma.brand.findFirst({
+                where: { brandName }
+            });
+
+            if (existingBrandName) {
+                return res.status(400).json({ message: 'Brand already exists!' });
+            }
+        }
+
+        const fields = {
+            brandName,
+            brandDesc,
+        };
+
+        const data = Object.entries(fields).reduce((acc, [key, value]) => {
+            if (value != null && value !== existingBrand[key]) {
+                acc[key] = value;
+            }
+            return acc;
+        }, {});
+
         const updatedBrand = await prisma.brand.update({
             where: { brandId: parseInt(id) },
-            data: {
-                brandName: brandName || brand.brandName,
-                brandDesc: brandDesc || brand.brandDesc,
-            }
+            data
         });
 
         return res.status(200).json({

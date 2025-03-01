@@ -146,8 +146,6 @@ export const updateCategory = async (req, res) => {
 
         const { categoryName } = req.body;
 
-        const file = req.file;
-
         const existingCategory = await prisma.category.findUnique({
             where: { categoryId: parseInt(id) },
             include: {
@@ -160,27 +158,46 @@ export const updateCategory = async (req, res) => {
         });
 
         if (!existingCategory) {
-            return res.status(404).json({ message: 'Category not found!' });
+            return res.status(404).json({ message: 'Category already exists!' });
         }
 
-        const slug = generateSlug(categoryName);
+        if (categoryName && categoryName !== existingCategory.categoryName) {
+            const existingCategoryName = await prisma.category.findFirst({
+                where: { categoryName }
+            });
 
-        const { url, filePath } = await uploadFile(file);
+            if (existingCategoryName) {
+                return res.status(400).json({ message: 'Category already exists!' });
+            }
+        }
 
-        await deleteFile(existingCategory.categoryThumbnail.filePath);
+        const fields = {
+            categoryName,
+            slug: categoryName ? generateSlug(categoryName) : null
+        };
+
+        const data = Object.entries(fields).reduce((acc, [key, value]) => {
+            if (value != null && value !== existingCategory[key]) {
+                acc[key] = value;
+            }
+            return acc;
+        }, {});
+
+        if (req.file) {
+            const file = req.file;
+            const { url, filePath } = await uploadFile(file);
+            await deleteFile(existingCategory.categoryThumbnail.filePath);
+            data.categoryThumbnail = {
+                update: {
+                    url,
+                    filePath
+                }
+            }
+        }
 
         const updatedCategory = await prisma.category.update({
             where: { categoryId: parseInt(id) },
-            data: {
-                categoryName: categoryName || existingCategory.categoryName,
-                slug: slug,
-                categoryThumbnail: {
-                    update: {
-                        url,
-                        filePath
-                    }
-                }
-            },
+            data,
             include
         });
 

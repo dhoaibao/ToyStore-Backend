@@ -85,7 +85,7 @@ export const createAddress = async (req, res) => {
         }
 
         const existingAddress = await prisma.address.findFirst({
-            where: {addressName}
+            where: { addressName }
         });
 
         if (existingAddress) {
@@ -98,7 +98,7 @@ export const createAddress = async (req, res) => {
                 provinceId: parseInt(provinceId),
                 districtId: parseInt(districtId),
                 wardCode: wardCode,
-                provinceName,   
+                provinceName,
                 districtName,
                 wardName,
                 detail,
@@ -139,28 +139,37 @@ export const updateAddress = async (req, res) => {
 
         const { provinceId, districtId, wardCode, addressName, provinceName, districtName, wardName, detail, isDefault, contactName, contactPhone, userId } = req.body;
 
-        const address = await prisma.address.findUnique({ where: { addressId: parseInt(id) } });
+        const existingAddress = await prisma.address.findUnique({ where: { addressId: parseInt(id) } });
 
-        if (!address) {
+        if (!existingAddress) {
             return res.status(404).json({ message: 'Address not found!' });
         }
 
+        const fields = {
+            provinceId: provinceId ? parseInt(provinceId) : null,
+            districtId: districtId ? parseInt(districtId) : null,
+            wardCode,
+            addressName,
+            provinceName,
+            districtName,
+            wardName,
+            detail,
+            isDefault,
+            contactName,
+            contactPhone,
+            userId: userId ? parseInt(userId) : null,
+        };
+
+        const data = Object.entries(fields).reduce((acc, [key, value]) => {
+            if (value != null && value !== existingAddress[key]) {
+                acc[key] = value;
+            }
+            return acc;
+        }, {});
+
         const updatedAddress = await prisma.address.update({
             where: { addressId: parseInt(id) },
-            data: {
-                addressName: addressName || address.addressName,
-                provinceId: provinceId || address.provinceId,
-                districtId: districtId || address.districtId,
-                wardCode: wardCode || address.wardCode,
-                provinceName: provinceName || address.provinceName,
-                districtName: districtName || address.districtName,
-                wardName: wardName || address.wardName,
-                detail: detail || address.detail,
-                isDefault: isDefault,
-                contactName: contactName || address.contactName,
-                contactPhone: contactPhone || address.contactPhone,
-                userId: parseInt(userId) || address.userId,
-            },
+            data,
             include: {
                 user: true,
             }

@@ -4,7 +4,6 @@ export * from './address.route.js';
 export * from './brand.route.js';
 export * from './category.route.js';
 export * from './productInfo.route.js';
-export * from './productInfoValue.route.js';
 export * from './product.route.js';
 export * from './cart.route.js';
 export * from './promotion.route.js';

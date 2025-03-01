@@ -157,7 +157,7 @@ export const createVoucher = async (req, res) => {
             });
         }
 
-        const existingVoucher = await prisma.voucher.findFirst({
+        const existingVoucher = await prisma.voucher.findUnique({
             where: {
                 voucherCode
             }
@@ -211,18 +211,37 @@ export const updateVoucher = async (req, res) => {
             });
         }
 
+        if (voucherCode && voucherCode !== existingVoucher.voucherCode) {
+            const existingVoucherCode = await prisma.voucher.findUnique({
+                where: { voucherCode }
+            });
+
+            if (existingVoucherCode) {
+                return res.status(400).json({ message: 'Voucher code already exists!' });
+            }
+        }
+
+        const fields = {
+            voucherCode,
+            discountType,
+            discountValue,
+            minOrderPrice,
+            maxPriceDiscount: maxPriceDiscount ? parseFloat(maxPriceDiscount) : null,
+            startDate: startDate ? new Date(startDate) : null,
+            endDate: endDate ? new Date(endDate) : null,
+            quantity: quantity ? parseInt(quantity) : null,
+        };
+
+        const data = Object.entries(fields).reduce((acc, [key, value]) => {
+            if (value != null && value !== existingVoucher[key]) {
+                acc[key] = value;
+            }
+            return acc;
+        }, {});
+
         const voucher = await prisma.voucher.update({
             where: { voucherId: parseInt(id) },
-            data: {
-                voucherCode: voucherCode || existingVoucher.voucherCode,
-                discountType: discountType || existingVoucher.discountType,
-                discountValue: parseFloat(discountValue) || existingVoucher.discountValue,
-                minOrderPrice: parseFloat(minOrderPrice) || existingVoucher.minOrderPrice,
-                maxPriceDiscount: parseFloat(maxPriceDiscount) || existingVoucher.maxPriceDiscount,
-                startDate: startDate ? new Date(startDate) : existingVoucher.startDate,
-                endDate: endDate ? new Date(endDate) : existingVoucher.endDate,
-                quantity: parseInt(quantity) || existingVoucher.quantity,
-            }
+            data
         });
 
         return res.status(200).json({
