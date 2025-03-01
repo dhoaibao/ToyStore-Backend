@@ -357,7 +357,7 @@ export const updateProduct = async (req, res) => {
                 const productInfosArray = JSON.parse(productInfos);
 
                 await Promise.all(productInfosArray.map(async (info) => {
-                    tx.productInfoValue.upsert({
+                    await tx.productInfoValue.upsert({
                         where: { productId_productInfoId: { productId: product.productId, productInfoId: info.productInfoId } },
                         update: { value: info.value },
                         create: { productId: product.productId, productInfoId: info.productInfoId, value: info.value }
