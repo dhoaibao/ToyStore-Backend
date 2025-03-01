@@ -4,7 +4,7 @@ import logger from 'morgan';
 import {
     authRoute, userRoute, addressRoute, brandRoute, categoryRoute,
     productInfoRoute, productRoute, cartRoute,
-    promotionRoute, orderRoute, voucherRoute
+    promotionRoute, orderRoute, voucherRoute, roleRoute, permissionRoute
 } from './routes/index.js';
 
 const app = express();
@@ -31,6 +31,8 @@ app.use(`/api/${API_VERSION}/cart`, cartRoute);
 app.use(`/api/${API_VERSION}/promotion`, promotionRoute);
 app.use(`/api/${API_VERSION}/order`, orderRoute);
 app.use(`/api/${API_VERSION}/voucher`, voucherRoute);
+app.use(`/api/${API_VERSION}/role`, roleRoute);
+app.use(`/api/${API_VERSION}/permission`, permissionRoute);
 
 app.get("/", (_, res) => {
     res.json({ message: "Server is running!" });
