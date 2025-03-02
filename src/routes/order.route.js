@@ -1,14 +1,14 @@
 import express from 'express';
 import { createOrder, getAllOrders, getOrderByUser, getOrderById, cancelOrder, updateOrderStatus } from "../controllers/order.controller.js";
-import { auth } from "../middlewares/authentication.js";
+import { authentication, authorization } from "../middlewares/auth.js";
 
 const router = express.Router();
 
-router.get('/', auth, getAllOrders);
-router.get('/by-user', auth, getOrderByUser);
-router.get('/:id', auth, getOrderById);
-router.post('/', auth, createOrder);
-router.put('/:id', auth, updateOrderStatus);
-router.put('/cancel/:id', auth, cancelOrder);
+router.get('/', authentication, getAllOrders);
+router.get('/by-user', authentication, getOrderByUser);
+router.get('/:id', authentication, getOrderById);
+router.post('/', authentication, createOrder);
+router.put('/:id', authentication, updateOrderStatus);
+router.put('/cancel/:id', authentication, authorization, cancelOrder);
 
 export const orderRoute = router;

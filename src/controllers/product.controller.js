@@ -1,9 +1,11 @@
 import prisma from '../config/prismaClient.js'
 import { generateSlug } from '../utils/generateSlug.js';
+import getCurrentPrice from '../utils/getCurrentPrice.js';
 import { uploadMultipleFiles, deleteFile } from '../utils/supabaseStorage.js';
 import { generateImageEmbedding, generateTextEmbedding } from '../utils/generateEmbeddings.js';
 
 const include = {
+    prices: true,
     category: {
         select: {
             categoryName: true,
@@ -39,7 +41,7 @@ const include = {
 
 export const getAllProducts = async (req, res) => {
     try {
-        const { page = 1, limit = 10, brandNames, categoryNames, ageOption, priceOption, sort, order, sortPrice, keyword, promotion, isActive } = req.query;
+        const { page = 1, limit = 10, brandNames, categoryNames, ageOption, priceOption, sort, order, keyword, promotion, isActive } = req.query;
         const skip = (page - 1) * limit;
         const take = parseInt(limit);
 
@@ -143,13 +145,13 @@ export const getAllProducts = async (req, res) => {
             include,
         });
 
-        if (sortPrice) {
-            if (sortPrice === 'asc') {
-                products.sort((a, b) => a.price - b.price);
-            } else if (sortPrice === 'desc') {
-                products.sort((a, b) => b.price - a.price);
-            }
-        }
+        const updatedProducts = products.map(product => {
+            const currentPrice = getCurrentPrice(product.prices);
+            return {
+                ...product,
+                price: currentPrice,
+            };
+        });
 
         const totalProducts = await prisma.product.count({
             where: filters,
@@ -157,7 +159,7 @@ export const getAllProducts = async (req, res) => {
 
         return res.status(200).json({
             message: 'All products fetched!',
-            data: products,
+            data: updatedProducts,
             pagination: {
                 total: totalProducts,
                 page: parseInt(page),
@@ -183,13 +185,19 @@ export const getProductBySlug = async (req, res) => {
             include,
         });
 
+        const currentPrice = getCurrentPrice(product.prices);
+        const updatedProduct = {
+            ...product,
+            price: currentPrice,
+        };
+
         if (!product) {
             return res.status(404).json({ message: "Product not found!" });
         }
 
         return res.status(200).json({
             message: 'Product fetched!',
-            data: product,
+            data: updatedProduct,
         });
     }
     catch (error) {
@@ -227,7 +235,12 @@ export const createProduct = async (req, res) => {
                     data: {
                         productName,
                         slug,
-                        price: parseFloat(price),
+                        prices: {
+                            create: {
+                                price: parseFloat(price),
+                                startDate: new Date(),
+                            }
+                        },
                         isActive: isActive === 'true',
                         quantity: parseInt(quantity),
                         description,
@@ -315,7 +328,7 @@ export const updateProduct = async (req, res) => {
 
         const files = req.files;
 
-        const { productName, price, isActive, quantity, description, brandId, categoryId, productInfos, existingImages } = req.body;
+        const { productName, price, startValidPrice, isActive, quantity, description, brandId, categoryId, productInfos, existingImages } = req.body;
 
         const existingProduct = await prisma.product.findUnique({
             where: { productId: parseInt(id) }
@@ -328,7 +341,6 @@ export const updateProduct = async (req, res) => {
         const fields = {
             productName,
             slug: productName ? generateSlug(productName) : null,
-            price: price ? parseFloat(price) : null,
             isActive: isActive ? isActive === 'true' : null,
             quantity: quantity ? parseInt(quantity) : null,
             description,
@@ -342,6 +354,23 @@ export const updateProduct = async (req, res) => {
             }
             return acc;
         }, {});
+
+        if (price) {
+            // const endDate = new Date();
+            // endDate.setDate(endDate.getDate() - 1); // Trừ 1 ngày một cách chính xác
+
+            data.prices = {
+                create: {
+                    price: parseFloat(price),
+                    startDate: new Date(),
+                },
+            };
+
+            await prisma.priceHistory.updateMany({
+                where: { productId: parseInt(id), endDate: null },
+                data: { endDate: new Date() },
+            });
+        }
 
         const result = await prisma.$transaction(async (tx) => {
             const [product, images] = await Promise.all([
@@ -482,6 +511,7 @@ export const deleteProduct = async (req, res) => {
         }
 
         await prisma.$transaction(async (tx) => {
+            await tx.priceHistory.deleteMany({ where: { productId: parseInt(id) } });
             await tx.productImageEmbedding.deleteMany({ where: { productId: parseInt(id) } });
             await tx.productEmbedding.deleteMany({ where: { productId: parseInt(id) } });
             await tx.uploadImage.deleteMany({ where: { productId: parseInt(id) } });

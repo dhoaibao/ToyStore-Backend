@@ -209,6 +209,7 @@ model Brand {
   brandId   Int      @id @default(autoincrement())
   brandName String   @unique
   brandDesc String
+  isActive  Boolean
   createdAt DateTime @default(now()) @db.Timestamptz
   updatedAt DateTime @updatedAt @db.Timestamptz
 
@@ -221,6 +222,7 @@ model Category {
   categoryId   Int      @id @default(autoincrement())
   categoryName String   @unique
   slug         String   @unique
+  isActive     Boolean
   createdAt    DateTime @default(now()) @db.Timestamptz
   updatedAt    DateTime @updatedAt @db.Timestamptz
 
@@ -257,6 +259,9 @@ model Review {
 model ProductInformation {
   productInfoId   Int      @id @default(autoincrement())
   productInfoName String
+  isActive        Boolean
+  type            String
+  options         String[]
   createdAt       DateTime @default(now()) @db.Timestamptz
   updatedAt       DateTime @updatedAt @db.Timestamptz
 
@@ -372,8 +377,8 @@ model Order {
 
   orderDetails OrderDetail[]
 
-  orderAddressId Int          @unique
-  orderAddress   OrderAddress @relation(fields: [orderAddressId], references: [orderAddressId])
+  orderAddressId Int?          @unique
+  orderAddress   OrderAddress? @relation(fields: [orderAddressId], references: [orderAddressId])
 
   orderTrackings OrderTracking[]
 

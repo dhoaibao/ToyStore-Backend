@@ -12,7 +12,7 @@ const include = {
 
 export const getAllCategories = async (req, res) => {
     try {
-        const { page = 1, limit = 10, keyword = '', sort = '', order = '' } = req.query;
+        const { page = 1, limit = 10, keyword = '', sort = '', order = '', isActive } = req.query;
         const skip = (page - 1) * limit;
         const take = parseInt(limit);
 
@@ -23,6 +23,10 @@ export const getAllCategories = async (req, res) => {
                 contains: keyword,
                 mode: 'insensitive'
             }
+        }
+
+        if (isActive) {
+            filters.isActive = isActive === 'true';
         }
 
         const sortOrder = {};
@@ -92,7 +96,7 @@ export const getCategoryById = async (req, res) => {
 
 export const createCategory = async (req, res) => {
     try {
-        const { categoryName } = req.body;
+        const { categoryName, isActive } = req.body;
 
         const file = req.file;
 
@@ -116,6 +120,7 @@ export const createCategory = async (req, res) => {
             data: {
                 categoryName,
                 slug,
+                isActive: isActive === 'true',
                 categoryThumbnail: {
                     create: {
                         url,
@@ -144,7 +149,7 @@ export const updateCategory = async (req, res) => {
     try {
         const { id } = req.params;
 
-        const { categoryName } = req.body;
+        const { categoryName, isActive } = req.body;
 
         const existingCategory = await prisma.category.findUnique({
             where: { categoryId: parseInt(id) },
@@ -172,6 +177,7 @@ export const updateCategory = async (req, res) => {
         }
 
         const fields = {
+            isActive: isActive ? isActive === 'true' : null,
             categoryName,
             slug: categoryName ? generateSlug(categoryName) : null
         };

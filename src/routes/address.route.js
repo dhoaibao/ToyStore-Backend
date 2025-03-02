@@ -1,14 +1,14 @@
 import express from 'express';
 import { getAddressByUser, getAllAddresses, getAddressById, createAddress, updateAddress, deleteAddress} from "../controllers/address.controller.js";
-import { auth } from "../middlewares/authentication.js";
+import { authentication } from "../middlewares/auth.js";
 
 const router = express.Router();
 
-router.get('/user', auth, getAddressByUser);
-router.get('/', auth, getAllAddresses);
-router.post('/', auth, createAddress);
-router.get('/:id', auth, getAddressById);
-router.put('/:id', auth, updateAddress);
-router.delete('/:id', auth, deleteAddress);
+router.get('/user', authentication, getAddressByUser);
+router.get('/', authentication, getAllAddresses);
+router.post('/', authentication, createAddress);
+router.get('/:id', authentication, getAddressById);
+router.put('/:id', authentication, updateAddress);
+router.delete('/:id', authentication, deleteAddress);
 
 export const addressRoute = router;

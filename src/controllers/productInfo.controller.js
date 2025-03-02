@@ -2,7 +2,7 @@ import prisma from '../config/prismaClient.js'
 
 export const getAllProductsInformation = async (req, res) => {
     try {
-        const { page = 1, limit = 10, keyword = '', sort = '', order = '' } = req.query;
+        const { page = 1, limit = 10, keyword = '', sort = '', order = '', isActive } = req.query;
         const skip = (page - 1) * limit;
         const take = parseInt(limit);
 
@@ -13,6 +13,10 @@ export const getAllProductsInformation = async (req, res) => {
                 contains: keyword,
                 mode: 'insensitive'
             }
+        }
+
+        if (isActive) {
+            filters.isActive = isActive === 'true';
         }
 
         const sortOrder = {};
@@ -83,9 +87,9 @@ export const getProductInformationById = async (req, res) => {
 
 export const createProductInformation = async (req, res) => {
     try {
-        const { productInfoName } = req.body;
+        const { productInfoName, isActive, type, options } = req.body;
 
-        if (!productInfoName) {
+        if (!productInfoName || !type) {
             return res.status(400).json({ message: 'Missing required fields!' });
         }
 
@@ -98,7 +102,12 @@ export const createProductInformation = async (req, res) => {
         }
 
         const productInformation = await prisma.productInformation.create({
-            data: { productInfoName }
+            data: {
+                productInfoName,
+                isActive,
+                type,
+                options
+            }
         });
 
         return res.status(201).json({
@@ -119,7 +128,7 @@ export const updateProductInformation = async (req, res) => {
     try {
         const { id } = req.params;
 
-        const { productInfoName } = req.body;
+        const { productInfoName, isActive, type, options } = req.body;
 
         const productInformation = await prisma.productInformation.findUnique({ where: { productInfoId: parseInt(id) } });
 
@@ -139,7 +148,12 @@ export const updateProductInformation = async (req, res) => {
 
         const updatedProductInformation = await prisma.productInformation.update({
             where: { productInfoId: parseInt(id) },
-            data: { productInfoName }
+            data: {
+                productInfoName,
+                isActive,
+                type,
+                options
+            }
         });
 
         return res.status(200).json({

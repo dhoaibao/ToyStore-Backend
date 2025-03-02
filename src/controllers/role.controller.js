@@ -82,7 +82,7 @@ export const getRoleById = async (req, res) => {
 
 export const createRole = async (req, res) => {
     try {
-        const { roleName, roleDesc, isActive = 'true' } = req.body;
+        const { roleName, roleDesc, isActive = 'true', rolePermissions } = req.body;
 
         if (!roleName || !roleDesc || !isActive) {
             return res.status(400).json({
@@ -104,7 +104,10 @@ export const createRole = async (req, res) => {
             data: {
                 roleName,
                 roleDesc,
-                isActive: isActive === 'true'
+                isActive,
+                permissions: {
+                    connect: rolePermissions.map(permissionId => ({ permissionId })),
+                },
             },
             include
         });
@@ -127,9 +130,9 @@ export const updateRole = async (req, res) => {
     try {
         const { id } = req.params;
 
-        const { roleName, roleDesc, isActive } = req.body;
+        const { roleName, roleDesc, isActive, rolePermissions } = req.body;
 
-        const existingRole = await prisma.role.findUnique({ where: { roleId: parseInt(id) } });
+        const existingRole = await prisma.role.findUnique({ where: { roleId: parseInt(id) }, include: { permissions: true } });
 
         if (!existingRole) {
             return res.status(404).json({ message: 'Role not found!' });
@@ -148,7 +151,7 @@ export const updateRole = async (req, res) => {
         const fields = {
             roleName,
             roleDesc,
-            isActive: isActive ? isActive === 'true' : null
+            isActive
         };
 
         const data = Object.entries(fields).reduce((acc, [key, value]) => {
@@ -157,6 +160,23 @@ export const updateRole = async (req, res) => {
             }
             return acc;
         }, {});
+
+        const currentPermissionIds = existingRole.permissions.map((p) => p.permissionId);
+
+        const permissionsToConnect = rolePermissions
+            .filter((id) => !currentPermissionIds.includes(id))
+            .map((permissionId) => ({ permissionId }));
+
+        const permissionsToDisconnect = currentPermissionIds
+            .filter((id) => !rolePermissions.includes(id))
+            .map((permissionId) => ({ permissionId }));
+
+        if (permissionsToConnect.length > 0 || permissionsToDisconnect.length > 0) {
+            data.permissions = {
+                connect: permissionsToConnect,
+                disconnect: permissionsToDisconnect,
+            };
+        }
 
         const updatedRole = await prisma.role.update({
             where: { roleId: parseInt(id) },

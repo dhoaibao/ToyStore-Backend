@@ -2,7 +2,7 @@ import prisma from '../config/prismaClient.js'
 
 export const getAllBrands = async (req, res) => {
     try {
-        const { page = 1, limit = 10, keyword = '', sort = '', order = '' } = req.query;
+        const { page = 1, limit = 10, keyword = '', sort = '', order = '', isActive } = req.query;
         const skip = (page - 1) * limit;
         const take = parseInt(limit);
 
@@ -13,6 +13,10 @@ export const getAllBrands = async (req, res) => {
                 contains: keyword,
                 mode: 'insensitive'
             }
+        }
+
+        if (isActive) {
+            filters.isActive = isActive === 'true';
         }
 
         const sortOrder = {};
@@ -80,7 +84,7 @@ export const getBrandById = async (req, res) => {
 
 export const createBrand = async (req, res) => {
     try {
-        const { brandName, brandDesc } = req.body;
+        const { brandName, brandDesc, isActive } = req.body;
 
         if (!brandName || !brandDesc) {
             return res.status(400).json({ message: 'Missing required fields!' });
@@ -98,6 +102,7 @@ export const createBrand = async (req, res) => {
             data: {
                 brandName,
                 brandDesc,
+                isActive
             }
         });
 
@@ -119,7 +124,7 @@ export const updateBrand = async (req, res) => {
     try {
         const { id } = req.params;
 
-        const { brandName, brandDesc } = req.body;
+        const { brandName, brandDesc, isActive } = req.body;
 
         const existingBrand = await prisma.brand.findUnique({ where: { brandId: parseInt(id) } });
 
@@ -140,6 +145,7 @@ export const updateBrand = async (req, res) => {
         const fields = {
             brandName,
             brandDesc,
+            isActive
         };
 
         const data = Object.entries(fields).reduce((acc, [key, value]) => {
@@ -148,6 +154,8 @@ export const updateBrand = async (req, res) => {
             }
             return acc;
         }, {});
+
+        console.log(data);
 
         const updatedBrand = await prisma.brand.update({
             where: { brandId: parseInt(id) },

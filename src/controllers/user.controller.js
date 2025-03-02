@@ -62,6 +62,7 @@ export const getAllUsers = async (req, res) => {
             take,
             include: {
                 avatar: true,
+                role: true,
             },
             where: filters,
             orderBy: sortOrder,
@@ -120,7 +121,7 @@ export const getUserById = async (req, res) => {
 
 export const createUser = async (req, res) => {
     try {
-        const { fullName, email, phone, gender, birthday, password, confirmPassword, isActive } = req.body;
+        const { fullName, email, phone, gender, birthday, password, confirmPassword, isActive, roleId } = req.body;
 
         if (!fullName || !email || !password || !confirmPassword || !birthday || !gender || !phone) {
             return res.status(400).json({ message: 'Missing required fields!' });
@@ -153,6 +154,7 @@ export const createUser = async (req, res) => {
                 fullName,
                 email,
                 phone,
+                roleId: parseInt(roleId),
                 isActive: isActive === 'true',
                 gender: Boolean(gender),
                 birthday: new Date(birthday),
@@ -194,7 +196,7 @@ export const updateUser = async (req, res) => {
     try {
         const { id } = req.params;
 
-        const { fullName, email, phone, gender, birthday, isActive } = req.body;
+        const { fullName, email, phone, gender, birthday, isActive, roleId } = req.body;
 
         const existingUser = await prisma.user.findUnique({
             where: { userId: parseInt(id) }
@@ -218,6 +220,7 @@ export const updateUser = async (req, res) => {
             fullName,
             email,
             phone,
+            roleId: roleId ? parseInt(roleId) : null,
             isActive: isActive ? isActive === 'true' : null,
             gender: gender ? Boolean(gender) : null,
             birthday: birthday ? new Date(birthday) : null,

@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 const generateToken = (user) => {
   const payload = {
     userId: user.userId,
-    email: user.email,
+    roleId: user.roleId,
   };
 
   const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
