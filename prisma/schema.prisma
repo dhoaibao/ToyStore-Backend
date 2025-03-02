@@ -8,10 +8,10 @@ datasource db {
 }
 
 model Role {
-  roleId   Int     @id @default(autoincrement())
-  roleName String
-  roleDesc String
-  isActive Boolean
+  roleId    Int      @id @default(autoincrement())
+  roleName  String
+  roleDesc  String
+  isActive  Boolean
   createdAt DateTime @default(now()) @db.Timestamptz
   updatedAt DateTime @updatedAt @db.Timestamptz
 
@@ -22,13 +22,13 @@ model Role {
 }
 
 model Permission {
-  permissionId   Int    @id @default(autoincrement())
+  permissionId   Int      @id @default(autoincrement())
   permissionName String
   apiPath        String
   method         String
   module         String
-  createdAt DateTime @default(now()) @db.Timestamptz
-  updatedAt DateTime @updatedAt @db.Timestamptz
+  createdAt      DateTime @default(now()) @db.Timestamptz
+  updatedAt      DateTime @updatedAt @db.Timestamptz
 
   roles Role[] @relation("permission_roles")
 
@@ -58,23 +58,26 @@ model UploadImage {
   url           String
   filePath      String
 
+  reviewId Int?
+  review   Review? @relation(fields: [reviewId], references: [reviewId])
+
   productId Int?
   product   Product? @relation(fields: [productId], references: [productId])
 
-  banner   Banner?
-  productImageEmbedding   ProductImageEmbedding?
-  user   User?
-  promotion   Promotion?
-  conversation   Conversation? 
-  systemConfig   SystemConfiguration? 
-  category   Category? 
+  banner                Banner?
+  productImageEmbedding ProductImageEmbedding?
+  user                  User?
+  promotion             Promotion?
+  conversation          Conversation?
+  systemConfig          SystemConfiguration?
+  category              Category?
 
   @@map("upload_images")
 }
 
 model Banner {
-  bannerId Int     @id @default(autoincrement())
-  isActive Boolean
+  bannerId  Int      @id @default(autoincrement())
+  isActive  Boolean
   createdAt DateTime @default(now()) @db.Timestamptz
   updatedAt DateTime @updatedAt @db.Timestamptz
 
@@ -88,12 +91,12 @@ model Banner {
 }
 
 model SystemConfiguration {
-  systemConfigId Int    @id @default(autoincrement())
+  systemConfigId Int      @id @default(autoincrement())
   shopName       String
   shopEmail      String
   shopPhone      String
-  createdAt DateTime @default(now()) @db.Timestamptz
-  updatedAt DateTime @updatedAt @db.Timestamptz
+  createdAt      DateTime @default(now()) @db.Timestamptz
+  updatedAt      DateTime @updatedAt @db.Timestamptz
 
   banners      Banner[]
   priceFilters PriceFilter[]
@@ -105,11 +108,11 @@ model SystemConfiguration {
 }
 
 model PriceFilter {
-  priceFilterId Int   @id @default(autoincrement())
+  priceFilterId Int      @id @default(autoincrement())
   minPrice      Float
   maxPrice      Float
-  createdAt DateTime @default(now()) @db.Timestamptz
-  updatedAt DateTime @updatedAt @db.Timestamptz
+  createdAt     DateTime @default(now()) @db.Timestamptz
+  updatedAt     DateTime @updatedAt @db.Timestamptz
 
   systemConfigId Int
   systemConfig   SystemConfiguration @relation(fields: [systemConfigId], references: [systemConfigId])
@@ -151,10 +154,21 @@ model ProductEmbedding {
   @@map("product_embeddings")
 }
 
+model PriceHistory {
+  priceHistoryId Int       @id @default(autoincrement())
+  price          Float
+  startDate      DateTime
+  endDate        DateTime?
+
+  productId Int
+  product   Product @relation(fields: [productId], references: [productId])
+
+  @@map("price_histories")
+}
+
 model Product {
   productId   Int      @id @default(autoincrement())
   productName String   @unique
-  price       Float
   slug        String   @unique
   quantity    Int
   description String
@@ -173,6 +187,8 @@ model Product {
   categoryId Int
   category   Category @relation(fields: [categoryId], references: [categoryId])
 
+  prices PriceHistory[]
+
   reviews Review[]
 
   productInfoValues ProductInfoValue[]
@@ -190,8 +206,8 @@ model Product {
 }
 
 model Brand {
-  brandId   Int    @id @default(autoincrement())
-  brandName String @unique
+  brandId   Int      @id @default(autoincrement())
+  brandName String   @unique
   brandDesc String
   createdAt DateTime @default(now()) @db.Timestamptz
   updatedAt DateTime @updatedAt @db.Timestamptz
@@ -202,11 +218,11 @@ model Brand {
 }
 
 model Category {
-  categoryId   Int    @id @default(autoincrement())
-  categoryName String @unique
-  slug         String @unique
-  createdAt DateTime @default(now()) @db.Timestamptz
-  updatedAt DateTime @updatedAt @db.Timestamptz
+  categoryId   Int      @id @default(autoincrement())
+  categoryName String   @unique
+  slug         String   @unique
+  createdAt    DateTime @default(now()) @db.Timestamptz
+  updatedAt    DateTime @updatedAt @db.Timestamptz
 
   categoryThumbnailId Int         @unique
   categoryThumbnail   UploadImage @relation(fields: [categoryThumbnailId], references: [uploadImageId])
@@ -228,6 +244,8 @@ model Review {
   productId Int
   product   Product @relation(fields: [productId], references: [productId])
 
+  uploadImages UploadImage[]
+
   parentReviewId Int?
   parentReview   Review? @relation("reply", fields: [parentReviewId], references: [reviewId])
 
@@ -237,10 +255,10 @@ model Review {
 }
 
 model ProductInformation {
-  productInfoId   Int    @id @default(autoincrement())
+  productInfoId   Int      @id @default(autoincrement())
   productInfoName String
-  createdAt DateTime @default(now()) @db.Timestamptz
-  updatedAt DateTime @updatedAt @db.Timestamptz
+  createdAt       DateTime @default(now()) @db.Timestamptz
+  updatedAt       DateTime @updatedAt @db.Timestamptz
 
   productInfoDetails ProductInfoValue[]
 
@@ -283,7 +301,7 @@ model User {
   sentConversations     Conversation[] @relation("sent")
   receivedConversations Conversation[] @relation("received")
 
-  cart   Cart?
+  cart Cart?
 
   orders Order[]
 
@@ -391,9 +409,9 @@ model OrderStatus {
 }
 
 model OrderDetail {
-  price         Float
+  price           Float
   discountedPrice Float
-  quantity      Int
+  quantity        Int
 
   orderId Int
   order   Order @relation(fields: [orderId], references: [orderId])
@@ -411,7 +429,7 @@ model OrderAddress {
   contactName    String
   contactPhone   String
 
-  order   Order? 
+  order Order?
 
   @@map("order_addresses")
 }
