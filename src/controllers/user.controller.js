@@ -10,6 +10,11 @@ export const getLoggedInUser = async (req, res) => {
             where: { userId: userId },
             include: {
                 avatar: true,
+                role: {
+                    select: {
+                        permissions: true,
+                    }
+                },
             }
         });
 

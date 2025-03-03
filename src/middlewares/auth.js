@@ -68,14 +68,22 @@ export const authorization = async (req, res, next) => {
         const originalUrl = req.originalUrl;
         const routePath = req.route.path;
 
-        const originalParts = originalUrl.split('/').filter(Boolean);
+        const pathWithoutQuery = originalUrl.split('?')[0];
+
+        const originalParts = pathWithoutQuery.split('/').filter(Boolean);
         const routeParts = routePath.split('/').filter(Boolean);
 
-        const overlapIndex = originalParts.findIndex((part) => part === routeParts[0]);
+        let combinePath = pathWithoutQuery;
 
-        originalParts.splice(overlapIndex, originalParts.length);
+        if (routeParts.length > 0) {
+            const overlapIndex = originalParts.findIndex((part) => part === routeParts[0]);
 
-        const combinePath = '/' + originalParts.join('/') + '/' + routeParts.join('/');
+            originalParts.splice(overlapIndex, originalParts.length);
+
+            combinePath = '/' + originalParts.join('/') + '/' + routeParts.join('/');
+        }
+
+        // console.log({ combinePath, originalParts, routeParts });
 
         const checkPermission = permissions.some((permission) => {
             return permission.apiPath === combinePath && permission.method === method;
@@ -86,7 +94,6 @@ export const authorization = async (req, res, next) => {
         }
 
         next();
-
     } catch (err) {
         console.error('Authorization error:', err);
         res.status(500).json({ message: 'Internal server error' });

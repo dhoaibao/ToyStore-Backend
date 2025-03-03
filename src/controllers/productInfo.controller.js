@@ -27,15 +27,20 @@ export const getAllProductsInformation = async (req, res) => {
             sortOrder.updatedAt = 'desc';
         }
 
-        const productsInformation = await prisma.productInformation.findMany({
-            where: filters,
-            skip,
-            take,
-            orderBy: sortOrder,
-            include: {
-                productInfoDetails: true
-            }
-        });
+        let productsInformation = [];
+        if (take === -1) {
+            productsInformation = await prisma.productInformation.findMany({
+                where: filters,
+                orderBy: sortOrder
+            });
+        } else {
+            productsInformation = await prisma.productInformation.findMany({
+                where: filters,
+                skip,
+                take,
+                orderBy: sortOrder
+            });
+        }
 
         const totalProductsInfo = await prisma.productInformation.count({ where: filters });
 

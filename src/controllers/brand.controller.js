@@ -27,12 +27,20 @@ export const getAllBrands = async (req, res) => {
             sortOrder.updatedAt = 'desc';
         }
 
-        const brands = await prisma.brand.findMany({
-            where: filters,
-            skip,
-            take,
-            orderBy: sortOrder
-        });
+        let brands = [];
+        if (take === -1) {
+            brands = await prisma.brand.findMany({
+                where: filters,
+                orderBy: sortOrder
+            });
+        } else {
+            brands = await prisma.brand.findMany({
+                where: filters,
+                skip,
+                take,
+                orderBy: sortOrder
+            });
+        }
 
         const totalBrands = await prisma.brand.count({ where: filters });
 

@@ -5,10 +5,10 @@ import { authentication, authorization } from "../middlewares/auth.js";
 const router = express.Router();
 
 router.get('/', authentication, getAllOrders);
-router.get('/by-user', authentication, getOrderByUser);
+router.get('/by-user', authentication, authorization, getOrderByUser);
 router.get('/:id', authentication, getOrderById);
-router.post('/', authentication, createOrder);
-router.put('/:id', authentication, updateOrderStatus);
+router.post('/', authentication, authorization, createOrder);
+router.put('/:id', authentication, authorization, updateOrderStatus);
 router.put('/cancel/:id', authentication, authorization, cancelOrder);
 
 export const orderRoute = router;

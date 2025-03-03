@@ -2,7 +2,7 @@ import prisma from '../config/prismaClient.js'
 
 export const getAllPermissions = async (req, res) => {
     try {
-        const { page = 1, limit = 10, keyword = '', sort = '', order = '' } = req.query;
+        const { page = 1, limit = 10, keyword = '', sort = '', order = '', module, method } = req.query;
         const skip = (page - 1) * limit;
         const take = parseInt(limit);
 
@@ -15,6 +15,14 @@ export const getAllPermissions = async (req, res) => {
             }
         }
 
+        if (module) {
+            filters.module = module;
+        }
+
+        if (method) {
+            filters.method = method;
+        }
+
         const sortOrder = {};
 
         if (sort && order) {
@@ -23,12 +31,20 @@ export const getAllPermissions = async (req, res) => {
             sortOrder.updatedAt = 'desc';
         }
 
-        const permissions = await prisma.permission.findMany({
-            where: filters,
-            skip,
-            take,
-            orderBy: sortOrder
-        });
+        let permissions = [];
+        if (take === -1) {
+            permissions = await prisma.permission.findMany({
+                where: filters,
+                orderBy: sortOrder
+            });
+        } else {
+            permissions = await prisma.permission.findMany({
+                where: filters,
+                skip,
+                take,
+                orderBy: sortOrder
+            });
+        }
 
         const totalPermissions = await prisma.permission.count({ where: filters });
 

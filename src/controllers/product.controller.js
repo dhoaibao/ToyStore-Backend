@@ -259,7 +259,7 @@ export const createProduct = async (req, res) => {
                     data: productInfosArray.map(info => ({
                         productId: product.productId,
                         productInfoId: info.productInfoId,
-                        value: info.value
+                        value: String(info.value)
                     }))
                 });
             }
@@ -305,8 +305,11 @@ export const createProduct = async (req, res) => {
             `;
 
             return product;
-        });
-
+        },
+            {
+                timeout: 15000,
+            }
+        );
 
         return res.status(201).json({
             message: 'Product created!',
@@ -388,7 +391,7 @@ export const updateProduct = async (req, res) => {
                 await Promise.all(productInfosArray.map(async (info) => {
                     await tx.productInfoValue.upsert({
                         where: { productId_productInfoId: { productId: product.productId, productInfoId: info.productInfoId } },
-                        update: { value: info.value },
+                        update: { value: String(info.value) },
                         create: { productId: product.productId, productInfoId: info.productInfoId, value: info.value }
                     });
                 }));
@@ -484,7 +487,11 @@ export const updateProduct = async (req, res) => {
             }
 
             return product;
-        })
+        },
+            {
+                timeout: 15000,
+            }
+        );
 
         return res.status(200).json({
             message: 'Product updated!',

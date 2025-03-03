@@ -37,13 +37,22 @@ export const getAllCategories = async (req, res) => {
             sortOrder.updatedAt = 'desc';
         }
 
-        const categories = await prisma.category.findMany({
-            where: filters,
-            include,
-            skip,
-            take,
-            orderBy: sortOrder
-        });
+        let categories = [];
+        if (take === -1) {
+            categories = await prisma.category.findMany({
+                where: filters,
+                orderBy: sortOrder,
+                include
+            });
+        } else {
+            categories = await prisma.category.findMany({
+                where: filters,
+                skip,
+                take,
+                orderBy: sortOrder,
+                include
+            });
+        }
 
         const totalCategories = await prisma.category.count({ where: filters });
 
