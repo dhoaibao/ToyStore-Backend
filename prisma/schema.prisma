@@ -237,14 +237,17 @@ model Category {
 model Review {
   reviewId  Int      @id @default(autoincrement())
   comment   String
-  rating    Float
+  rating    Float?
   createdAt DateTime @default(now()) @db.Timestamptz
+
+  orderDetailId Int? @unique
+  orderDetail   OrderDetail? @relation(fields: [orderDetailId], references: [orderDetailId])
 
   userId Int
   user   User @relation(fields: [userId], references: [userId])
 
-  productId Int
-  product   Product @relation(fields: [productId], references: [productId])
+  productId Int?
+  product   Product? @relation(fields: [productId], references: [productId])
 
   uploadImages UploadImage[]
 
@@ -414,9 +417,12 @@ model OrderStatus {
 }
 
 model OrderDetail {
+  orderDetailId   Int   @id @default(autoincrement())
   price           Float
   discountedPrice Float
   quantity        Int
+
+  review   Review? @relation
 
   orderId Int
   order   Order @relation(fields: [orderId], references: [orderId])
@@ -424,7 +430,6 @@ model OrderDetail {
   productId Int
   product   Product @relation(fields: [productId], references: [productId])
 
-  @@id([orderId, productId])
   @@map("order_details")
 }
 

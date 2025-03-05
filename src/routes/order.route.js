@@ -5,7 +5,7 @@ import { authentication, authorization } from "../middlewares/auth.js";
 const router = express.Router();
 
 router.get('/', authentication, getAllOrders);
-router.get('/by-user', authentication, authorization, getOrderByUser);
+router.get('/by-user', authentication, getOrderByUser);
 router.get('/:id', authentication, getOrderById);
 router.post('/', authentication, authorization, createOrder);
 router.put('/:id', authentication, authorization, updateOrderStatus);

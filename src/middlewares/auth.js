@@ -73,7 +73,7 @@ export const authorization = async (req, res, next) => {
         const originalParts = pathWithoutQuery.split('/').filter(Boolean);
         const routeParts = routePath.split('/').filter(Boolean);
 
-        let combinePath = pathWithoutQuery;
+        let combinePath = pathWithoutQuery.slice(0, pathWithoutQuery.length - 1);
 
         if (routeParts.length > 0) {
             const overlapIndex = originalParts.findIndex((part) => part === routeParts[0]);
@@ -83,11 +83,11 @@ export const authorization = async (req, res, next) => {
             combinePath = '/' + originalParts.join('/') + '/' + routeParts.join('/');
         }
 
-        // console.log({ combinePath, originalParts, routeParts });
-
         const checkPermission = permissions.some((permission) => {
             return permission.apiPath === combinePath && permission.method === method;
         });
+
+        console.log({ combinePath, checkPermission });
 
         if (!checkPermission) {
             return res.status(403).json({ message: 'Authorization: Permission denied!' });

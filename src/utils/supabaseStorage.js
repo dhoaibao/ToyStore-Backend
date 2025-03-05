@@ -1,5 +1,6 @@
 import supabase from "../config/supabaseConfig.js";
 import { decode } from "base64-arraybuffer";
+import path from "path";
 
 export const uploadFile = async (file) => {
     try {

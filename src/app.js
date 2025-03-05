@@ -3,7 +3,7 @@ import cors from 'cors';
 import logger from 'morgan';
 import {
     authRoute, userRoute, addressRoute, brandRoute, categoryRoute,
-    productInfoRoute, productRoute, cartRoute,
+    productInfoRoute, productRoute, cartRoute, reviewRoute,
     promotionRoute, orderRoute, voucherRoute, roleRoute, permissionRoute
 } from './routes/index.js';
 
@@ -33,6 +33,7 @@ app.use(`/api/${API_VERSION}/order`, orderRoute);
 app.use(`/api/${API_VERSION}/voucher`, voucherRoute);
 app.use(`/api/${API_VERSION}/role`, roleRoute);
 app.use(`/api/${API_VERSION}/permission`, permissionRoute);
+app.use(`/api/${API_VERSION}/review`, reviewRoute);
 
 app.get("/", (_, res) => {
     res.json({ message: "Server is running!" });

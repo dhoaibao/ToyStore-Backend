@@ -82,7 +82,7 @@ export const getRoleById = async (req, res) => {
 
 export const createRole = async (req, res) => {
     try {
-        const { roleName, roleDesc, isActive = 'true', rolePermissions } = req.body;
+        const { roleName, roleDesc, isActive, rolePermissions } = req.body;
 
         if (!roleName || !roleDesc || !isActive) {
             return res.status(400).json({

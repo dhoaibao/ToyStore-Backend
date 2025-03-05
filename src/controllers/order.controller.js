@@ -1,4 +1,5 @@
 import prisma from '../config/prismaClient.js'
+import getCurrentPrice from '../utils/getCurrentPrice.js';
 
 const include = {
     orderTrackings: {
@@ -16,11 +17,13 @@ const include = {
     paymentMethod: true,
     orderDetails: {
         select: {
+            orderDetailId: true,
             quantity: true,
             price: true,
             discountedPrice: true,
             product: {
                 select: {
+                    productId: true,
                     productName: true,
                     slug: true,
                     productImages: {
@@ -121,7 +124,7 @@ export const getAllOrders = async (req, res) => {
 export const getOrderByUser = async (req, res) => {
     try {
         const userId = req.userId;
-        const { page = 1, limit = 10, orderStatusId, orderId, startDate, endDate } = req.query;
+        const { page = 1, limit = 10, orderStatus, orderId, startDate, endDate } = req.query;
         const skip = (page - 1) * limit;
         const take = parseInt(limit);
 
@@ -129,9 +132,13 @@ export const getOrderByUser = async (req, res) => {
 
         filters.userId = userId;
 
-        if (orderStatusId && orderStatusId !== '0') {
-            filters.orderStatus = {
-                orderStatusId: parseInt(orderStatusId)
+        if (orderStatus && orderStatus !== 'all') {
+            filters.orderTrackings = {
+                some: {
+                    orderStatus: {
+                        statusName: orderStatus
+                    }
+                }
             };
         }
 
@@ -187,21 +194,7 @@ export const getOrderById = async (req, res) => {
 
         const order = await prisma.order.findUnique({
             where: { orderId: parseInt(id) },
-            include: {
-                orderStatus: true,
-                paymentMethod: true,
-                orderAddress: true,
-                orderDetails: {
-                    include: {
-                        product: {
-                            include: {
-                                productImages: true,
-                                promotions: true
-                            }
-                        }
-                    }
-                }
-            }
+            include,
         });
 
         if (!order) {
@@ -248,7 +241,7 @@ export const createOrder = async (req, res) => {
                             paymentMethodId
                         }
                     },
-                    voucherId,
+                    // voucherId,
                     orderAddress: {
                         create: {
                             address: addressString,
@@ -267,7 +260,7 @@ export const createOrder = async (req, res) => {
             });
 
             const orderDetails = orderItems.map((item) => ({
-                price: item.product.price,
+                price: getCurrentPrice(item.product.prices),
                 discountedPrice: item.product.discountedPrice || 0,
                 quantity: item.quantity,
                 orderId: order.orderId,
@@ -390,6 +383,16 @@ export const updateOrderStatus = async (req, res) => {
                 data: {
                     orderStatusId: parseInt(orderStatusId),
                     orderId: existingOrder.orderId
+                }
+            });
+        }
+
+        if (parseInt(orderStatusId) === 4) {
+            await prisma.order.update({
+                where: { orderId: existingOrder.orderId },
+                data: {
+                    paymentStatus: true,
+                    paidDate: new Date()
                 }
             });
         }

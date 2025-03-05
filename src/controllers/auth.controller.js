@@ -154,6 +154,7 @@ export const signInWithGoogle = async (req, res) => {
         let url = null;
         let filePath = null;
         if (photoUrl) {
+            console.log({photoUrl});
             const result = await uploadFileFromUrl(photoUrl);
             url = result.url;
             filePath = result.filePath;
@@ -166,6 +167,7 @@ export const signInWithGoogle = async (req, res) => {
                 data: {
                     email,
                     fullName,
+                    roleId: 1,
                     phone: phoneNumber || null,
                     avatar: {
                         create: {

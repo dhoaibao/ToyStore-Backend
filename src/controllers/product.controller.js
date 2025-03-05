@@ -334,11 +334,22 @@ export const updateProduct = async (req, res) => {
         const { productName, price, startValidPrice, isActive, quantity, description, brandId, categoryId, productInfos, existingImages } = req.body;
 
         const existingProduct = await prisma.product.findUnique({
-            where: { productId: parseInt(id) }
+            where: { productId: parseInt(id) },
+            include: { prices: true }
         });
 
         if (!existingProduct) {
             return res.status(404).json({ message: 'Product not found!' });
+        }
+
+        if (productName) {
+            const existingProductWithSameName = await prisma.product.findFirst({
+                where: { productName }
+            });
+
+            if (existingProductWithSameName && existingProductWithSameName.productId !== parseInt(id)) {
+                return res.status(400).json({ message: 'Product already exists!' });
+            }
         }
 
         const fields = {
@@ -358,7 +369,7 @@ export const updateProduct = async (req, res) => {
             return acc;
         }, {});
 
-        if (price) {
+        if (price && parseFloat(price) !== existingProduct.prices[existingProduct.prices.length - 1].price) {
             // const endDate = new Date();
             // endDate.setDate(endDate.getDate() - 1); // Trừ 1 ngày một cách chính xác
 
