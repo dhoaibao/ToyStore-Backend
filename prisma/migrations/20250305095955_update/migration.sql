@@ -1,3 +1,4 @@
+CREATE EXTENSION IF NOT EXISTS vector;
 -- CreateTable
 CREATE TABLE "roles" (
     "roleId" SERIAL NOT NULL,
@@ -391,9 +392,6 @@ CREATE UNIQUE INDEX "newses_title_key" ON "newses"("title");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "product_image_embeddings_upload_image_id_key" ON "product_image_embeddings"("upload_image_id");
-
--- CreateIndex
-CREATE UNIQUE INDEX "product_embeddings_product_id_key" ON "product_embeddings"("product_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "products_productName_key" ON "products"("productName");

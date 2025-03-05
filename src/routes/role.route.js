@@ -7,6 +7,6 @@ const router = express.Router();
 router.get('/', getAllRoles);
 router.post('/', authentication, authorization, createRole);
 router.get('/:id', authentication, getRoleById);
-router.put('/:id', authentication, updateRole);
+router.put('/:id', authentication, authorization, updateRole);
 
 export const roleRoute = router;

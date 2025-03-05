@@ -60,9 +60,9 @@ export const getAllProducts = async (req, res) => {
         }
 
         if (keyword) {
-            filters.productName = {
-                contains: keyword,
-                mode: 'insensitive'
+            const uniqueProductIds = await searchProducts(keyword);
+            filters.productId = {
+                in: uniqueProductIds
             };
         }
 
@@ -228,60 +228,51 @@ export const createProduct = async (req, res) => {
         }
 
         const slug = generateSlug(productName);
+        const images = await uploadMultipleFiles(files);
+        const productInfosArray = JSON.parse(productInfos);
 
         const result = await prisma.$transaction(async (tx) => {
-            const [product, images] = await Promise.all([
-                tx.product.create({
-                    data: {
-                        productName,
-                        slug,
-                        prices: {
-                            create: {
-                                price: parseFloat(price),
-                                startDate: new Date(),
-                            }
-                        },
-                        isActive: isActive === 'true',
-                        quantity: parseInt(quantity),
-                        description,
-                        brandId: parseInt(brandId),
-                        categoryId: parseInt(categoryId),
+            const product = await tx.product.create({
+                data: {
+                    productName,
+                    slug,
+                    prices: {
+                        create: {
+                            price: parseFloat(price),
+                            startDate: new Date(),
+                        }
                     },
-                    include,
-                }),
-                files && uploadMultipleFiles(files)
-            ]);
+                    isActive: isActive === 'true',
+                    quantity: parseInt(quantity),
+                    description,
+                    brandId: parseInt(brandId),
+                    categoryId: parseInt(categoryId),
+                    productImages: {
+                        createMany: {
+                            data: images.map(({ url, filePath }) => ({
+                                url,
+                                filePath
+                            }))
+                        }
+                    },
+                    productInfoValues: {
+                        createMany: {
+                            data: productInfosArray.map(info => ({
+                                value: String(info.value),
+                                productInfoId: info.productInfoId
+                            }))
+                        }
+                    },
+                },
+                include,
+            });
 
-            if (productInfos) {
-                const productInfosArray = JSON.parse(productInfos);
-
-                await tx.productInfoValue.createMany({
-                    data: productInfosArray.map(info => ({
-                        productId: product.productId,
-                        productInfoId: info.productInfoId,
-                        value: String(info.value)
-                    }))
-                });
-            }
-
-            const productImages = await Promise.all(images.map(async ({ url, filePath }) => {
-                const uploadImage = await tx.uploadImage.create({
-                    data: {
-                        url,
-                        filePath,
-                        productId: product.productId
-                    }
-                });
-
+            await Promise.all(product.productImages.map(async ({ url, uploadImageId }) => {
                 const formData = new FormData();
                 formData.append('url', url);
 
                 const imageEmbedding = await generateImageEmbedding(formData);
 
-                return { uploadImageId: uploadImage.uploadImageId, imageEmbedding };
-            }));
-
-            await Promise.all(productImages.map(async ({ uploadImageId, imageEmbedding }) => {
                 const embeddingString = `[${imageEmbedding.join(',')}]`;
                 await tx.$executeRaw`
                   INSERT INTO product_image_embeddings (product_id, upload_image_id, embedding)
@@ -294,20 +285,22 @@ export const createProduct = async (req, res) => {
                 product.description,
                 product.brand.brandName,
                 product.category.categoryName,
-                product.productInfoValues.map((info) => info.value).join(' '),
-            ].join(' ');
-            const textEmbedding = await generateTextEmbedding(allProductInfo);
+            ];
 
-            const embeddingString = `[${textEmbedding.join(',')}]`;
-            await tx.$executeRaw`
-              INSERT INTO product_embeddings (product_id, embedding)
-              VALUES (${product.productId}, ${embeddingString}::vector)
-            `;
+            await Promise.all(allProductInfo.map(async (item) => {
+                const textEmbedding = await generateTextEmbedding(item);
+                const embeddingString = `[${textEmbedding.join(',')}]`;
+                await tx.$executeRaw`
+                  INSERT INTO product_embeddings (product_id, embedding)
+                  VALUES (${product.productId}, ${embeddingString}::vector)
+                `;
+            }
+            ));
 
             return product;
         },
             {
-                timeout: 15000,
+                timeout: 20000,
             }
         );
 
@@ -575,9 +568,9 @@ export const imageSearch = async (req, res) => {
             SELECT product_id, embedding::text, 
                    1 - (embedding <=> ${imageEmbeddingString}::vector) AS cosine_similarity
             FROM product_image_embeddings
-            WHERE 1 - (embedding <=> ${imageEmbeddingString}::vector) > 0.6
+            WHERE 1 - (embedding <=> ${imageEmbeddingString}::vector) > 0.5
             ORDER BY cosine_similarity DESC
-            LIMIT 10;
+            LIMIT 1;
         `;
 
         const productIds = productImageEmbeddings.map(embedding => embedding.product_id);
@@ -608,5 +601,29 @@ export const imageSearch = async (req, res) => {
             message: 'Internal Server Error',
             error: error.message
         });
+    }
+}
+
+const searchProducts = async (keyword) => {
+    try {
+        const embedding = await generateTextEmbedding(keyword);
+
+        const embeddingString = `[${embedding.join(',')}]`;
+
+        const productEmbeddings = await prisma.$queryRaw`
+            SELECT product_id, embedding::text, 
+                   1 - (embedding <=> ${embeddingString}::vector) AS cosine_similarity
+            FROM product_embeddings
+            WHERE 1 - (embedding <=> ${embeddingString}::vector) > 0.5
+            ORDER BY cosine_similarity DESC
+        `;
+
+        const productIds = productEmbeddings.map(embedding => embedding.product_id);
+        const uniqueProductIds = [...new Set(productIds)];
+
+        return uniqueProductIds;
+    } catch (error) {
+        console.error(error);
+        return [];
     }
 }

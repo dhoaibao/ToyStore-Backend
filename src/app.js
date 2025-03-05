@@ -1,6 +1,9 @@
 import express from 'express';
 import cors from 'cors';
 import logger from 'morgan';
+import { Server } from 'socket.io'
+import http from 'http'
+import { setData, getData, deleteData } from './utils/redis.js';
 import {
     authRoute, userRoute, addressRoute, brandRoute, categoryRoute,
     productInfoRoute, productRoute, cartRoute, reviewRoute,
@@ -8,6 +11,46 @@ import {
 } from './routes/index.js';
 
 const app = express();
+const httpServer = http.createServer(app);
+const io = new Server(httpServer, {
+    cors: {
+        origin: '*',
+    }
+});
+
+io.on('connection', (socket) => {
+    const { userId } = socket.handshake.query;
+    if (userId !== 'null') {
+        setData(`user-${userId}`, null, socket.id);
+        console.log('User connected:', userId);
+    };
+
+    socket.on('joinRoom', async () => {
+        socket.join('toystore');
+    });
+
+    socket.on('sendMessage', async ({ senderId, content, time }) => {
+        io.to('toystore').emit('newMessage', {
+            senderId,
+            content,
+            time
+        });
+    });
+
+    socket.on('replyMessage', async ({ senderId, receiverId, content, time }) => {
+        const socketId = await getData(`user-${receiverId}`);
+        io.to(socketId).emit('newMessage', {
+            senderId,
+            content,
+            time
+        });
+    });
+
+    socket.on('disconnect', async () => {
+        console.log('User disconnected:', userId);
+        deleteData(`user-${userId}`);
+    });
+});
 
 app.use(cors({
     origin: '*', // Allow all origins
@@ -54,4 +97,4 @@ app.use((err, _, res, __) => {
     });
 });
 
-export default app;
+export default httpServer;

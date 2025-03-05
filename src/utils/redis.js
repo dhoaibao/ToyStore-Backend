@@ -1,14 +1,6 @@
 import client from '../config/redisConfig.js';
 import convertTimeToSeconds from './convertTimeToSeconds.js';
 
-client.on('error', (err) => {
-    console.error('Redis client error:', err);
-});
-
-client.connect().catch((err) => {
-    console.error('Error connecting to Redis:', err);
-});
-
 export const setData = async (key, time, value) => {
     try {
         const ttl = time ? convertTimeToSeconds(time) : null;
@@ -75,6 +67,22 @@ export const verifyData = async (key, value) => {
         }
     } catch (err) {
         console.error('Error verifying data:', err);
+        return false;
+    }
+};
+
+export const deleteData = async (key) => {
+    try {
+        const result = await client.del(key);
+        if (result === 1) {
+            console.log(`Data with key: ${key} deleted successfully!`);
+            return true;
+        } else {
+            console.log(`No data found for key: ${key}`);
+            return false;
+        }
+    } catch (err) {
+        console.error('Error deleting data:', err);
         return false;
     }
 };

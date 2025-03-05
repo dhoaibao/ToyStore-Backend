@@ -35,22 +35,22 @@ model Permission {
   @@map("permissions")
 }
 
-model Conversation {
-  conversationId Int      @id @default(autoincrement())
-  text           String
-  isRead         Boolean
-  createdAt      DateTime @default(now()) @db.Timestamptz
+model Message {
+  messageId Int      @id @default(autoincrement())
+  content   String
+  isRead    Boolean
+  createdAt DateTime @default(now()) @db.Timestamptz
 
   uploadImageId Int         @unique
   uploadImage   UploadImage @relation(fields: [uploadImageId], references: [uploadImageId])
 
   senderId Int
-  sender   User @relation("sent", fields: [senderId], references: [userId])
+  sender   User @relation("sentMessages", fields: [senderId], references: [userId])
 
   receiverId Int
-  receiver   User @relation("received", fields: [receiverId], references: [userId])
+  receiver   User @relation("receivedMessages", fields: [receiverId], references: [userId])
 
-  @@map("conversations")
+  @@map("messages")
 }
 
 model UploadImage {
@@ -68,7 +68,7 @@ model UploadImage {
   productImageEmbedding ProductImageEmbedding?
   user                  User?
   promotion             Promotion?
-  conversation          Conversation?
+  message               Message?
   systemConfig          SystemConfiguration?
   category              Category?
 
@@ -148,7 +148,7 @@ model ProductEmbedding {
   productEmbeddingId Int                   @id @default(autoincrement()) @map("product_embedding_id")
   embedding          Unsupported("vector")
 
-  productId Int     @unique @map("product_id")
+  productId Int     @map("product_id")
   product   Product @relation(fields: [productId], references: [productId])
 
   @@map("product_embeddings")
@@ -240,7 +240,7 @@ model Review {
   rating    Float?
   createdAt DateTime @default(now()) @db.Timestamptz
 
-  orderDetailId Int? @unique
+  orderDetailId Int?         @unique
   orderDetail   OrderDetail? @relation(fields: [orderDetailId], references: [orderDetailId])
 
   userId Int
@@ -306,8 +306,8 @@ model User {
   roleId Int?
   role   Role? @relation(fields: [roleId], references: [roleId])
 
-  sentConversations     Conversation[] @relation("sent")
-  receivedConversations Conversation[] @relation("received")
+  sentMessages     Message[] @relation("sentMessages")
+  receivedMessages Message[] @relation("receivedMessages")
 
   cart Cart?
 
@@ -422,7 +422,7 @@ model OrderDetail {
   discountedPrice Float
   quantity        Int
 
-  review   Review? @relation
+  review Review? @relation
 
   orderId Int
   order   Order @relation(fields: [orderId], references: [orderId])

@@ -7,6 +7,6 @@ const router = express.Router();
 router.get('/', getAllPermissions);
 router.post('/', authentication, authorization, createPermission);
 router.get('/:id', authentication, authorization, getPermissionById);
-router.put('/:id', authentication, updatePermission);
+router.put('/:id', authentication, authorization, updatePermission);
 
 export const permissionRoute = router;
