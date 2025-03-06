@@ -38,17 +38,17 @@ model Permission {
 model Message {
   messageId Int      @id @default(autoincrement())
   content   String
-  isRead    Boolean
-  createdAt DateTime @default(now()) @db.Timestamptz
+  isRead    Boolean @default(false)
+  time      DateTime
 
-  uploadImageId Int         @unique
-  uploadImage   UploadImage @relation(fields: [uploadImageId], references: [uploadImageId])
+  uploadImageId Int?         @unique
+  uploadImage   UploadImage? @relation(fields: [uploadImageId], references: [uploadImageId])
 
   senderId Int
   sender   User @relation("sentMessages", fields: [senderId], references: [userId])
 
-  receiverId Int
-  receiver   User @relation("receivedMessages", fields: [receiverId], references: [userId])
+  receiverId Int?
+  receiver   User? @relation("receivedMessages", fields: [receiverId], references: [userId])
 
   @@map("messages")
 }

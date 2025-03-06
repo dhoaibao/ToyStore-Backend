@@ -6,9 +6,10 @@ import http from 'http'
 import { setData, getData, deleteData } from './utils/redis.js';
 import {
     authRoute, userRoute, addressRoute, brandRoute, categoryRoute,
-    productInfoRoute, productRoute, cartRoute, reviewRoute,
+    productInfoRoute, productRoute, cartRoute, reviewRoute, messageRoute,
     promotionRoute, orderRoute, voucherRoute, roleRoute, permissionRoute
 } from './routes/index.js';
+import prisma from './config/prismaClient.js';
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -35,6 +36,13 @@ io.on('connection', (socket) => {
             content,
             time
         });
+        await prisma.message.create({
+            data: {
+                senderId,
+                content,
+                time
+            }
+        });
     });
 
     socket.on('replyMessage', async ({ senderId, receiverId, content, time }) => {
@@ -43,6 +51,14 @@ io.on('connection', (socket) => {
             senderId,
             content,
             time
+        });
+        await prisma.message.create({
+            data: {
+                senderId,
+                receiverId,
+                content,
+                time
+            }
         });
     });
 
@@ -77,6 +93,7 @@ app.use(`/api/${API_VERSION}/voucher`, voucherRoute);
 app.use(`/api/${API_VERSION}/role`, roleRoute);
 app.use(`/api/${API_VERSION}/permission`, permissionRoute);
 app.use(`/api/${API_VERSION}/review`, reviewRoute);
+app.use(`/api/${API_VERSION}/message`, messageRoute);
 
 app.get("/", (_, res) => {
     res.json({ message: "Server is running!" });

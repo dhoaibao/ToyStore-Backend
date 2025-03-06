@@ -12,3 +12,4 @@ export * from './voucher.route.js'
 export * from './role.route.js';
 export * from './permission.route.js';
 export * from './review.route.js';
+export * from './message.route.js';
