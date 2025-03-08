@@ -50,11 +50,13 @@ io.on('connection', (socket) => {
         io.to(socketId).emit('updateStatus', senderId);
     });
 
-    socket.on('sendMessage', async ({ senderId, content, time }) => {
+    socket.on('sendMessage', async ({ senderId, content, time, senderName, avatar }) => {
         io.to('toystore').emit('newMessage', {
             senderId,
             content,
             isRead: false,
+            senderName,
+            avatar,
             time
         });
         await prisma.message.create({
