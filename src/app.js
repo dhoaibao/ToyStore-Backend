@@ -10,6 +10,7 @@ import {
     promotionRoute, orderRoute, voucherRoute, roleRoute, permissionRoute
 } from './routes/index.js';
 import prisma from './config/prismaClient.js';
+import { send } from 'process';
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -23,6 +24,7 @@ io.on('connection', (socket) => {
     const { userId } = socket.handshake.query;
     if (userId !== 'null') {
         setData(`user-${userId}`, null, socket.id);
+        setData(`user-${userId}-online`, null, 'true');
         console.log('User connected:', userId);
     };
 
@@ -30,10 +32,29 @@ io.on('connection', (socket) => {
         socket.join('toystore');
     });
 
+    socket.on('markAsRead', async ({ senderId, receiverId }) => {
+        console.log('Mark as read:', senderId, receiverId);
+        await prisma.message.updateMany({
+            where: {
+                senderId: senderId,
+                receiverId: receiverId,
+                isRead: false
+            },
+            data: {
+                isRead: true
+            },
+        });
+
+        const socketId = await getData(`user-${senderId}`);
+        console.log('Socket ID:', senderId, socketId);
+        io.to(socketId).emit('updateStatus', senderId);
+    });
+
     socket.on('sendMessage', async ({ senderId, content, time }) => {
         io.to('toystore').emit('newMessage', {
             senderId,
             content,
+            isRead: false,
             time
         });
         await prisma.message.create({
@@ -50,6 +71,7 @@ io.on('connection', (socket) => {
         io.to(socketId).emit('newMessage', {
             senderId,
             content,
+            isRead: false,
             time
         });
         await prisma.message.create({
@@ -65,6 +87,7 @@ io.on('connection', (socket) => {
     socket.on('disconnect', async () => {
         console.log('User disconnected:', userId);
         deleteData(`user-${userId}`);
+        setData(`user-${userId}-online`, null, new Date());
     });
 });
 
