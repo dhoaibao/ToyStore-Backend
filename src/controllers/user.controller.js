@@ -184,7 +184,7 @@ export const createUser = async (req, res) => {
         }
 
         return res.status(200).json({
-            message: 'User updated!',
+            message: 'User created!',
             data: user,
         });
     }
@@ -229,7 +229,7 @@ export const updateUser = async (req, res) => {
             isActive: isActive ? isActive === 'true' : null,
             gender: gender ? Boolean(gender) : null,
             birthday: birthday ? new Date(birthday) : null,
-        };
+        };  
 
         const data = Object.entries(fields).reduce((acc, [key, value]) => {
             if (value != null && value !== existingUser[key]) {
