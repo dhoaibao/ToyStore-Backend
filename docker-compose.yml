@@ -1,0 +1,18 @@
+services:
+  embedding_service:
+    image: dhoaibao/embedding_service:latest
+    ports:
+      - "5000:5000"
+  postgresql:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: postgresql
+    environment:
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_USER: dhoaibao
+      POSTGRES_DB: toystore
+    ports:
+      - "5435:5432"
+    volumes:
+      - /home/dhoaibao/DockerData/databases/postgresql:/var/lib/postgresql/data
