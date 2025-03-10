@@ -5,8 +5,8 @@
   "scripts": {
     "start": "sudo docker compose up -d && bun --watch server.js",
     "db": "bun x prisma migrate dev --name update",
-    "db_backup" :"pg_dump -U dhoaibao -h localhost -p 5432 toystore > backup.sql",
-    "db_restore" :"psql -U dhoaibao -h localhost -p 5432 -d toystore -f backup.sql"
+    "db_backup": "pg_dump -U dhoaibao -h localhost -p 5432 toystore > backup.sql && git add backup.sql && git commit -m 'backup database'",
+    "db_restore": "psql -U dhoaibao -h localhost -p 5432 -d toystore -f backup.sql"
   },
   "devDependencies": {
     "@types/bun": "latest"
