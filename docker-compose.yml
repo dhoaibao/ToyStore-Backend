@@ -1,8 +1,14 @@
 services:
   embedding_service:
+    container_name: embedding_service
     image: dhoaibao/embedding_service:latest
     ports:
       - "5000:5000"
+  redis:
+    image: redis:alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
   postgresql:
     build:
       context: .
@@ -13,6 +19,6 @@ services:
       POSTGRES_USER: dhoaibao
       POSTGRES_DB: toystore
     ports:
-      - "5435:5432"
+      - "5432:5432"
     volumes:
       - /home/dhoaibao/DockerData/databases/postgresql:/var/lib/postgresql/data

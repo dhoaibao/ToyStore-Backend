@@ -13,5 +13,5 @@ RUN apk add --no-cache \
 RUN git clone --branch v0.8.0 https://github.com/pgvector/pgvector.git /tmp/pgvector \
     && cd /tmp/pgvector \
     && make \
-    && sudo make install \
+    && make install \
     && rm -rf /tmp/pgvector
