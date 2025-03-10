@@ -20,6 +20,7 @@ import {
   voucherRoute,
   roleRoute,
   permissionRoute,
+  statisticRoute
 } from "./routes/index.js";
 import prisma from "./config/prismaClient.js";
 import { send } from "process";
@@ -136,6 +137,7 @@ app.use(`/api/${API_VERSION}/role`, roleRoute);
 app.use(`/api/${API_VERSION}/permission`, permissionRoute);
 app.use(`/api/${API_VERSION}/review`, reviewRoute);
 app.use(`/api/${API_VERSION}/message`, messageRoute);
+app.use(`/api/${API_VERSION}/statistic`, statisticRoute);
 
 app.get("/", (_, res) => {
   res.json({ message: "Server is running!" });
