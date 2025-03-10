@@ -1419,6 +1419,7 @@ COPY public.brands ("brandId", "brandName", "brandDesc", "isActive", "createdAt"
 --
 
 COPY public.cart_details (quantity, "productId", "cartId") FROM stdin;
+3	2	1
 \.
 
 
