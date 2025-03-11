@@ -54,6 +54,7 @@ export const getStatistics = async (req, res) => {
       },
       select: {
         finalPrice: true,
+        createdAt: true
       },
     });
 
@@ -76,7 +77,7 @@ export const getStatistics = async (req, res) => {
       const periodEnd = now.clone().endOf(type);
 
       const periodRevenues = orders.filter((order) => {
-        const orderDate = moment(order.createdAt);
+        const orderDate = order.createdAt;
         return orderDate >= periodStart && orderDate <= periodEnd;
       });
 

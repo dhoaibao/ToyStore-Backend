@@ -132,7 +132,7 @@ export const getOrderByUser = async (req, res) => {
 
         filters.userId = userId;
 
-        if (orderStatus && orderStatus !== 'all') {
+        if (orderStatus && orderStatus !== 'all') {     
             filters.orderTrackings = {
                 some: {
                     orderStatus: {
@@ -141,7 +141,6 @@ export const getOrderByUser = async (req, res) => {
                 }
             };
         }
-
         if (startDate && endDate) {
             filters.createdAt = {
                 gte: new Date(`${startDate}T00:00:00.000Z`),
