@@ -17,6 +17,22 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
+-- Name: public; Type: SCHEMA; Schema: -; Owner: dhoaibao
+--
+
+-- *not* creating schema, since initdb creates it
+
+
+ALTER SCHEMA public OWNER TO dhoaibao;
+
+--
+-- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: dhoaibao
+--
+
+COMMENT ON SCHEMA public IS '';
+
+
+--
 -- Name: vector; Type: EXTENSION; Schema: -; Owner: -
 --
 
@@ -1503,6 +1519,9 @@ COPY public.order_trackings ("time", "orderId", "orderStatusId") FROM stdin;
 2025-03-10 02:35:30.439+00	1	1
 2025-03-10 02:36:13.866+00	1	2
 2025-03-10 13:10:46.29+00	2	1
+2025-03-11 09:48:46.218+00	1	3
+2025-03-11 09:48:48.757+00	2	2
+2025-03-12 07:49:00.018+00	1	4
 \.
 
 
@@ -1511,8 +1530,8 @@ COPY public.order_trackings ("time", "orderId", "orderStatusId") FROM stdin;
 --
 
 COPY public.orders ("orderId", "totalPrice", "totalDiscount", "shippingFee", "finalPrice", "paymentStatus", "paidDate", "createdAt", "updatedAt", "userId", "orderAddressId", "paymentMethodId", "voucherId") FROM stdin;
-1	1257000	0	22000	1279000	f	\N	2025-03-10 02:35:30.433+00	2025-03-10 02:35:30.433+00	1	1	1	\N
 2	419000	0	22000	441000	f	\N	2025-03-10 13:10:46.283+00	2025-03-10 13:10:46.283+00	1	2	1	\N
+1	1257000	0	22000	1279000	t	2025-03-12 07:49:00.023	2025-03-10 02:35:30.433+00	2025-03-12 07:49:00.024+00	1	1	1	\N
 \.
 
 
@@ -1713,7 +1732,6 @@ COPY public.system_configurations ("systemConfigId", "shopName", "shopEmail", "s
 
 COPY public.upload_images ("uploadImageId", url, "filePath", "reviewId", "productId") FROM stdin;
 1	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/Luffy.jpg-1741512069649	images/Luffy.jpg-1741512069649	\N	\N
-2	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/71806_3.webp-1741573851798	images/71806_3.webp-1741573851798	\N	\N
 8	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/71806_1.webp-1741574054094	images/71806_1.webp-1741574054094	\N	2
 9	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/71806_1-2.webp-1741574054095	images/71806_1-2.webp-1741574054095	\N	2
 10	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/71806_2.webp-1741574054095	images/71806_2.webp-1741574054095	\N	2
@@ -1729,6 +1747,8 @@ COPY public.upload_images ("uploadImageId", url, "filePath", "reviewId", "produc
 309	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/6055946_1.webp-1741608930700	images/6055946_1.webp-1741608930700	\N	11
 310	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/6055946_2.webp-1741608930700	images/6055946_2.webp-1741608930700	\N	11
 311	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/6055946_4.webp-1741608930701	images/6055946_4.webp-1741608930701	\N	11
+2	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/71806_3.webp-1741687130492	images/71806_3.webp-1741687130492	\N	\N
+312	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/ACg8ocLd2Qh-PY4zPUE2bGJjWTo28wg5ovRYIAAVLKUnuBiDs0z8PFA=s96-c-1741765649996	images/ACg8ocLd2Qh-PY4zPUE2bGJjWTo28wg5ovRYIAAVLKUnuBiDs0z8PFA=s96-c-1741765649996	\N	\N
 \.
 
 
@@ -1739,6 +1759,7 @@ COPY public.upload_images ("uploadImageId", url, "filePath", "reviewId", "produc
 COPY public.users ("userId", "fullName", email, password, phone, gender, birthday, "isActive", "createdAt", "updatedAt", "avatarId", "roleId") FROM stdin;
 1	Duong Hoai Bao	baob2103488@student.ctu.edu.vn	$2b$10$w2eJGZtvcnZFT2hhZ3IO0O.KBYTHrgEbUzD7AZy3dvuJB.rshyUhi	\N	\N	2003-05-25 00:00:00	t	2025-03-09 09:20:41.76+00	2025-03-09 09:20:41.76+00	\N	1
 2	Duong Hoai Bao	admin@gmail.com	$2b$10$v1Q5Ltn3N78FVqqx4eEJRe5GykpO8TQj1AG5Qt0NwsD5Z4LQXjfmO	0942463758	t	2003-05-25 00:00:00	t	2025-03-09 09:21:09.627+00	2025-03-09 09:21:14.056+00	1	2
+3	Clone	clone001.test@gmail.com	\N	0942463758	t	2003-01-01 00:00:00	t	2025-03-12 07:35:53.293+00	2025-03-12 07:47:18.117+00	312	1
 \.
 
 
@@ -1916,14 +1937,14 @@ SELECT pg_catalog.setval('public."system_configurations_systemConfigId_seq"', 1,
 -- Name: upload_images_uploadImageId_seq; Type: SEQUENCE SET; Schema: public; Owner: dhoaibao
 --
 
-SELECT pg_catalog.setval('public."upload_images_uploadImageId_seq"', 311, true);
+SELECT pg_catalog.setval('public."upload_images_uploadImageId_seq"', 312, true);
 
 
 --
 -- Name: users_userId_seq; Type: SEQUENCE SET; Schema: public; Owner: dhoaibao
 --
 
-SELECT pg_catalog.setval('public."users_userId_seq"', 2, true);
+SELECT pg_catalog.setval('public."users_userId_seq"', 3, true);
 
 
 --
@@ -2663,6 +2684,13 @@ ALTER TABLE ONLY public.users
 
 ALTER TABLE ONLY public.users
     ADD CONSTRAINT "users_roleId_fkey" FOREIGN KEY ("roleId") REFERENCES public.roles("roleId") ON UPDATE CASCADE ON DELETE SET NULL;
+
+
+--
+-- Name: SCHEMA public; Type: ACL; Schema: -; Owner: dhoaibao
+--
+
+REVOKE USAGE ON SCHEMA public FROM PUBLIC;
 
 
 --
