@@ -87,7 +87,7 @@ export const authorization = async (req, res, next) => {
     const originalParts = pathWithoutQuery.split("/").filter(Boolean);
     const routeParts = routePath.split("/").filter(Boolean);
 
-    let combinePath = pathWithoutQuery.slice(0, pathWithoutQuery.length - 1);
+    let combinePath = pathWithoutQuery.endsWith('/') ? pathWithoutQuery.slice(0, -1) : pathWithoutQuery;
 
     if (routeParts.length > 0) {
       const overlapIndex = originalParts.findIndex(
