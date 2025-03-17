@@ -1,11 +1,7 @@
 import prisma from "../config/prismaClient.js";
 import { generateSlug } from "../utils/generateSlug.js";
 import getCurrentPrice from "../utils/getCurrentPrice.js";
-import {
-  uploadMultipleFiles,
-  deleteFile,
-  uploadFile,
-} from "../utils/supabaseStorage.js";
+import { deleteFile, uploadFile } from "../utils/supabaseStorage.js";
 import {
   generateImageEmbedding,
   generateTextEmbedding,
@@ -35,11 +31,15 @@ const include = {
     },
   },
   productImages: true,
-  promotion: {
-    include: {
-      promotionThumbnail: {
+  promotionValues: true,
+  reviews: {
+    select: {
+      comment: true,
+      rating: true,
+      createdAt: true,
+      user: {
         select: {
-          url: true,
+          fullName: true,
         },
       },
     },
@@ -67,7 +67,7 @@ export const getAllProducts = async (req, res) => {
     const filters = {};
 
     if (promotion) {
-      filters.promotions = {
+      filters.promotionValues = {
         some: {
           promotionId: parseInt(promotion),
         },
@@ -203,6 +203,12 @@ export const getProductBySlug = async (req, res) => {
       where: { slug },
       include,
     });
+
+    if (!product) {
+      res.status(400).json({
+        messgae: "Product not found!",
+      });
+    }
 
     const currentPrice = getCurrentPrice(product.prices);
     const updatedProduct = {

@@ -38,7 +38,7 @@ model Permission {
 model Message {
   messageId Int      @id @default(autoincrement())
   content   String
-  isRead    Boolean @default(false)
+  isRead    Boolean  @default(false)
   time      DateTime
 
   uploadImageId Int?         @unique
@@ -197,9 +197,8 @@ model Product {
 
   orderDetails OrderDetail[]
 
-  promotionId Int?
-  promotion   Promotion? @relation(fields: [promotionId], references: [promotionId])
-
+  promotionValues PromotionValue[]
+  
   productEmbeddings ProductEmbedding[]
 
   @@map("products")
@@ -479,17 +478,29 @@ model Promotion {
   promotionId   Int      @id @default(autoincrement())
   promotionName String
   description   String
-  discountType  String // "percentage", "fixed_amount"
-  discountValue Float
-  startDate     DateTime
-  endDate       DateTime
   createdAt     DateTime @default(now()) @db.Timestamptz
   updatedAt     DateTime @updatedAt @db.Timestamptz
 
   promotionThumbnailId Int         @unique
   promotionThumbnail   UploadImage @relation(fields: [promotionThumbnailId], references: [uploadImageId])
 
-  products Product[]
+  promotionValues PromotionValue[]
 
   @@map("promotions")
+}
+
+model PromotionValue {
+  discountType  String // "percentage", "fixed_amount"
+  discountValue Float
+  startDate     DateTime
+  endDate       DateTime
+  
+  promotionId Int
+  promotion   Promotion @relation(fields: [promotionId], references: [promotionId])
+  productId   Int
+  product     Product @relation(fields: [productId], references: [productId])
+  
+  @@id([promotionId, productId])
+  
+  @@map("promotion_values")
 }
