@@ -46,7 +46,6 @@ io.on("connection", (socket) => {
   });
 
   socket.on("markAsRead", async ({ senderId, receiverId }) => {
-    console.log("Mark as read:", senderId, receiverId);
     await prisma.message.updateMany({
       where: {
         senderId: senderId,
@@ -59,7 +58,6 @@ io.on("connection", (socket) => {
     });
 
     const socketId = await getData(`user-${senderId}`);
-    console.log("Socket ID:", senderId, socketId);
     io.to(socketId).emit("updateStatus", senderId);
   });
 
