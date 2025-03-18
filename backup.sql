@@ -307,7 +307,6 @@ CREATE TABLE public.messages (
     "messageId" integer NOT NULL,
     content text NOT NULL,
     "isRead" boolean DEFAULT false NOT NULL,
-    "uploadImageId" integer,
     "senderId" integer NOT NULL,
     "receiverId" integer,
     "time" timestamp(3) without time zone NOT NULL
@@ -1037,7 +1036,8 @@ CREATE TABLE public.upload_images (
     url text NOT NULL,
     "filePath" text NOT NULL,
     "reviewId" integer,
-    "productId" integer
+    "productId" integer,
+    "messageId" integer
 );
 
 
@@ -1404,6 +1404,7 @@ b4a93ff4-1395-47db-8bb4-188a335ca4b9	6b8d1e2212ee7e381e5aa2f423abe1b4598a5892ac0
 1f99f48f-5c14-4477-a177-c0dabad645fb	171ad6f32257feabc8e5789c8de89bbc982505f91b392c758fb93af1396c0839	2025-03-09 09:10:57.246218+00	20250306093356_update	\N	\N	2025-03-09 09:10:57.241042+00	1
 8cff60f2-ed19-49f1-8deb-189b87493fdc	57eddc2f75863a97836205f926b23f243da49838079af5dea2c2474e19551545	2025-03-09 09:10:57.254052+00	20250306093457_update	\N	\N	2025-03-09 09:10:57.248088+00	1
 33eecdc3-f5cc-453a-b645-5d5a77a90f5b	11bd54867caa876359938959aa833d511b5a0a40d24cc845e0cbf24260bb278b	2025-03-16 10:22:48.613594+00	20250316102248_update	\N	\N	2025-03-16 10:22:48.579714+00	1
+9954a48e-e9eb-40ec-b2ba-1ccc0e3fbf5b	d584b1849b3e9a0db811eec8c568dbd3d1e467e582ad02453253b6cb63282246	2025-03-18 09:47:14.61429+00	20250318094714_update	\N	\N	2025-03-18 09:47:14.592111+00	1
 \.
 
 
@@ -1465,8 +1466,8 @@ COPY public.carts ("cartId", "userId") FROM stdin;
 --
 
 COPY public.categories ("categoryId", "categoryName", slug, "isActive", "createdAt", "updatedAt", "categoryThumbnailId") FROM stdin;
-1	LEGO	lego	t	2025-03-10 02:30:53.014+00	2025-03-10 02:30:53.014+00	2
 2	 Super Hero	super-hero	t	2025-03-10 12:13:03.742+00	2025-03-10 12:13:03.742+00	308
+1	Siêu Robot	sieu-robot	t	2025-03-10 02:30:53.014+00	2025-03-18 09:30:44.058+00	2
 \.
 
 
@@ -1474,42 +1475,59 @@ COPY public.categories ("categoryId", "categoryName", slug, "isActive", "created
 -- Data for Name: messages; Type: TABLE DATA; Schema: public; Owner: dhoaibao
 --
 
-COPY public.messages ("messageId", content, "isRead", "uploadImageId", "senderId", "receiverId", "time") FROM stdin;
-75	ads	t	\N	2	1	2025-03-17 10:35:00.669
-81	con	t	\N	2	1	2025-03-17 12:12:24.872
-83	???	t	\N	2	1	2025-03-17 12:13:59.694
-84	....\\	t	\N	2	1	2025-03-17 12:14:05.188
-82	...	t	\N	1	\N	2025-03-17 12:13:53.119
-85	????	t	\N	1	\N	2025-03-17 12:19:30.408
-86	asd	t	\N	1	\N	2025-03-17 12:20:33.177
-87	ok	t	\N	1	\N	2025-03-17 12:21:42.943
-88	a	t	\N	1	\N	2025-03-17 12:22:14.273
-89	a	t	\N	1	\N	2025-03-17 12:22:23.537
-80	con	t	\N	2	1	2025-03-15 12:12:19.431
-78	ban con do khong	t	\N	1	\N	2025-03-15 12:10:38.367
-79	con ban	t	\N	2	1	2025-03-15 12:11:42.125
-77	tin nhan cuoi	t	\N	1	\N	2025-03-15 10:43:29.035
-90	asd	t	\N	1	\N	2025-03-17 12:25:50.635
-91	asd	t	\N	1	\N	2025-03-17 12:26:31.472
-92	a	t	\N	1	\N	2025-03-17 12:27:23.341
-93	ad	t	\N	2	1	2025-03-17 12:28:00.976
-94	asd	t	\N	1	\N	2025-03-17 12:28:19.325
-95	asd	t	\N	1	\N	2025-03-17 12:28:22.384
-96	asd	t	\N	1	\N	2025-03-17 12:28:25.11
-62	xin chao	t	\N	1	\N	2025-03-17 10:34:15.262
-64	toi can mua mot do choi lego	t	\N	1	\N	2025-03-17 10:34:40.043
-63	chao, ban can giup gi	t	\N	2	1	2025-03-17 10:34:22.623
-65	oke	t	\N	2	1	2025-03-17 10:34:46.141
-67	asd	t	\N	2	1	2025-03-17 10:34:51.682
-68	asd	t	\N	2	1	2025-03-17 10:34:53.047
-66	sa	t	\N	1	\N	2025-03-17 10:34:49.085
-70	asd	t	\N	1	\N	2025-03-17 10:34:55.545
-71	asd	t	\N	1	\N	2025-03-17 10:34:55.975
-72	asd	t	\N	1	\N	2025-03-17 10:34:56.348
-69	asd	t	\N	2	1	2025-03-17 10:34:53.411
-73	asd	t	\N	2	1	2025-03-17 10:34:59.776
-74	asd	t	\N	2	1	2025-03-17 10:35:00.315
-76	ad	t	\N	1	\N	2025-03-17 10:35:03.461
+COPY public.messages ("messageId", content, "isRead", "senderId", "receiverId", "time") FROM stdin;
+75	ads	t	2	1	2025-03-17 10:35:00.669
+81	con	t	2	1	2025-03-17 12:12:24.872
+83	???	t	2	1	2025-03-17 12:13:59.694
+84	....\\	t	2	1	2025-03-17 12:14:05.188
+82	...	t	1	\N	2025-03-17 12:13:53.119
+85	????	t	1	\N	2025-03-17 12:19:30.408
+86	asd	t	1	\N	2025-03-17 12:20:33.177
+87	ok	t	1	\N	2025-03-17 12:21:42.943
+88	a	t	1	\N	2025-03-17 12:22:14.273
+89	a	t	1	\N	2025-03-17 12:22:23.537
+80	con	t	2	1	2025-03-15 12:12:19.431
+78	ban con do khong	t	1	\N	2025-03-15 12:10:38.367
+79	con ban	t	2	1	2025-03-15 12:11:42.125
+77	tin nhan cuoi	t	1	\N	2025-03-15 10:43:29.035
+90	asd	t	1	\N	2025-03-17 12:25:50.635
+91	asd	t	1	\N	2025-03-17 12:26:31.472
+92	a	t	1	\N	2025-03-17 12:27:23.341
+93	ad	t	2	1	2025-03-17 12:28:00.976
+94	asd	t	1	\N	2025-03-17 12:28:19.325
+95	asd	t	1	\N	2025-03-17 12:28:22.384
+96	asd	t	1	\N	2025-03-17 12:28:25.11
+62	xin chao	t	1	\N	2025-03-17 10:34:15.262
+64	toi can mua mot do choi lego	t	1	\N	2025-03-17 10:34:40.043
+63	chao, ban can giup gi	t	2	1	2025-03-17 10:34:22.623
+65	oke	t	2	1	2025-03-17 10:34:46.141
+67	asd	t	2	1	2025-03-17 10:34:51.682
+68	asd	t	2	1	2025-03-17 10:34:53.047
+66	sa	t	1	\N	2025-03-17 10:34:49.085
+70	asd	t	1	\N	2025-03-17 10:34:55.545
+71	asd	t	1	\N	2025-03-17 10:34:55.975
+72	asd	t	1	\N	2025-03-17 10:34:56.348
+69	asd	t	2	1	2025-03-17 10:34:53.411
+97	asd	t	1	\N	2025-03-18 05:31:17.327
+73	asd	t	2	1	2025-03-17 10:34:59.776
+74	asd	t	2	1	2025-03-17 10:35:00.315
+76	ad	t	1	\N	2025-03-17 10:35:03.461
+107		t	1	\N	2025-03-18 09:51:28.035
+108	asd	t	1	\N	2025-03-18 09:58:14.25
+109		t	1	\N	2025-03-18 09:58:20.634
+110		t	1	\N	2025-03-18 10:04:51.189
+111		t	1	\N	2025-03-18 10:06:46.562
+112	oke roi do	t	1	\N	2025-03-18 10:14:10.258
+113		t	1	\N	2025-03-18 10:14:22.774
+114		t	1	\N	2025-03-18 10:21:23.767
+115		t	1	\N	2025-03-18 10:24:01.8
+116		t	1	\N	2025-03-18 10:24:30.894
+117		t	1	\N	2025-03-18 10:26:10.417
+118		t	1	\N	2025-03-18 10:26:36.269
+119		t	1	\N	2025-03-18 10:27:12.009
+120		t	1	\N	2025-03-18 10:28:03.548
+121	oke	t	1	\N	2025-03-18 10:38:44.088
+122		t	1	\N	2025-03-18 10:39:19.933
 \.
 
 
@@ -1787,26 +1805,44 @@ COPY public.system_configurations ("systemConfigId", "shopName", "shopEmail", "s
 -- Data for Name: upload_images; Type: TABLE DATA; Schema: public; Owner: dhoaibao
 --
 
-COPY public.upload_images ("uploadImageId", url, "filePath", "reviewId", "productId") FROM stdin;
-1	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/Luffy.jpg-1741512069649	images/Luffy.jpg-1741512069649	\N	\N
-8	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/71806_1.webp-1741574054094	images/71806_1.webp-1741574054094	\N	2
-9	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/71806_1-2.webp-1741574054095	images/71806_1-2.webp-1741574054095	\N	2
-10	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/71806_2.webp-1741574054095	images/71806_2.webp-1741574054095	\N	2
-11	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/71806_4bd05f3b-92a3-4f59-9596-fc0d990b708b.webp-1741574054095	images/71806_4bd05f3b-92a3-4f59-9596-fc0d990b708b.webp-1741574054095	\N	2
-12	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/71806_5.webp-1741574054096	images/71806_5.webp-1741574054096	\N	2
-33	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/71806_1-2.webp-1741575719770	images/71806_1-2.webp-1741575719770	\N	7
-34	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/71806_2.webp-1741575719773	images/71806_2.webp-1741575719773	\N	7
-35	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/71806_3.webp-1741575719774	images/71806_3.webp-1741575719774	\N	7
-36	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/71806_4bd05f3b-92a3-4f59-9596-fc0d990b708b.webp-1741575719774	images/71806_4bd05f3b-92a3-4f59-9596-fc0d990b708b.webp-1741575719774	\N	7
-37	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/71806_5.webp-1741575719774	images/71806_5.webp-1741575719774	\N	7
-308	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/6055946_2.webp-1741608782000	images/6055946_2.webp-1741608782000	\N	\N
-287	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/71806_3.webp-1741578715819	images/71806_3.webp-1741578715819	\N	9
-309	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/6055946_1.webp-1741608930700	images/6055946_1.webp-1741608930700	\N	11
-310	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/6055946_2.webp-1741608930700	images/6055946_2.webp-1741608930700	\N	11
-311	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/6055946_4.webp-1741608930701	images/6055946_4.webp-1741608930701	\N	11
-2	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/71806_3.webp-1741687130492	images/71806_3.webp-1741687130492	\N	\N
-312	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/ACg8ocLd2Qh-PY4zPUE2bGJjWTo28wg5ovRYIAAVLKUnuBiDs0z8PFA=s96-c-1741765649996	images/ACg8ocLd2Qh-PY4zPUE2bGJjWTo28wg5ovRYIAAVLKUnuBiDs0z8PFA=s96-c-1741765649996	\N	\N
-313	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/6055946_2.webp-1742188520565	images/6055946_2.webp-1742188520565	\N	\N
+COPY public.upload_images ("uploadImageId", url, "filePath", "reviewId", "productId", "messageId") FROM stdin;
+1	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/Luffy.jpg-1741512069649	images/Luffy.jpg-1741512069649	\N	\N	\N
+8	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/71806_1.webp-1741574054094	images/71806_1.webp-1741574054094	\N	2	\N
+9	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/71806_1-2.webp-1741574054095	images/71806_1-2.webp-1741574054095	\N	2	\N
+10	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/71806_2.webp-1741574054095	images/71806_2.webp-1741574054095	\N	2	\N
+11	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/71806_4bd05f3b-92a3-4f59-9596-fc0d990b708b.webp-1741574054095	images/71806_4bd05f3b-92a3-4f59-9596-fc0d990b708b.webp-1741574054095	\N	2	\N
+12	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/71806_5.webp-1741574054096	images/71806_5.webp-1741574054096	\N	2	\N
+33	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/71806_1-2.webp-1741575719770	images/71806_1-2.webp-1741575719770	\N	7	\N
+34	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/71806_2.webp-1741575719773	images/71806_2.webp-1741575719773	\N	7	\N
+35	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/71806_3.webp-1741575719774	images/71806_3.webp-1741575719774	\N	7	\N
+36	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/71806_4bd05f3b-92a3-4f59-9596-fc0d990b708b.webp-1741575719774	images/71806_4bd05f3b-92a3-4f59-9596-fc0d990b708b.webp-1741575719774	\N	7	\N
+37	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/71806_5.webp-1741575719774	images/71806_5.webp-1741575719774	\N	7	\N
+308	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/6055946_2.webp-1741608782000	images/6055946_2.webp-1741608782000	\N	\N	\N
+287	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/71806_3.webp-1741578715819	images/71806_3.webp-1741578715819	\N	9	\N
+309	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/6055946_1.webp-1741608930700	images/6055946_1.webp-1741608930700	\N	11	\N
+310	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/6055946_2.webp-1741608930700	images/6055946_2.webp-1741608930700	\N	11	\N
+311	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/6055946_4.webp-1741608930701	images/6055946_4.webp-1741608930701	\N	11	\N
+330	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742293683550	images/undefined-1742293683550	\N	\N	120
+331	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742294359934	images/undefined-1742294359934	\N	\N	122
+312	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/ACg8ocLd2Qh-PY4zPUE2bGJjWTo28wg5ovRYIAAVLKUnuBiDs0z8PFA=s96-c-1741765649996	images/ACg8ocLd2Qh-PY4zPUE2bGJjWTo28wg5ovRYIAAVLKUnuBiDs0z8PFA=s96-c-1741765649996	\N	\N	\N
+313	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/6055946_2.webp-1742188520565	images/6055946_2.webp-1742188520565	\N	\N	\N
+2	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/71806_5.webp-1742290242232	images/71806_5.webp-1742290242232	\N	\N	\N
+314	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742291488038	images/undefined-1742291488038	\N	\N	107
+315	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742291894253	images/undefined-1742291894253	\N	\N	108
+316	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742291900635	images/undefined-1742291900635	\N	\N	109
+317	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742292291190	images/undefined-1742292291190	\N	\N	110
+318	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742292406564	images/undefined-1742292406564	\N	\N	111
+319	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742292406565	images/undefined-1742292406565	\N	\N	111
+320	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742292406566	images/undefined-1742292406566	\N	\N	111
+321	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742292406566	images/undefined-1742292406566	\N	\N	111
+322	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742292406567	images/undefined-1742292406567	\N	\N	111
+323	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742292862775	images/undefined-1742292862775	\N	\N	113
+324	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742293283769	images/undefined-1742293283769	\N	\N	114
+325	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742293441801	images/undefined-1742293441801	\N	\N	115
+326	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742293470895	images/undefined-1742293470895	\N	\N	116
+327	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742293570419	images/undefined-1742293570419	\N	\N	117
+328	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742293596270	images/undefined-1742293596270	\N	\N	118
+329	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742293632011	images/undefined-1742293632011	\N	\N	119
 \.
 
 
@@ -1870,7 +1906,7 @@ SELECT pg_catalog.setval('public."categories_categoryId_seq"', 2, true);
 -- Name: messages_messageId_seq; Type: SEQUENCE SET; Schema: public; Owner: dhoaibao
 --
 
-SELECT pg_catalog.setval('public."messages_messageId_seq"', 96, true);
+SELECT pg_catalog.setval('public."messages_messageId_seq"', 122, true);
 
 
 --
@@ -1996,7 +2032,7 @@ SELECT pg_catalog.setval('public."system_configurations_systemConfigId_seq"', 1,
 -- Name: upload_images_uploadImageId_seq; Type: SEQUENCE SET; Schema: public; Owner: dhoaibao
 --
 
-SELECT pg_catalog.setval('public."upload_images_uploadImageId_seq"', 313, true);
+SELECT pg_catalog.setval('public."upload_images_uploadImageId_seq"', 331, true);
 
 
 --
@@ -2334,13 +2370,6 @@ CREATE UNIQUE INDEX categories_slug_key ON public.categories USING btree (slug);
 
 
 --
--- Name: messages_uploadImageId_key; Type: INDEX; Schema: public; Owner: dhoaibao
---
-
-CREATE UNIQUE INDEX "messages_uploadImageId_key" ON public.messages USING btree ("uploadImageId");
-
-
---
 -- Name: newses_title_key; Type: INDEX; Schema: public; Owner: dhoaibao
 --
 
@@ -2519,14 +2548,6 @@ ALTER TABLE ONLY public.messages
 
 ALTER TABLE ONLY public.messages
     ADD CONSTRAINT "messages_senderId_fkey" FOREIGN KEY ("senderId") REFERENCES public.users("userId") ON UPDATE CASCADE ON DELETE RESTRICT;
-
-
---
--- Name: messages messages_uploadImageId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dhoaibao
---
-
-ALTER TABLE ONLY public.messages
-    ADD CONSTRAINT "messages_uploadImageId_fkey" FOREIGN KEY ("uploadImageId") REFERENCES public.upload_images("uploadImageId") ON UPDATE CASCADE ON DELETE SET NULL;
 
 
 --
@@ -2727,6 +2748,14 @@ ALTER TABLE ONLY public.reviews
 
 ALTER TABLE ONLY public.system_configurations
     ADD CONSTRAINT "system_configurations_logoId_fkey" FOREIGN KEY ("logoId") REFERENCES public.upload_images("uploadImageId") ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+--
+-- Name: upload_images upload_images_messageId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dhoaibao
+--
+
+ALTER TABLE ONLY public.upload_images
+    ADD CONSTRAINT "upload_images_messageId_fkey" FOREIGN KEY ("messageId") REFERENCES public.messages("messageId") ON UPDATE CASCADE ON DELETE SET NULL;
 
 
 --
