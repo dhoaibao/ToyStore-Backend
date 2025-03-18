@@ -41,8 +41,7 @@ model Message {
   isRead    Boolean  @default(false)
   time      DateTime
 
-  uploadImageId Int?         @unique
-  uploadImage   UploadImage? @relation(fields: [uploadImageId], references: [uploadImageId])
+  uploadImages UploadImage[]
 
   senderId Int
   sender   User @relation("sentMessages", fields: [senderId], references: [userId])
@@ -64,11 +63,13 @@ model UploadImage {
   productId Int?
   product   Product? @relation(fields: [productId], references: [productId])
 
+  messageId Int?
+  message   Message?  @relation(fields: [messageId], references: [messageId])
+
   banner                Banner?
   productImageEmbedding ProductImageEmbedding?
   user                  User?
   promotion             Promotion?
-  message               Message?
   systemConfig          SystemConfiguration?
   category              Category?
 
@@ -198,7 +199,7 @@ model Product {
   orderDetails OrderDetail[]
 
   promotionValues PromotionValue[]
-  
+
   productEmbeddings ProductEmbedding[]
 
   @@map("products")
@@ -494,13 +495,12 @@ model PromotionValue {
   discountValue Float
   startDate     DateTime
   endDate       DateTime
-  
+
   promotionId Int
   promotion   Promotion @relation(fields: [promotionId], references: [promotionId])
   productId   Int
-  product     Product @relation(fields: [productId], references: [productId])
-  
+  product     Product   @relation(fields: [productId], references: [productId])
+
   @@id([promotionId, productId])
-  
   @@map("promotion_values")
 }
