@@ -1,5 +1,13 @@
 import prisma from "../config/prismaClient.js";
 
+const include = {
+  uploadImages: {
+    select: {
+      url: true
+    }
+  }
+}
+
 export const getMessages = async (req, res) => {
   try {
     const { id } = req.params;
@@ -25,6 +33,7 @@ export const getMessages = async (req, res) => {
       },
       skip,
       take,
+      include
     });
     
     const reversedMessages = messages.reverse();

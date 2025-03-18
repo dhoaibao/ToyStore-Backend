@@ -4,6 +4,7 @@ import logger from "morgan";
 import { Server } from "socket.io";
 import http from "http";
 import { setData, getData, deleteData } from "./utils/redis.js";
+import { uploadFile } from "./utils/supabaseStorage.js";
 import {
   authRoute,
   userRoute,
@@ -20,7 +21,7 @@ import {
   voucherRoute,
   roleRoute,
   permissionRoute,
-  statisticRoute
+  statisticRoute,
 } from "./routes/index.js";
 import prisma from "./config/prismaClient.js";
 import { send } from "process";
@@ -63,21 +64,44 @@ io.on("connection", (socket) => {
 
   socket.on(
     "sendMessage",
-    async ({ senderId, content, time, senderName, avatar }) => {
+    async ({ senderId, content, time, senderName, avatar, files }) => {
+      const images = await Promise.all(
+        files.map(async (file) => {
+          const { url, filePath } = await uploadFile(file);
+          return { url, filePath };
+        }),
+      );
+      const message = await prisma.message.create({
+        data: {
+          senderId,
+          content,
+          time,
+        },
+      });
+
+      if (images.length > 0) {
+        await prisma.uploadImage.createMany({
+          data: images.map(({ url, filePath }) => ({
+            messageId: message.messageId,
+            url,
+            filePath,
+          })),
+        });
+      }
+
       io.to("toystore").emit("newMessage", {
         senderId,
         content,
         isRead: false,
         senderName,
         avatar,
+        uploadImages:
+          images.length > 0
+            ? images.map(({ url }) => ({
+                url,
+              }))
+            : [],
         time,
-      });
-      await prisma.message.create({
-        data: {
-          senderId,
-          content,
-          time,
-        },
       });
     },
   );
