@@ -24,7 +24,6 @@ import {
   statisticRoute,
 } from "./routes/index.js";
 import prisma from "./config/prismaClient.js";
-import { send } from "process";
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -36,7 +35,7 @@ const io = new Server(httpServer, {
 
 io.on("connection", (socket) => {
   const { userId } = socket.handshake.query;
-  if (userId !== "null") {
+  if (userId !== undefined) {
     setData(`user-${userId}`, null, socket.id);
     setData(`user-${userId}-online`, null, "true");
     console.log("User connected:", userId);
@@ -106,21 +105,39 @@ io.on("connection", (socket) => {
     },
   );
 
-  socket.on("replyMessage", async ({ senderId, receiverId, content, time }) => {
-    const socketId = await getData(`user-${receiverId}`);
-    io.to(socketId).emit("newMessage", {
-      senderId,
-      content,
-      isRead: false,
-      time,
-    });
-    await prisma.message.create({
+  socket.on("replyMessage", async ({ senderId, receiverId, content, time, files }) => {
+    const images = await Promise.all(
+      files.map(async (file) => {
+        const { url, filePath } = await uploadFile(file);
+        return { url, filePath };
+      }),
+    );
+    
+    const message = await prisma.message.create({
       data: {
         senderId,
         receiverId,
         content,
         time,
       },
+    });
+    
+    if (images.length > 0) {
+      await prisma.uploadImage.createMany({
+        data: images.map(({ url, filePath }) => ({
+          messageId: message.messageId,
+          url,
+          filePath,
+        })),
+      });
+    }
+    
+    const socketId = await getData(`user-${receiverId}`);
+    io.to(socketId).emit("newMessage", {
+      senderId,
+      content,
+      isRead: false,
+      time,
     });
   });
 

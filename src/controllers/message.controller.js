@@ -133,8 +133,15 @@ export const getConversations = async (req, res) => {
           time: "desc",
         },
       });
-
-      conversations.push({ sender, lastMessage });
+      
+      const unreadCount = await prisma.message.count({
+        where: {
+          senderId: senderId,
+          isRead: false,
+        },
+      });
+    
+      conversations.push({ sender, lastMessage, unreadCount});
     }
     
     const totalConversations = conversations.length;
