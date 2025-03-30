@@ -1449,6 +1449,8 @@ COPY public.brands ("brandId", "brandName", "brandDesc", "isActive", "createdAt"
 
 COPY public.cart_details (quantity, "productId", "cartId") FROM stdin;
 7	2	1
+4	11	2
+4	7	2
 \.
 
 
@@ -1458,6 +1460,7 @@ COPY public.cart_details (quantity, "productId", "cartId") FROM stdin;
 
 COPY public.carts ("cartId", "userId") FROM stdin;
 1	1
+2	3
 \.
 
 
@@ -1476,58 +1479,63 @@ COPY public.categories ("categoryId", "categoryName", slug, "isActive", "created
 --
 
 COPY public.messages ("messageId", content, "isRead", "senderId", "receiverId", "time") FROM stdin;
+123	xin chao	t	1	\N	2025-03-18 11:47:17.821
+124		t	1	\N	2025-03-18 11:47:29.144
 75	ads	t	2	1	2025-03-17 10:35:00.669
 81	con	t	2	1	2025-03-17 12:12:24.872
 83	???	t	2	1	2025-03-17 12:13:59.694
 84	....\\	t	2	1	2025-03-17 12:14:05.188
 82	...	t	1	\N	2025-03-17 12:13:53.119
-85	????	t	1	\N	2025-03-17 12:19:30.408
-86	asd	t	1	\N	2025-03-17 12:20:33.177
-87	ok	t	1	\N	2025-03-17 12:21:42.943
-88	a	t	1	\N	2025-03-17 12:22:14.273
-89	a	t	1	\N	2025-03-17 12:22:23.537
+136	hello	t	3	\N	2025-03-23 09:36:14.603
+137	.	t	3	\N	2025-03-23 09:37:00.46
+138	.	t	3	\N	2025-03-23 09:37:45.621
+139	..	t	3	\N	2025-03-23 09:38:12.602
+140	.	t	3	\N	2025-03-23 09:40:16.385
 80	con	t	2	1	2025-03-15 12:12:19.431
 78	ban con do khong	t	1	\N	2025-03-15 12:10:38.367
 79	con ban	t	2	1	2025-03-15 12:11:42.125
 77	tin nhan cuoi	t	1	\N	2025-03-15 10:43:29.035
-90	asd	t	1	\N	2025-03-17 12:25:50.635
-91	asd	t	1	\N	2025-03-17 12:26:31.472
-92	a	t	1	\N	2025-03-17 12:27:23.341
-93	ad	t	2	1	2025-03-17 12:28:00.976
-94	asd	t	1	\N	2025-03-17 12:28:19.325
-95	asd	t	1	\N	2025-03-17 12:28:22.384
-96	asd	t	1	\N	2025-03-17 12:28:25.11
+141	.	t	3	\N	2025-03-23 09:41:43.768
+142	/	t	3	\N	2025-03-23 09:42:39.896
+143	..	t	3	\N	2025-03-23 09:43:27.024
+144	chao	t	3	\N	2025-03-23 09:44:06.572
+145	a	t	3	\N	2025-03-23 09:44:46.533
+146	v	t	3	\N	2025-03-23 09:48:27.944
+147	hello	t	3	\N	2025-03-23 11:29:11.689
 62	xin chao	t	1	\N	2025-03-17 10:34:15.262
 64	toi can mua mot do choi lego	t	1	\N	2025-03-17 10:34:40.043
+148	chao	t	3	\N	2025-03-23 11:31:22.564
 63	chao, ban can giup gi	t	2	1	2025-03-17 10:34:22.623
-65	oke	t	2	1	2025-03-17 10:34:46.141
-67	asd	t	2	1	2025-03-17 10:34:51.682
-68	asd	t	2	1	2025-03-17 10:34:53.047
-66	sa	t	1	\N	2025-03-17 10:34:49.085
-70	asd	t	1	\N	2025-03-17 10:34:55.545
-71	asd	t	1	\N	2025-03-17 10:34:55.975
-72	asd	t	1	\N	2025-03-17 10:34:56.348
-69	asd	t	2	1	2025-03-17 10:34:53.411
-97	asd	t	1	\N	2025-03-18 05:31:17.327
-73	asd	t	2	1	2025-03-17 10:34:59.776
-74	asd	t	2	1	2025-03-17 10:35:00.315
-76	ad	t	1	\N	2025-03-17 10:35:03.461
-107		t	1	\N	2025-03-18 09:51:28.035
-108	asd	t	1	\N	2025-03-18 09:58:14.25
-109		t	1	\N	2025-03-18 09:58:20.634
-110		t	1	\N	2025-03-18 10:04:51.189
-111		t	1	\N	2025-03-18 10:06:46.562
-112	oke roi do	t	1	\N	2025-03-18 10:14:10.258
-113		t	1	\N	2025-03-18 10:14:22.774
-114		t	1	\N	2025-03-18 10:21:23.767
-115		t	1	\N	2025-03-18 10:24:01.8
-116		t	1	\N	2025-03-18 10:24:30.894
-117		t	1	\N	2025-03-18 10:26:10.417
-118		t	1	\N	2025-03-18 10:26:36.269
-119		t	1	\N	2025-03-18 10:27:12.009
-120		t	1	\N	2025-03-18 10:28:03.548
-121	oke	t	1	\N	2025-03-18 10:38:44.088
-122		t	1	\N	2025-03-18 10:39:19.933
+149	hello	t	3	\N	2025-03-23 11:42:17.474
+150	chao	t	3	\N	2025-03-23 11:45:36.181
+151	chao	t	3	\N	2025-03-23 11:48:50.949
+152	hello	t	3	\N	2025-03-23 11:49:00.442
+153	chao	t	3	\N	2025-03-23 11:49:08.536
+154	hello	t	3	\N	2025-03-23 11:52:58.406
+155	chao	t	3	\N	2025-03-23 11:53:05.193
+125	oke	t	1	\N	2025-03-18 11:47:50.638
+156	hello	t	3	\N	2025-03-23 11:54:10.023
+157	chao	t	3	\N	2025-03-23 11:54:20.292
+158	hello	t	3	\N	2025-03-23 11:54:31.491
+159	chao	t	3	\N	2025-03-23 11:55:34.183
+126	xin chào	t	1	\N	2025-03-18 12:03:04.251
+127		t	1	\N	2025-03-18 12:04:11.526
+129	chao	t	1	\N	2025-03-23 05:21:46.194
+128	chao ban	t	2	1	2025-03-23 05:15:32.897
+130	hello	t	1	\N	2025-03-23 06:38:05.809
+131		t	1	\N	2025-03-23 07:54:03.774
+132	ok	t	1	\N	2025-03-23 08:01:05.013
+133	toi can giup do	t	3	\N	2025-03-23 09:16:46.409
+160	hello	t	3	\N	2025-03-23 11:58:14.082
+161	chao	t	3	\N	2025-03-23 11:58:17.952
+162	alo	t	3	\N	2025-03-23 11:58:28.443
+163		t	3	\N	2025-03-23 11:59:08.071
+164	chao	t	3	\N	2025-03-23 11:59:37.965
+165		t	3	\N	2025-03-23 11:59:43.218
+166	chao	t	3	\N	2025-03-23 12:02:12.852
+167		t	3	\N	2025-03-23 12:02:17.435
+134		t	3	\N	2025-03-23 09:25:02.407
+135		t	3	\N	2025-03-23 09:25:24.52
 \.
 
 
@@ -1822,27 +1830,20 @@ COPY public.upload_images ("uploadImageId", url, "filePath", "reviewId", "produc
 309	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/6055946_1.webp-1741608930700	images/6055946_1.webp-1741608930700	\N	11	\N
 310	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/6055946_2.webp-1741608930700	images/6055946_2.webp-1741608930700	\N	11	\N
 311	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/6055946_4.webp-1741608930701	images/6055946_4.webp-1741608930701	\N	11	\N
-330	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742293683550	images/undefined-1742293683550	\N	\N	120
-331	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742294359934	images/undefined-1742294359934	\N	\N	122
 312	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/ACg8ocLd2Qh-PY4zPUE2bGJjWTo28wg5ovRYIAAVLKUnuBiDs0z8PFA=s96-c-1741765649996	images/ACg8ocLd2Qh-PY4zPUE2bGJjWTo28wg5ovRYIAAVLKUnuBiDs0z8PFA=s96-c-1741765649996	\N	\N	\N
 313	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/6055946_2.webp-1742188520565	images/6055946_2.webp-1742188520565	\N	\N	\N
 2	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/71806_5.webp-1742290242232	images/71806_5.webp-1742290242232	\N	\N	\N
-314	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742291488038	images/undefined-1742291488038	\N	\N	107
-315	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742291894253	images/undefined-1742291894253	\N	\N	108
-316	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742291900635	images/undefined-1742291900635	\N	\N	109
-317	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742292291190	images/undefined-1742292291190	\N	\N	110
-318	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742292406564	images/undefined-1742292406564	\N	\N	111
-319	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742292406565	images/undefined-1742292406565	\N	\N	111
-320	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742292406566	images/undefined-1742292406566	\N	\N	111
-321	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742292406566	images/undefined-1742292406566	\N	\N	111
-322	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742292406567	images/undefined-1742292406567	\N	\N	111
-323	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742292862775	images/undefined-1742292862775	\N	\N	113
-324	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742293283769	images/undefined-1742293283769	\N	\N	114
-325	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742293441801	images/undefined-1742293441801	\N	\N	115
-326	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742293470895	images/undefined-1742293470895	\N	\N	116
-327	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742293570419	images/undefined-1742293570419	\N	\N	117
-328	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742293596270	images/undefined-1742293596270	\N	\N	118
-329	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742293632011	images/undefined-1742293632011	\N	\N	119
+332	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742298449146	images/undefined-1742298449146	\N	\N	124
+333	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742298449150	images/undefined-1742298449150	\N	\N	124
+334	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742299451528	images/undefined-1742299451528	\N	\N	127
+335	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742299451530	images/undefined-1742299451530	\N	\N	127
+336	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742716443776	images/undefined-1742716443776	\N	\N	131
+337	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742721902408	images/undefined-1742721902408	\N	\N	134
+338	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742721924520	images/undefined-1742721924520	\N	\N	135
+339	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742721924521	images/undefined-1742721924521	\N	\N	135
+340	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742731148073	images/undefined-1742731148073	\N	\N	163
+341	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742731183220	images/undefined-1742731183220	\N	\N	165
+342	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742731337438	images/undefined-1742731337438	\N	\N	167
 \.
 
 
@@ -1892,7 +1893,7 @@ SELECT pg_catalog.setval('public."brands_brandId_seq"', 2, true);
 -- Name: carts_cartId_seq; Type: SEQUENCE SET; Schema: public; Owner: dhoaibao
 --
 
-SELECT pg_catalog.setval('public."carts_cartId_seq"', 1, true);
+SELECT pg_catalog.setval('public."carts_cartId_seq"', 2, true);
 
 
 --
@@ -1906,7 +1907,7 @@ SELECT pg_catalog.setval('public."categories_categoryId_seq"', 2, true);
 -- Name: messages_messageId_seq; Type: SEQUENCE SET; Schema: public; Owner: dhoaibao
 --
 
-SELECT pg_catalog.setval('public."messages_messageId_seq"', 122, true);
+SELECT pg_catalog.setval('public."messages_messageId_seq"', 167, true);
 
 
 --
@@ -2032,7 +2033,7 @@ SELECT pg_catalog.setval('public."system_configurations_systemConfigId_seq"', 1,
 -- Name: upload_images_uploadImageId_seq; Type: SEQUENCE SET; Schema: public; Owner: dhoaibao
 --
 
-SELECT pg_catalog.setval('public."upload_images_uploadImageId_seq"', 331, true);
+SELECT pg_catalog.setval('public."upload_images_uploadImageId_seq"', 342, true);
 
 
 --
