@@ -106,6 +106,7 @@ io.on("connection", (socket) => {
   );
 
   socket.on("replyMessage", async ({ senderId, receiverId, content, time, files }) => {
+    console.log("asjhd")
     const images = await Promise.all(
       files.map(async (file) => {
         const { url, filePath } = await uploadFile(file);
