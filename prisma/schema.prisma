@@ -64,7 +64,7 @@ model UploadImage {
   product   Product? @relation(fields: [productId], references: [productId])
 
   messageId Int?
-  message   Message?  @relation(fields: [messageId], references: [messageId])
+  message   Message? @relation(fields: [messageId], references: [messageId])
 
   banner                Banner?
   productImageEmbedding ProductImageEmbedding?
@@ -198,7 +198,7 @@ model Product {
 
   orderDetails OrderDetail[]
 
-  promotionValues PromotionValue[]
+  promotionPeriods PromotionPeriod[] @relation("product_promotionperiod")
 
   productEmbeddings ProductEmbedding[]
 
@@ -485,22 +485,22 @@ model Promotion {
   promotionThumbnailId Int         @unique
   promotionThumbnail   UploadImage @relation(fields: [promotionThumbnailId], references: [uploadImageId])
 
-  promotionValues PromotionValue[]
+  promotionPeriods PromotionPeriod[]
 
   @@map("promotions")
 }
 
-model PromotionValue {
-  discountType  String // "percentage", "fixed_amount"
-  discountValue Float
-  startDate     DateTime
-  endDate       DateTime
+model PromotionPeriod {
+  promotionPeriodId Int      @id @default(autoincrement())
+  discountType      String // "percentage", "fixed_amount"
+  discountValue     Float
+  startDate         DateTime
+  endDate           DateTime
 
   promotionId Int
   promotion   Promotion @relation(fields: [promotionId], references: [promotionId])
-  productId   Int
-  product     Product   @relation(fields: [productId], references: [productId])
+  
+  products     Product[] @relation("product_promotionperiod")
 
-  @@id([promotionId, productId])
-  @@map("promotion_values")
+  @@map("promotion_periods")
 }

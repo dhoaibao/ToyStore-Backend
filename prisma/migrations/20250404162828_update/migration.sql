@@ -1,4 +1,3 @@
-CREATE EXTENSION IF NOT EXISTS vector;
 -- CreateTable
 CREATE TABLE "roles" (
     "roleId" SERIAL NOT NULL,
@@ -25,16 +24,15 @@ CREATE TABLE "permissions" (
 );
 
 -- CreateTable
-CREATE TABLE "conversations" (
-    "conversationId" SERIAL NOT NULL,
-    "text" TEXT NOT NULL,
-    "isRead" BOOLEAN NOT NULL,
-    "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "uploadImageId" INTEGER NOT NULL,
+CREATE TABLE "messages" (
+    "messageId" SERIAL NOT NULL,
+    "content" TEXT NOT NULL,
+    "isRead" BOOLEAN NOT NULL DEFAULT false,
+    "time" TIMESTAMP(3) NOT NULL,
     "senderId" INTEGER NOT NULL,
-    "receiverId" INTEGER NOT NULL,
+    "receiverId" INTEGER,
 
-    CONSTRAINT "conversations_pkey" PRIMARY KEY ("conversationId")
+    CONSTRAINT "messages_pkey" PRIMARY KEY ("messageId")
 );
 
 -- CreateTable
@@ -44,6 +42,7 @@ CREATE TABLE "upload_images" (
     "filePath" TEXT NOT NULL,
     "reviewId" INTEGER,
     "productId" INTEGER,
+    "messageId" INTEGER,
 
     CONSTRAINT "upload_images_pkey" PRIMARY KEY ("uploadImageId")
 );
@@ -141,7 +140,6 @@ CREATE TABLE "products" (
     "updatedAt" TIMESTAMPTZ NOT NULL,
     "brandId" INTEGER NOT NULL,
     "categoryId" INTEGER NOT NULL,
-    "promotionId" INTEGER,
 
     CONSTRAINT "products_pkey" PRIMARY KEY ("productId")
 );
@@ -351,15 +349,23 @@ CREATE TABLE "promotions" (
     "promotionId" SERIAL NOT NULL,
     "promotionName" TEXT NOT NULL,
     "description" TEXT NOT NULL,
-    "discountType" TEXT NOT NULL,
-    "discountValue" DOUBLE PRECISION NOT NULL,
-    "startDate" TIMESTAMP(3) NOT NULL,
-    "endDate" TIMESTAMP(3) NOT NULL,
     "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMPTZ NOT NULL,
     "promotionThumbnailId" INTEGER NOT NULL,
 
     CONSTRAINT "promotions_pkey" PRIMARY KEY ("promotionId")
+);
+
+-- CreateTable
+CREATE TABLE "promotion_periods" (
+    "promotionPeriodId" SERIAL NOT NULL,
+    "discountType" TEXT NOT NULL,
+    "discountValue" DOUBLE PRECISION NOT NULL,
+    "startDate" TIMESTAMP(3) NOT NULL,
+    "endDate" TIMESTAMP(3) NOT NULL,
+    "promotionId" INTEGER NOT NULL,
+
+    CONSTRAINT "promotion_periods_pkey" PRIMARY KEY ("promotionPeriodId")
 );
 
 -- CreateTable
@@ -371,15 +377,20 @@ CREATE TABLE "_permission_roles" (
 );
 
 -- CreateTable
+CREATE TABLE "_product_promotionperiod" (
+    "A" INTEGER NOT NULL,
+    "B" INTEGER NOT NULL,
+
+    CONSTRAINT "_product_promotionperiod_AB_pkey" PRIMARY KEY ("A","B")
+);
+
+-- CreateTable
 CREATE TABLE "_user_voucher" (
     "A" INTEGER NOT NULL,
     "B" INTEGER NOT NULL,
 
     CONSTRAINT "_user_voucher_AB_pkey" PRIMARY KEY ("A","B")
 );
-
--- CreateIndex
-CREATE UNIQUE INDEX "conversations_uploadImageId_key" ON "conversations"("uploadImageId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "banners_uploadImageId_key" ON "banners"("uploadImageId");
@@ -436,22 +447,25 @@ CREATE UNIQUE INDEX "promotions_promotionThumbnailId_key" ON "promotions"("promo
 CREATE INDEX "_permission_roles_B_index" ON "_permission_roles"("B");
 
 -- CreateIndex
+CREATE INDEX "_product_promotionperiod_B_index" ON "_product_promotionperiod"("B");
+
+-- CreateIndex
 CREATE INDEX "_user_voucher_B_index" ON "_user_voucher"("B");
 
 -- AddForeignKey
-ALTER TABLE "conversations" ADD CONSTRAINT "conversations_uploadImageId_fkey" FOREIGN KEY ("uploadImageId") REFERENCES "upload_images"("uploadImageId") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "messages" ADD CONSTRAINT "messages_senderId_fkey" FOREIGN KEY ("senderId") REFERENCES "users"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "conversations" ADD CONSTRAINT "conversations_senderId_fkey" FOREIGN KEY ("senderId") REFERENCES "users"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "conversations" ADD CONSTRAINT "conversations_receiverId_fkey" FOREIGN KEY ("receiverId") REFERENCES "users"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "messages" ADD CONSTRAINT "messages_receiverId_fkey" FOREIGN KEY ("receiverId") REFERENCES "users"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "upload_images" ADD CONSTRAINT "upload_images_reviewId_fkey" FOREIGN KEY ("reviewId") REFERENCES "reviews"("reviewId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "upload_images" ADD CONSTRAINT "upload_images_productId_fkey" FOREIGN KEY ("productId") REFERENCES "products"("productId") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "upload_images" ADD CONSTRAINT "upload_images_messageId_fkey" FOREIGN KEY ("messageId") REFERENCES "messages"("messageId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "banners" ADD CONSTRAINT "banners_uploadImageId_fkey" FOREIGN KEY ("uploadImageId") REFERENCES "upload_images"("uploadImageId") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -482,9 +496,6 @@ ALTER TABLE "products" ADD CONSTRAINT "products_brandId_fkey" FOREIGN KEY ("bran
 
 -- AddForeignKey
 ALTER TABLE "products" ADD CONSTRAINT "products_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "categories"("categoryId") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "products" ADD CONSTRAINT "products_promotionId_fkey" FOREIGN KEY ("promotionId") REFERENCES "promotions"("promotionId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "categories" ADD CONSTRAINT "categories_categoryThumbnailId_fkey" FOREIGN KEY ("categoryThumbnailId") REFERENCES "upload_images"("uploadImageId") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -553,10 +564,19 @@ ALTER TABLE "order_details" ADD CONSTRAINT "order_details_productId_fkey" FOREIG
 ALTER TABLE "promotions" ADD CONSTRAINT "promotions_promotionThumbnailId_fkey" FOREIGN KEY ("promotionThumbnailId") REFERENCES "upload_images"("uploadImageId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "promotion_periods" ADD CONSTRAINT "promotion_periods_promotionId_fkey" FOREIGN KEY ("promotionId") REFERENCES "promotions"("promotionId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "_permission_roles" ADD CONSTRAINT "_permission_roles_A_fkey" FOREIGN KEY ("A") REFERENCES "permissions"("permissionId") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_permission_roles" ADD CONSTRAINT "_permission_roles_B_fkey" FOREIGN KEY ("B") REFERENCES "roles"("roleId") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_product_promotionperiod" ADD CONSTRAINT "_product_promotionperiod_A_fkey" FOREIGN KEY ("A") REFERENCES "products"("productId") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_product_promotionperiod" ADD CONSTRAINT "_product_promotionperiod_B_fkey" FOREIGN KEY ("B") REFERENCES "promotion_periods"("promotionPeriodId") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_user_voucher" ADD CONSTRAINT "_user_voucher_A_fkey" FOREIGN KEY ("A") REFERENCES "users"("userId") ON DELETE CASCADE ON UPDATE CASCADE;
