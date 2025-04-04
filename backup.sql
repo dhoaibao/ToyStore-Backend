@@ -1421,7 +1421,8 @@ COPY public._user_voucher ("A", "B") FROM stdin;
 --
 
 COPY public.addresses ("addressId", "addressName", "provinceId", "districtId", "wardCode", "provinceName", "districtName", "wardName", detail, "contactName", "contactPhone", "isDefault", "userId") FROM stdin;
-1	Nhà riêng	220	1572	550113	Cần Thơ	Quận Ninh Kiều	Phường Xuân Khánh	3/2	Dương Bảo	0942463758	t	1
+2	Nha rieng	202	3695	90764	Hồ Chí Minh	Thành Phố Thủ Đức	Phường Thảo Điền	abc	Duong Bao	0912345678	t	3
+1	Nhà riêng	220	1572	550113	Cần Thơ	Quận Ninh Kiều	Phường Xuân Khánh	3/2	Dương Bảo	0942463758	f	1
 \.
 
 
@@ -1449,8 +1450,6 @@ COPY public.brands ("brandId", "brandName", "brandDesc", "isActive", "createdAt"
 
 COPY public.cart_details (quantity, "productId", "cartId") FROM stdin;
 7	2	1
-4	11	2
-4	7	2
 \.
 
 
@@ -1479,63 +1478,16 @@ COPY public.categories ("categoryId", "categoryName", slug, "isActive", "created
 --
 
 COPY public.messages ("messageId", content, "isRead", "senderId", "receiverId", "time") FROM stdin;
-123	xin chao	t	1	\N	2025-03-18 11:47:17.821
-124		t	1	\N	2025-03-18 11:47:29.144
-75	ads	t	2	1	2025-03-17 10:35:00.669
-81	con	t	2	1	2025-03-17 12:12:24.872
-83	???	t	2	1	2025-03-17 12:13:59.694
-84	....\\	t	2	1	2025-03-17 12:14:05.188
-82	...	t	1	\N	2025-03-17 12:13:53.119
-136	hello	t	3	\N	2025-03-23 09:36:14.603
-137	.	t	3	\N	2025-03-23 09:37:00.46
-138	.	t	3	\N	2025-03-23 09:37:45.621
-139	..	t	3	\N	2025-03-23 09:38:12.602
-140	.	t	3	\N	2025-03-23 09:40:16.385
-80	con	t	2	1	2025-03-15 12:12:19.431
-78	ban con do khong	t	1	\N	2025-03-15 12:10:38.367
-79	con ban	t	2	1	2025-03-15 12:11:42.125
-77	tin nhan cuoi	t	1	\N	2025-03-15 10:43:29.035
-141	.	t	3	\N	2025-03-23 09:41:43.768
-142	/	t	3	\N	2025-03-23 09:42:39.896
-143	..	t	3	\N	2025-03-23 09:43:27.024
-144	chao	t	3	\N	2025-03-23 09:44:06.572
-145	a	t	3	\N	2025-03-23 09:44:46.533
-146	v	t	3	\N	2025-03-23 09:48:27.944
-147	hello	t	3	\N	2025-03-23 11:29:11.689
-62	xin chao	t	1	\N	2025-03-17 10:34:15.262
-64	toi can mua mot do choi lego	t	1	\N	2025-03-17 10:34:40.043
-148	chao	t	3	\N	2025-03-23 11:31:22.564
-63	chao, ban can giup gi	t	2	1	2025-03-17 10:34:22.623
-149	hello	t	3	\N	2025-03-23 11:42:17.474
-150	chao	t	3	\N	2025-03-23 11:45:36.181
-151	chao	t	3	\N	2025-03-23 11:48:50.949
-152	hello	t	3	\N	2025-03-23 11:49:00.442
-153	chao	t	3	\N	2025-03-23 11:49:08.536
-154	hello	t	3	\N	2025-03-23 11:52:58.406
-155	chao	t	3	\N	2025-03-23 11:53:05.193
-125	oke	t	1	\N	2025-03-18 11:47:50.638
-156	hello	t	3	\N	2025-03-23 11:54:10.023
-157	chao	t	3	\N	2025-03-23 11:54:20.292
-158	hello	t	3	\N	2025-03-23 11:54:31.491
-159	chao	t	3	\N	2025-03-23 11:55:34.183
-126	xin chào	t	1	\N	2025-03-18 12:03:04.251
-127		t	1	\N	2025-03-18 12:04:11.526
-129	chao	t	1	\N	2025-03-23 05:21:46.194
-128	chao ban	t	2	1	2025-03-23 05:15:32.897
-130	hello	t	1	\N	2025-03-23 06:38:05.809
-131		t	1	\N	2025-03-23 07:54:03.774
-132	ok	t	1	\N	2025-03-23 08:01:05.013
-133	toi can giup do	t	3	\N	2025-03-23 09:16:46.409
-160	hello	t	3	\N	2025-03-23 11:58:14.082
-161	chao	t	3	\N	2025-03-23 11:58:17.952
-162	alo	t	3	\N	2025-03-23 11:58:28.443
-163		t	3	\N	2025-03-23 11:59:08.071
-164	chao	t	3	\N	2025-03-23 11:59:37.965
-165		t	3	\N	2025-03-23 11:59:43.218
-166	chao	t	3	\N	2025-03-23 12:02:12.852
-167		t	3	\N	2025-03-23 12:02:17.435
-134		t	3	\N	2025-03-23 09:25:02.407
-135		t	3	\N	2025-03-23 09:25:24.52
+183	chào	t	3	\N	2025-04-04 06:14:53.391
+197	bạn có đó không	t	3	\N	2025-04-04 08:05:23.697
+199	tôi cần giúp đỡ	t	1	\N	2025-04-04 08:23:23.454
+200	ok	t	1	\N	2025-04-04 08:39:14.635
+201	ok	t	2	1	2025-04-04 08:41:07.824
+202		t	2	1	2025-04-04 08:41:14.329
+203		t	1	\N	2025-04-04 08:41:36.534
+204	ok	t	2	1	2025-04-04 08:42:22.758
+205		t	1	\N	2025-04-04 08:42:30.864
+206		t	2	1	2025-04-04 08:43:41.453
 \.
 
 
@@ -1554,6 +1506,7 @@ COPY public.newses ("newsId", title, slug, content, "createdAt", "updatedAt") FR
 COPY public.order_addresses ("orderAddressId", address, "contactName", "contactPhone") FROM stdin;
 1	3/2, Phường Xuân Khánh, Quận Ninh Kiều, Cần Thơ	Dương Bảo	0942463758
 2	3/2, Phường Xuân Khánh, Quận Ninh Kiều, Cần Thơ	Dương Bảo	0942463758
+3	abc, Phường Thảo Điền, Thành Phố Thủ Đức, Hồ Chí Minh	Duong Bao	0912345678
 \.
 
 
@@ -1564,6 +1517,9 @@ COPY public.order_addresses ("orderAddressId", address, "contactName", "contactP
 COPY public.order_details ("orderDetailId", price, "discountedPrice", quantity, "orderId", "productId") FROM stdin;
 1	419000	0	3	1	2
 2	419000	0	1	2	2
+3	419000	0	1	3	9
+4	419000	0	4	3	7
+5	299000	0	4	3	11
 \.
 
 
@@ -1591,6 +1547,7 @@ COPY public.order_trackings ("time", "orderId", "orderStatusId") FROM stdin;
 2025-03-11 09:48:46.218+00	1	3
 2025-03-11 09:48:48.757+00	2	2
 2025-03-12 07:49:00.018+00	1	4
+2025-04-01 09:44:07.885+00	3	1
 \.
 
 
@@ -1601,6 +1558,7 @@ COPY public.order_trackings ("time", "orderId", "orderStatusId") FROM stdin;
 COPY public.orders ("orderId", "totalPrice", "totalDiscount", "shippingFee", "finalPrice", "paymentStatus", "paidDate", "createdAt", "updatedAt", "userId", "orderAddressId", "paymentMethodId", "voucherId") FROM stdin;
 2	419000	0	22000	441000	f	\N	2025-03-10 13:10:46.283+00	2025-03-10 13:10:46.283+00	1	2	1	\N
 1	1257000	0	22000	1279000	t	2025-03-12 07:49:00.023	2025-03-10 02:35:30.433+00	2025-03-12 07:49:00.024+00	1	1	1	\N
+3	3291000	225000	20500	3086500	f	\N	2025-04-01 09:44:07.867+00	2025-04-01 09:44:07.867+00	3	3	1	\N
 \.
 
 
@@ -1753,10 +1711,10 @@ COPY public.product_informations ("productInfoId", "productInfoName", "isActive"
 --
 
 COPY public.products ("productId", "productName", slug, quantity, description, "soldNumber", "avgRating", "isActive", "createdAt", "updatedAt", "brandId", "categoryId") FROM stdin;
-9	test1	test1	50	Siêu chiến giáp của Cole có buồng lái và được trang bị một cây búa để chiến đấu với những tên Chiến binh Sói gian ác. Và bây giờ, bạn có thể kết hợp các bộ phận của 3 cỗ máy ninja tuyệt vời do Cole, Sora và Kai điều khiển để tạo ra cỗ máy kết hợp của riêng bạn. Mỗi cỗ máy có thể tùy chỉnh và được bán riêng, đi kèm với chân, tay, vũ khí và thân có thể tháo rời để bạn có thể kết hợp.\r\n\r\n• Xây dựng những bộ chiến giáp của riêng bạn – Những bé hâm mộ NINJAGO® có thể tận hưởng hàng giờ vui vẻ sáng tạo khi kết hợp các bộ phận từ những bộ đồ chơi khác nhau (được bán riêng) để tạo ra những bộ siêu chiến giáp NINJAGO® của riêng mình\r\n\r\n• 2 nhân vật NINJAGO® – Bộ trò chơi bao gồm Cole với phụ kiện thanh kiếm mini và Chiến binh Sói gian ác cũng có thanh kiếm. Bé có thể tái hiện các trận chiến từ phần 2 của bộ phim hoạt hình NINJAGO Dragons Rising\r\n\r\n• Chiến giáp có thể điều chỉnh được – chiến giáp hạng nặng này có buồng lái để bé có thể đặt Cole vào, một chiếc búa lớn và tay chân có thể điều chỉnh được, có thể nghiêng và điều chỉnh thành các tư thế chiến đấu. Ngoài ra bé có thể hoán đổi và kết hợp các bộ phận từ chiến giáp của Cole với chiến giáp công nghệ của Sora (71807) và chiến giáp Kai (71808) được bán riêng\r\n\r\n• Quà tặng siêu hấp dẫn cho bé – Bộ LEGO® NINJAGO siêu đỉnh này sẽ mang đến cho bé nghiệm lắp ráp và vui chơi sáng tạo. Qúa thích hợp làm quà tặng cho những dịp sinh nhật hoặc lễ Tết.\r\n\r\n• Xây dựng thế giới LEGO® NINJAGO® của bé – Cùng sưu tập thêm những bộ trò chơi LEGO® NINJAGO® khác và xây dựng một thế giới của riêng bé, từ đó mở ra những câu chuyện mới\r\n\r\n• Kích thước – Bộ lắp ráp LEGO® gồm 235 mảnh, sau khi hoàn thiện cao trên 5,5 inch (14 cm)	0	0	t	2025-03-10 03:11:02.271+00	2025-03-10 03:11:02.271+00	1	1
-7	testsssss	testsssss	50	Siêu chiến giáp của Cole có buồng lái và được trang bị một cây búa để chiến đấu với những tên Chiến binh Sói gian ác. Và bây giờ, bạn có thể kết hợp các bộ phận của 3 cỗ máy ninja tuyệt vời do Cole, Sora và Kai điều khiển để tạo ra cỗ máy kết hợp của riêng bạn. Mỗi cỗ máy có thể tùy chỉnh và được bán riêng, đi kèm với chân, tay, vũ khí và thân có thể tháo rời để bạn có thể kết hợp.\r\n\r\n• Xây dựng những bộ chiến giáp của riêng bạn – Những bé hâm mộ NINJAGO® có thể tận hưởng hàng giờ vui vẻ sáng tạo khi kết hợp các bộ phận từ những bộ đồ chơi khác nhau (được bán riêng) để tạo ra những bộ siêu chiến giáp NINJAGO® của riêng mình\r\n\r\n• 2 nhân vật NINJAGO® – Bộ trò chơi bao gồm Cole với phụ kiện thanh kiếm mini và Chiến binh Sói gian ác cũng có thanh kiếm. Bé có thể tái hiện các trận chiến từ phần 2 của bộ phim hoạt hình NINJAGO Dragons Rising\r\n\r\n• Chiến giáp có thể điều chỉnh được – chiến giáp hạng nặng này có buồng lái để bé có thể đặt Cole vào, một chiếc búa lớn và tay chân có thể điều chỉnh được, có thể nghiêng và điều chỉnh thành các tư thế chiến đấu. Ngoài ra bé có thể hoán đổi và kết hợp các bộ phận từ chiến giáp của Cole với chiến giáp công nghệ của Sora (71807) và chiến giáp Kai (71808) được bán riêng\r\n\r\n• Quà tặng siêu hấp dẫn cho bé – Bộ LEGO® NINJAGO siêu đỉnh này sẽ mang đến cho bé nghiệm lắp ráp và vui chơi sáng tạo. Qúa thích hợp làm quà tặng cho những dịp sinh nhật hoặc lễ Tết.\r\n\r\n• Xây dựng thế giới LEGO® NINJAGO® của bé – Cùng sưu tập thêm những bộ trò chơi LEGO® NINJAGO® khác và xây dựng một thế giới của riêng bé, từ đó mở ra những câu chuyện mới\r\n\r\n• Kích thước – Bộ lắp ráp LEGO® gồm 235 mảnh, sau khi hoàn thiện cao trên 5,5 inch (14 cm)	0	0	t	2025-03-10 03:02:02.092+00	2025-03-10 03:51:17.279+00	1	1
-11	Mô Hình Nhân Vật Người Dơi 4inch BATMAN 6055946	mo-hinh-nhan-vat-nguoi-doi-4inch-batman-6055946	20	Đồ chơi BATMAN mô hình siêu anh hùng 4 inch 6058529 là mô hình đồ chơi siêu anh hùng đến từ vũ trụ DC chiếm được tình cảm không nhỏ của mọi người trên toàn thế giới. Mô hình sở hữu các chi tiết hoàn hảo, lắp ráp dễ dàng với các khớp nối linh hoạt. Sản phẩm đến từ hãng BATMAN cực kỳ an toàn cho bé trong quá trình chơi cũng như kích thích sự phát triển trí tuệ của bé\r\n\r\nĐồ chơi siêu anh hùng 6058529 gây ấn tượng với những đặc điểm nổi bật sau đây:\r\n\r\n    Sản phẩm có đường nét và chi tiết sắc sảo kết hợp với áo choàng mềm mại cực kỳ giống với nhân vật trên phim ảnh mang đến một anh hùng người dơi “siêu thực”.\r\n    Mô hình hành động với kích thước chuẩn 10cm nhỏ gọn phù hợp mang đi nhiều nơi cũng như cho bé cầm nắm trong quá trình chơi.\r\n    Sản phẩm được đi kèm 3 vũ khí bí mật như: găng tay, khiên chắn, súng plasma nhằm hỗ trợ bé có thể biến hoá nhiều trạng thái thông qua khả năng tư duy lắp ráp của bé từ đó kích thích trí tuệ, sự tưởng tượng và sáng tạo của trẻ bay cao để cho các nhân vật trong việc hoàn thành nhiệm vụ hay kế hoạch đặt ra của các bé.\r\n    Sản phẩm được làm từ nhựa cao cấp, các góc cạnh được bo tròn với bề mặt nhẵn tạo sự an toàn, không làm trầy xước da khi bé chơi. \r\n    Sở hữu 11 khớp nối giúp bé có thể sáng tạo ra những hành động hay tư thế khác nhau để hòa mình vào cuộc chiến của riêng mình và các bạn chơi cùng.\r\n    Quá trình tháo lắp dễ dàng mà không sợ dễ dàng bị hư hỏng, rớt các khớp nên không hề độc hại trong quá trình bé chơi robot.\r\n    Hỗ trợ kích thích phát triển vận động cũng như trí não của bé trong quá trình chơi mô hình.\r\n    Sản phẩm phù hợp cho các bé có độ tuổi từ 3 tuổi trở lên.\r\n    Sản phẩm giao hàng ngẫu nhiên	0	0	t	2025-03-10 04:00:19.481+00	2025-03-10 12:15:33.121+00	2	2
 2	Đồ chơi lắp ráp Chiến giáp của Cole LEGO NINJAGO 71806	do-choi-lap-rap-chien-giap-cua-cole-lego-ninjago-71806	50	Siêu chiến giáp của Cole có buồng lái và được trang bị một cây búa để chiến đấu với những tên Chiến binh Sói gian ác. Và bây giờ, bạn có thể kết hợp các bộ phận của 3 cỗ máy ninja tuyệt vời do Cole, Sora và Kai điều khiển để tạo ra cỗ máy kết hợp của riêng bạn. Mỗi cỗ máy có thể tùy chỉnh và được bán riêng, đi kèm với chân, tay, vũ khí và thân có thể tháo rời để bạn có thể kết hợp.\r\n\r\n• Xây dựng những bộ chiến giáp của riêng bạn – Những bé hâm mộ NINJAGO® có thể tận hưởng hàng giờ vui vẻ sáng tạo khi kết hợp các bộ phận từ những bộ đồ chơi khác nhau (được bán riêng) để tạo ra những bộ siêu chiến giáp NINJAGO® của riêng mình\r\n\r\n• 2 nhân vật NINJAGO® – Bộ trò chơi bao gồm Cole với phụ kiện thanh kiếm mini và Chiến binh Sói gian ác cũng có thanh kiếm. Bé có thể tái hiện các trận chiến từ phần 2 của bộ phim hoạt hình NINJAGO Dragons Rising\r\n\r\n• Chiến giáp có thể điều chỉnh được – chiến giáp hạng nặng này có buồng lái để bé có thể đặt Cole vào, một chiếc búa lớn và tay chân có thể điều chỉnh được, có thể nghiêng và điều chỉnh thành các tư thế chiến đấu. Ngoài ra bé có thể hoán đổi và kết hợp các bộ phận từ chiến giáp của Cole với chiến giáp công nghệ của Sora (71807) và chiến giáp Kai (71808) được bán riêng\r\n\r\n• Quà tặng siêu hấp dẫn cho bé – Bộ LEGO® NINJAGO siêu đỉnh này sẽ mang đến cho bé nghiệm lắp ráp và vui chơi sáng tạo. Qúa thích hợp làm quà tặng cho những dịp sinh nhật hoặc lễ Tết.\r\n\r\n• Xây dựng thế giới LEGO® NINJAGO® của bé – Cùng sưu tập thêm những bộ trò chơi LEGO® NINJAGO® khác và xây dựng một thế giới của riêng bé, từ đó mở ra những câu chuyện mới\r\n\r\n• Kích thước – Bộ lắp ráp LEGO® gồm 235 mảnh, sau khi hoàn thiện cao trên 5,5 inch (14 cm)	4	0	t	2025-03-10 02:34:14.81+00	2025-03-10 13:10:46.294+00	1	1
+9	test1	test1	50	Siêu chiến giáp của Cole có buồng lái và được trang bị một cây búa để chiến đấu với những tên Chiến binh Sói gian ác. Và bây giờ, bạn có thể kết hợp các bộ phận của 3 cỗ máy ninja tuyệt vời do Cole, Sora và Kai điều khiển để tạo ra cỗ máy kết hợp của riêng bạn. Mỗi cỗ máy có thể tùy chỉnh và được bán riêng, đi kèm với chân, tay, vũ khí và thân có thể tháo rời để bạn có thể kết hợp.\r\n\r\n• Xây dựng những bộ chiến giáp của riêng bạn – Những bé hâm mộ NINJAGO® có thể tận hưởng hàng giờ vui vẻ sáng tạo khi kết hợp các bộ phận từ những bộ đồ chơi khác nhau (được bán riêng) để tạo ra những bộ siêu chiến giáp NINJAGO® của riêng mình\r\n\r\n• 2 nhân vật NINJAGO® – Bộ trò chơi bao gồm Cole với phụ kiện thanh kiếm mini và Chiến binh Sói gian ác cũng có thanh kiếm. Bé có thể tái hiện các trận chiến từ phần 2 của bộ phim hoạt hình NINJAGO Dragons Rising\r\n\r\n• Chiến giáp có thể điều chỉnh được – chiến giáp hạng nặng này có buồng lái để bé có thể đặt Cole vào, một chiếc búa lớn và tay chân có thể điều chỉnh được, có thể nghiêng và điều chỉnh thành các tư thế chiến đấu. Ngoài ra bé có thể hoán đổi và kết hợp các bộ phận từ chiến giáp của Cole với chiến giáp công nghệ của Sora (71807) và chiến giáp Kai (71808) được bán riêng\r\n\r\n• Quà tặng siêu hấp dẫn cho bé – Bộ LEGO® NINJAGO siêu đỉnh này sẽ mang đến cho bé nghiệm lắp ráp và vui chơi sáng tạo. Qúa thích hợp làm quà tặng cho những dịp sinh nhật hoặc lễ Tết.\r\n\r\n• Xây dựng thế giới LEGO® NINJAGO® của bé – Cùng sưu tập thêm những bộ trò chơi LEGO® NINJAGO® khác và xây dựng một thế giới của riêng bé, từ đó mở ra những câu chuyện mới\r\n\r\n• Kích thước – Bộ lắp ráp LEGO® gồm 235 mảnh, sau khi hoàn thiện cao trên 5,5 inch (14 cm)	1	0	t	2025-03-10 03:11:02.271+00	2025-04-01 09:44:07.891+00	1	1
+7	testsssss	testsssss	50	Siêu chiến giáp của Cole có buồng lái và được trang bị một cây búa để chiến đấu với những tên Chiến binh Sói gian ác. Và bây giờ, bạn có thể kết hợp các bộ phận của 3 cỗ máy ninja tuyệt vời do Cole, Sora và Kai điều khiển để tạo ra cỗ máy kết hợp của riêng bạn. Mỗi cỗ máy có thể tùy chỉnh và được bán riêng, đi kèm với chân, tay, vũ khí và thân có thể tháo rời để bạn có thể kết hợp.\r\n\r\n• Xây dựng những bộ chiến giáp của riêng bạn – Những bé hâm mộ NINJAGO® có thể tận hưởng hàng giờ vui vẻ sáng tạo khi kết hợp các bộ phận từ những bộ đồ chơi khác nhau (được bán riêng) để tạo ra những bộ siêu chiến giáp NINJAGO® của riêng mình\r\n\r\n• 2 nhân vật NINJAGO® – Bộ trò chơi bao gồm Cole với phụ kiện thanh kiếm mini và Chiến binh Sói gian ác cũng có thanh kiếm. Bé có thể tái hiện các trận chiến từ phần 2 của bộ phim hoạt hình NINJAGO Dragons Rising\r\n\r\n• Chiến giáp có thể điều chỉnh được – chiến giáp hạng nặng này có buồng lái để bé có thể đặt Cole vào, một chiếc búa lớn và tay chân có thể điều chỉnh được, có thể nghiêng và điều chỉnh thành các tư thế chiến đấu. Ngoài ra bé có thể hoán đổi và kết hợp các bộ phận từ chiến giáp của Cole với chiến giáp công nghệ của Sora (71807) và chiến giáp Kai (71808) được bán riêng\r\n\r\n• Quà tặng siêu hấp dẫn cho bé – Bộ LEGO® NINJAGO siêu đỉnh này sẽ mang đến cho bé nghiệm lắp ráp và vui chơi sáng tạo. Qúa thích hợp làm quà tặng cho những dịp sinh nhật hoặc lễ Tết.\r\n\r\n• Xây dựng thế giới LEGO® NINJAGO® của bé – Cùng sưu tập thêm những bộ trò chơi LEGO® NINJAGO® khác và xây dựng một thế giới của riêng bé, từ đó mở ra những câu chuyện mới\r\n\r\n• Kích thước – Bộ lắp ráp LEGO® gồm 235 mảnh, sau khi hoàn thiện cao trên 5,5 inch (14 cm)	4	0	t	2025-03-10 03:02:02.092+00	2025-04-01 09:44:07.891+00	1	1
+11	Mô Hình Nhân Vật Người Dơi 4inch BATMAN 6055946	mo-hinh-nhan-vat-nguoi-doi-4inch-batman-6055946	20	Đồ chơi BATMAN mô hình siêu anh hùng 4 inch 6058529 là mô hình đồ chơi siêu anh hùng đến từ vũ trụ DC chiếm được tình cảm không nhỏ của mọi người trên toàn thế giới. Mô hình sở hữu các chi tiết hoàn hảo, lắp ráp dễ dàng với các khớp nối linh hoạt. Sản phẩm đến từ hãng BATMAN cực kỳ an toàn cho bé trong quá trình chơi cũng như kích thích sự phát triển trí tuệ của bé\r\n\r\nĐồ chơi siêu anh hùng 6058529 gây ấn tượng với những đặc điểm nổi bật sau đây:\r\n\r\n    Sản phẩm có đường nét và chi tiết sắc sảo kết hợp với áo choàng mềm mại cực kỳ giống với nhân vật trên phim ảnh mang đến một anh hùng người dơi “siêu thực”.\r\n    Mô hình hành động với kích thước chuẩn 10cm nhỏ gọn phù hợp mang đi nhiều nơi cũng như cho bé cầm nắm trong quá trình chơi.\r\n    Sản phẩm được đi kèm 3 vũ khí bí mật như: găng tay, khiên chắn, súng plasma nhằm hỗ trợ bé có thể biến hoá nhiều trạng thái thông qua khả năng tư duy lắp ráp của bé từ đó kích thích trí tuệ, sự tưởng tượng và sáng tạo của trẻ bay cao để cho các nhân vật trong việc hoàn thành nhiệm vụ hay kế hoạch đặt ra của các bé.\r\n    Sản phẩm được làm từ nhựa cao cấp, các góc cạnh được bo tròn với bề mặt nhẵn tạo sự an toàn, không làm trầy xước da khi bé chơi. \r\n    Sở hữu 11 khớp nối giúp bé có thể sáng tạo ra những hành động hay tư thế khác nhau để hòa mình vào cuộc chiến của riêng mình và các bạn chơi cùng.\r\n    Quá trình tháo lắp dễ dàng mà không sợ dễ dàng bị hư hỏng, rớt các khớp nên không hề độc hại trong quá trình bé chơi robot.\r\n    Hỗ trợ kích thích phát triển vận động cũng như trí não của bé trong quá trình chơi mô hình.\r\n    Sản phẩm phù hợp cho các bé có độ tuổi từ 3 tuổi trở lên.\r\n    Sản phẩm giao hàng ngẫu nhiên	4	0	t	2025-03-10 04:00:19.481+00	2025-04-01 09:44:07.891+00	2	2
 \.
 
 
@@ -1833,17 +1791,24 @@ COPY public.upload_images ("uploadImageId", url, "filePath", "reviewId", "produc
 312	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/ACg8ocLd2Qh-PY4zPUE2bGJjWTo28wg5ovRYIAAVLKUnuBiDs0z8PFA=s96-c-1741765649996	images/ACg8ocLd2Qh-PY4zPUE2bGJjWTo28wg5ovRYIAAVLKUnuBiDs0z8PFA=s96-c-1741765649996	\N	\N	\N
 313	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/6055946_2.webp-1742188520565	images/6055946_2.webp-1742188520565	\N	\N	\N
 2	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/71806_5.webp-1742290242232	images/71806_5.webp-1742290242232	\N	\N	\N
-332	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742298449146	images/undefined-1742298449146	\N	\N	124
-333	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742298449150	images/undefined-1742298449150	\N	\N	124
-334	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742299451528	images/undefined-1742299451528	\N	\N	127
-335	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742299451530	images/undefined-1742299451530	\N	\N	127
-336	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742716443776	images/undefined-1742716443776	\N	\N	131
-337	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742721902408	images/undefined-1742721902408	\N	\N	134
-338	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742721924520	images/undefined-1742721924520	\N	\N	135
-339	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742721924521	images/undefined-1742721924521	\N	\N	135
-340	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742731148073	images/undefined-1742731148073	\N	\N	163
-341	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742731183220	images/undefined-1742731183220	\N	\N	165
-342	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742731337438	images/undefined-1742731337438	\N	\N	167
+334	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742299451528	images/undefined-1742299451528	\N	\N	\N
+335	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742299451530	images/undefined-1742299451530	\N	\N	\N
+342	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742731337438	images/undefined-1742731337438	\N	\N	\N
+337	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742721902408	images/undefined-1742721902408	\N	\N	\N
+338	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742721924520	images/undefined-1742721924520	\N	\N	\N
+339	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742721924521	images/undefined-1742721924521	\N	\N	\N
+336	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742716443776	images/undefined-1742716443776	\N	\N	\N
+332	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742298449146	images/undefined-1742298449146	\N	\N	\N
+333	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742298449150	images/undefined-1742298449150	\N	\N	\N
+341	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742731183220	images/undefined-1742731183220	\N	\N	\N
+340	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1742731148073	images/undefined-1742731148073	\N	\N	\N
+343	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1743752256252	images/undefined-1743752256252	\N	\N	\N
+344	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1743756074332	images/undefined-1743756074332	\N	\N	202
+345	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1743756096536	images/undefined-1743756096536	\N	\N	203
+346	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1743756096537	images/undefined-1743756096537	\N	\N	203
+347	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1743756096538	images/undefined-1743756096538	\N	\N	203
+348	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1743756150865	images/undefined-1743756150865	\N	\N	205
+349	https://uswmuftkubwmolbqboyn.supabase.co/storage/v1/object/public/ToyStore/images/undefined-1743756221454	images/undefined-1743756221454	\N	\N	206
 \.
 
 
@@ -1872,7 +1837,7 @@ COPY public.vouchers ("voucherId", "voucherCode", "discountType", "discountValue
 -- Name: addresses_addressId_seq; Type: SEQUENCE SET; Schema: public; Owner: dhoaibao
 --
 
-SELECT pg_catalog.setval('public."addresses_addressId_seq"', 1, true);
+SELECT pg_catalog.setval('public."addresses_addressId_seq"', 2, true);
 
 
 --
@@ -1907,7 +1872,7 @@ SELECT pg_catalog.setval('public."categories_categoryId_seq"', 2, true);
 -- Name: messages_messageId_seq; Type: SEQUENCE SET; Schema: public; Owner: dhoaibao
 --
 
-SELECT pg_catalog.setval('public."messages_messageId_seq"', 167, true);
+SELECT pg_catalog.setval('public."messages_messageId_seq"', 206, true);
 
 
 --
@@ -1921,14 +1886,14 @@ SELECT pg_catalog.setval('public."newses_newsId_seq"', 1, false);
 -- Name: order_addresses_orderAddressId_seq; Type: SEQUENCE SET; Schema: public; Owner: dhoaibao
 --
 
-SELECT pg_catalog.setval('public."order_addresses_orderAddressId_seq"', 2, true);
+SELECT pg_catalog.setval('public."order_addresses_orderAddressId_seq"', 3, true);
 
 
 --
 -- Name: order_details_orderDetailId_seq; Type: SEQUENCE SET; Schema: public; Owner: dhoaibao
 --
 
-SELECT pg_catalog.setval('public."order_details_orderDetailId_seq"', 2, true);
+SELECT pg_catalog.setval('public."order_details_orderDetailId_seq"', 5, true);
 
 
 --
@@ -1942,7 +1907,7 @@ SELECT pg_catalog.setval('public."order_statuses_orderStatusId_seq"', 5, true);
 -- Name: orders_orderId_seq; Type: SEQUENCE SET; Schema: public; Owner: dhoaibao
 --
 
-SELECT pg_catalog.setval('public."orders_orderId_seq"', 2, true);
+SELECT pg_catalog.setval('public."orders_orderId_seq"', 3, true);
 
 
 --
@@ -2033,7 +1998,7 @@ SELECT pg_catalog.setval('public."system_configurations_systemConfigId_seq"', 1,
 -- Name: upload_images_uploadImageId_seq; Type: SEQUENCE SET; Schema: public; Owner: dhoaibao
 --
 
-SELECT pg_catalog.setval('public."upload_images_uploadImageId_seq"', 342, true);
+SELECT pg_catalog.setval('public."upload_images_uploadImageId_seq"', 349, true);
 
 
 --
