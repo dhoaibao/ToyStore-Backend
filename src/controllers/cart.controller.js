@@ -10,7 +10,7 @@ const include = {
                             url: true
                         }
                     },
-                    promotionValues: true,
+                    promotionPeriods: true,
                     prices: true,
                 }
             }

@@ -31,7 +31,7 @@ const include = {
     },
   },
   productImages: true,
-  promotionValues: true,
+  promotionPeriods: true,
   reviews: {
     select: {
       comment: true,
@@ -51,6 +51,7 @@ export const getAllProducts = async (req, res) => {
     const {
       page = 1,
       limit = 10,
+      productIds,
       brandNames,
       categoryNames,
       ageOption,
@@ -78,10 +79,25 @@ export const getAllProducts = async (req, res) => {
       filters.isActive = isActive === "true";
     }
 
+    // if (keyword) {
+    //   const uniqueProductIds = await searchProducts(keyword);
+    //   filters.productId = {
+    //     in: uniqueProductIds,
+    //   };
+    // }
+    //
+
     if (keyword) {
-      const uniqueProductIds = await searchProducts(keyword);
+      filters.productName = {
+        contains: keyword,
+        mode: "insensitive",
+      };
+    }
+
+    if (productIds) {
       filters.productId = {
-        in: uniqueProductIds,
+        in: productIds.map((id) => parseInt(id)),
+        mode: "insensitive",
       };
     }
 

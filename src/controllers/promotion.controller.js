@@ -7,7 +7,26 @@ const include = {
       url: true,
     },
   },
-  promotionValues: true
+  promotionPeriods: {
+    select: {
+      promotionPeriodId: true,
+      discountType: true,
+      discountValue: true,
+      startDate: true,
+      endDate: true,
+      products: {
+        select: {
+          productId: true,
+          productName: true,
+          productImages: {
+            select: {
+              url: true,
+            },
+          },
+        },
+      },
+    },
+  },
 };
 
 export const getAllPromotions = async (req, res) => {
@@ -109,8 +128,6 @@ export const createPromotion = async (req, res) => {
       discountValue,
       startDate,
       endDate,
-      brandId,
-      categoryId,
       productIds,
     } = req.body;
 
@@ -123,54 +140,28 @@ export const createPromotion = async (req, res) => {
       !discountValue ||
       !startDate ||
       !endDate ||
-      !file
+      !file ||
+      !productIds
     ) {
       return res.status(400).json({ message: "Missing required fields!" });
     }
 
-    if (!brandId && !categoryId && !productIds) {
-      return res.status(400).json({ message: "Missing required fields!" });
-    }
-
-    let idList = productIds ? [...productIds] : [];
-    if (brandId) {
-      const products = await prisma.product.findMany({
-        where: { brandId: parseInt(brandId) },
-        select: {
-          productId: true,
-        },
-      });
-      const ids = products.map((product) => product.productId);
-      idList = [...idList, ...ids];
-    }
-
-    if (categoryId) {
-      const products = await prisma.product.findMany({
-        where: { categoryId: parseInt(categoryId) },
-        select: {
-          productId: true,
-        },
-      });
-      const ids = products.map((product) => product.productId);
-      idList = [...idList, ...ids];
-    }
-
-    const uniqueProductIds = [...new Set(idList)];
+    const parsedProductIds = productIds.map((id) => parseInt(id));
 
     const image = await uploadFile(file);
     const promotion = await prisma.promotion.create({
       data: {
         promotionName,
         description,
-        promotionValues: {
-          createMany: {
-            data: uniqueProductIds.map((id) => ({
-              productId: id,
-              discountType,
-              discountValue: parseFloat(discountValue),
-              startDate: new Date(startDate),
-              endDate: new Date(endDate),
-            })),
+        promotionPeriods: {
+          create: {
+            discountType,
+            discountValue: parseFloat(discountValue),
+            startDate: new Date(startDate),
+            endDate: new Date(endDate),
+            products: {
+              connect: parsedProductIds.map((id) => ({ productId: id })),
+            },
           },
         },
         promotionThumbnail: {
@@ -207,6 +198,8 @@ export const updatePromotion = async (req, res) => {
       discountValue,
       startDate,
       endDate,
+      promotionPeriodId,
+      productIds,
     } = req.body;
 
     const file = req.file;
@@ -229,10 +222,6 @@ export const updatePromotion = async (req, res) => {
     const fields = {
       promotionName,
       description,
-      discountType,
-      discountValue: discountValue ? parseFloat(discountValue) : null,
-      startDate: startDate ? new Date(startDate) : null,
-      endDate: endDate ? new Date(endDate) : null,
     };
 
     const data = Object.entries(fields).reduce((acc, [key, value]) => {
@@ -257,6 +246,89 @@ export const updatePromotion = async (req, res) => {
       data,
       include,
     });
+console.log(productIds)
+    // Parse product IDs from the request
+    const parsedProductIds = productIds
+      ? productIds.map((id) => parseInt(id))
+      : [];
+
+    let promotionPeriod = {};
+    if (promotionPeriodId) {
+      promotionPeriod = await prisma.promotionPeriod.update({
+        where: { promotionPeriodId: parseInt(promotionPeriodId) },
+        data: {
+          discountType,
+          discountValue: parseFloat(discountValue),
+          startDate: new Date(startDate),
+          endDate: new Date(endDate),
+        },
+        select: {
+          promotionPeriodId: true,
+          products: {
+            select: {
+              productId: true,
+            },
+          },
+        },
+      });
+    } else {
+      promotionPeriod = await prisma.promotionPeriod.create({
+        data: {
+          promotionId: existingPromotion.promotionId,
+          discountType,
+          discountValue: parseFloat(discountValue),
+          startDate: new Date(startDate),
+          endDate: new Date(endDate),
+          products: {
+            connect: parsedProductIds.map((id) => ({ productId: id })),
+          },
+        },
+        include: {
+          products: true
+        }
+      });
+    }
+
+    // Extract existing product IDs
+    const existingProductIds = promotionPeriod.products.map(
+      (value) => value.productId,
+    );
+
+    // Find product IDs that are new (need to be added)
+    const productIdsToAdd = parsedProductIds.filter(
+      (id) => !existingProductIds.includes(id),
+    );
+
+    // Find product IDs that have been removed (need to be deleted)
+    const productIdsToRemove = existingProductIds.filter(
+      (id) => !parsedProductIds.includes(id),
+    );
+
+    if (productIdsToAdd.length > 0 || productIdsToRemove.length > 0) {
+      // Prepare update data
+      const updateData = {
+        where: { promotionPeriodId: promotionPeriod.promotionPeriodId },
+        data: {
+          products: {},
+        },
+      };
+
+      // Check and add products to connect if needed
+      if (productIdsToAdd.length > 0) {
+        updateData.data.products.connect = productIdsToAdd.map((id) => ({
+          productId: id,
+        }));
+      }
+
+      // Check and add products to disconnect if needed
+      if (productIdsToRemove.length > 0) {
+        updateData.data.products.disconnect = productIdsToRemove.map((id) => ({
+          productId: id,
+        }));
+      }
+
+      await prisma.promotionPeriod.update(updateData);
+    }
 
     return res.status(200).json({
       message: "Promotion updated!",
