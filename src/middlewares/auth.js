@@ -103,7 +103,7 @@ export const authorization = async (req, res, next) => {
       return permission.apiPath === combinePath && permission.method === method;
     });
 
-    console.log({ combinePath, checkPermission });
+    // console.log({ combinePath, checkPermission });
 
     if (!checkPermission) {
       return res
