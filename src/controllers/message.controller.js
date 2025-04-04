@@ -3,10 +3,10 @@ import prisma from "../config/prismaClient.js";
 const include = {
   uploadImages: {
     select: {
-      url: true
-    }
-  }
-}
+      url: true,
+    },
+  },
+};
 
 export const getMessages = async (req, res) => {
   try {
@@ -28,15 +28,10 @@ export const getMessages = async (req, res) => {
           },
         ],
       },
-      orderBy: {
-        time: "desc",
-      },
       skip,
       take,
-      include
+      include,
     });
-    
-    const reversedMessages = messages.reverse();
 
     const totalMessages = await prisma.message.count({
       where: {
@@ -60,14 +55,14 @@ export const getMessages = async (req, res) => {
 
     return res.status(200).json({
       message: "All messages fetched!",
-      data: reversedMessages,
+      data: messages,
       unreadCount: unreadCount,
       pagination: {
-          total: totalMessages,
-          page: parseInt(page),
-          limit: take,
-          totalPages: Math.ceil(totalMessages / take),
-      }
+        total: totalMessages,
+        page: parseInt(page),
+        limit: take,
+        totalPages: Math.ceil(totalMessages / take),
+      },
     });
   } catch (error) {
     console.error(error);
@@ -83,11 +78,13 @@ export const getConversations = async (req, res) => {
     const { page = 1, limit = 20 } = req.query;
     const skip = (parseInt(page) - 1) * parseInt(limit);
     const take = parseInt(limit);
-    
+
     const senders = await prisma.message.findMany({
-      distinct: ["senderId", "receiverId"],
-      select: {
-        senderId: true,
+      where: {
+        receiverId: null,
+      },
+      distinct: ["senderId"],
+      include: {
         sender: {
           select: {
             fullName: true,
@@ -103,58 +100,46 @@ export const getConversations = async (req, res) => {
       orderBy: {
         time: "desc",
       },
-      where: {
-        receiverId: null,
-      },
       skip,
       take,
     });
 
-    const conversations = [];
-    for (const sender of senders) {
-      const senderId = sender.senderId;
-      const lastMessage = await prisma.message.findFirst({
-        where: {
-          OR: [
-            {
-              senderId: senderId,
-            },
-            {
-              receiverId: senderId,
-            },
-          ],
-        },
-        select: {
-          content: true,
-          time: true,
-          isRead: true,
-        },
-        orderBy: {
-          time: "desc",
-        },
-      });
-      
-      const unreadCount = await prisma.message.count({
-        where: {
-          senderId: senderId,
-          isRead: false,
-        },
-      });
-    
-      conversations.push({ sender, lastMessage, unreadCount});
-    }
-    
+    const conversations = await Promise.all(
+      senders.map(async (i) => {
+        const senderId = i.senderId;
+        const unreadCount = await prisma.message.count({
+          where: {
+            senderId: senderId,
+            isRead: false,
+          },
+        });
+
+        const sender = {
+          senderId: i.senderId,
+          ...i.sender,
+        };
+
+        const lastMessage = {
+          content: i.content,
+          time: i.time,
+          isRead: i.isRead,
+        };
+
+        return { sender, lastMessage, unreadCount };
+      }),
+    );
+
     const totalConversations = conversations.length;
 
     return res.status(200).json({
       message: "Conversations fetched!",
       data: conversations,
       pagination: {
-          total: totalConversations,
-          page: parseInt(page),
-          limit: take,
-          totalPages: Math.ceil(totalConversations / take),
-      }
+        total: totalConversations,
+        page: parseInt(page),
+        limit: take,
+        totalPages: Math.ceil(totalConversations / take),
+      },
     });
   } catch (error) {
     console.error(error);

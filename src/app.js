@@ -62,8 +62,9 @@ io.on("connection", (socket) => {
   });
 
   socket.on(
-    "sendMessage",
-    async ({ senderId, content, time, senderName, avatar, files }) => {
+    "sendMessageByClient",
+    async ({ senderId, content, time, senderName, email, avatar, files }) => {
+      console.log("send message by client")
       const images = await Promise.all(
         files.map(async (file) => {
           const { url, filePath } = await uploadFile(file);
@@ -93,6 +94,7 @@ io.on("connection", (socket) => {
         content,
         isRead: false,
         senderName,
+        email,
         avatar,
         uploadImages:
           images.length > 0
@@ -105,8 +107,8 @@ io.on("connection", (socket) => {
     },
   );
 
-  socket.on("replyMessage", async ({ senderId, receiverId, content, time, files }) => {
-    console.log("asjhd")
+  socket.on("sendMessageByStore", async ({ senderId, receiverId, content, time, files }) => {
+    console.log("send message by store")
     const images = await Promise.all(
       files.map(async (file) => {
         const { url, filePath } = await uploadFile(file);
