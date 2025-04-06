@@ -173,6 +173,7 @@ model Product {
   slug        String   @unique
   quantity    Int
   description String
+  vat         Float
   soldNumber  Int      @default(0)
   avgRating   Float    @default(0)
   isActive    Boolean

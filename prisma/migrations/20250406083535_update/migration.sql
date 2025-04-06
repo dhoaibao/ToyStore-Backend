@@ -1,3 +1,5 @@
+CREATE EXTENSION IF NOT EXISTS vector;
+
 -- CreateTable
 CREATE TABLE "roles" (
     "roleId" SERIAL NOT NULL,
@@ -133,6 +135,7 @@ CREATE TABLE "products" (
     "slug" TEXT NOT NULL,
     "quantity" INTEGER NOT NULL,
     "description" TEXT NOT NULL,
+    "vat" DOUBLE PRECISION NOT NULL,
     "soldNumber" INTEGER NOT NULL DEFAULT 0,
     "avgRating" DOUBLE PRECISION NOT NULL DEFAULT 0,
     "isActive" BOOLEAN NOT NULL,
