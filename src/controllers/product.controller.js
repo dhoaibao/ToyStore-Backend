@@ -262,9 +262,10 @@ export const createProduct = async (req, res) => {
       brandId,
       categoryId,
       productInfos,
+      vat
     } = req.body;
 
-    if (!productName || !price || !isActive || !quantity || !description) {
+    if (!productName || !price || !isActive || !quantity || !description || !vat) {
       return res.status(400).json({ message: "Missing required fields!" });
     }
 
@@ -306,6 +307,7 @@ export const createProduct = async (req, res) => {
             isActive: isActive === "true",
             quantity: parseInt(quantity),
             description,
+            vat: parseFloat(vat),
             brandId: parseInt(brandId),
             categoryId: parseInt(categoryId),
             productImages: {
@@ -394,6 +396,7 @@ export const updateProduct = async (req, res) => {
       isActive,
       quantity,
       description,
+      vat,
       brandId,
       categoryId,
       productInfos,
@@ -427,6 +430,7 @@ export const updateProduct = async (req, res) => {
       slug: productName ? generateSlug(productName) : null,
       isActive: isActive ? isActive === "true" : null,
       quantity: quantity ? parseInt(quantity) : null,
+      vat: vat ? parseInt(vat) : null,
       description,
       brandId: brandId ? parseInt(brandId) : null,
       categoryId: categoryId ? parseInt(categoryId) : null,
