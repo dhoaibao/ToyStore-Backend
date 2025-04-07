@@ -41,5 +41,5 @@ jobs:
 
             bun install
 
-            pm2 restart backend
+            pm2 restart toystore-backend
           EOF
