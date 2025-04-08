@@ -61,7 +61,7 @@ export const getAllProducts = async (req, res) => {
       keyword,
       promotion,
       isActive,
-      sortPrice
+      sortPrice,
     } = req.query;
     const skip = (page - 1) * limit;
     const take = parseInt(limit);
@@ -164,11 +164,24 @@ export const getAllProducts = async (req, res) => {
 
     const sortOrder = {};
 
-    if (sort && order) {
-      if (sort === "newest") {
-        sortOrder.createdAt = order;
-      } else if (sort === "bestseller") {
-        sortOrder.soldNumber = order;
+    if (sort) {
+      if (sort === "bestseller") {
+        // Calculate date 3 months ago
+        const threeMonthsAgo = new Date();
+        threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+
+        // Add filter for sales in the last 3 months
+        filters.orderDetails = {
+          some: {
+            order: {
+              createdAt: {
+                gte: threeMonthsAgo,
+              },
+            },
+          },
+        };
+
+        sortOrder.soldNumber = "desc";
       } else if (sort === "soldNumber") {
         sortOrder.soldNumber = order === "asc" ? "desc" : "asc";
       } else if (sort !== "price") {
@@ -193,7 +206,7 @@ export const getAllProducts = async (req, res) => {
         price: currentPrice,
       };
     });
-    
+
     if (sort === "price") {
       updatedProducts.sort((a, b) => {
         const priceA = a.price;
