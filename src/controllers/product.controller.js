@@ -61,7 +61,6 @@ export const getAllProducts = async (req, res) => {
       keyword,
       promotion,
       isActive,
-      sortPrice,
     } = req.query;
     const skip = (page - 1) * limit;
     const take = parseInt(limit);
