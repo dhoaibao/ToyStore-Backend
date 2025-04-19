@@ -84,14 +84,6 @@ export const createAddress = async (req, res) => {
             return res.status(400).json({ message: 'Missing required fields!' });
         }
 
-        const existingAddress = await prisma.address.findFirst({
-            where: { addressName }
-        });
-
-        if (existingAddress) {
-            return res.status(400).json({ message: 'Address name already exists!' });
-        }
-
         const address = await prisma.address.create({
             data: {
                 addressName,
