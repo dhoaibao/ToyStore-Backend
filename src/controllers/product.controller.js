@@ -68,7 +68,7 @@ export const getAllProducts = async (req, res) => {
     const filters = {};
 
     if (promotion) {
-      filters.promotionValues = {
+      filters.promotionPeriods = {
         some: {
           promotionId: parseInt(promotion),
         },
