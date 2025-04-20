@@ -1,5 +1,14 @@
 import prisma from "../config/prismaClient.js";
 import getCurrentPrice from "../utils/getCurrentPrice.js";
+import { createPaymentUrl } from "../utils/vnpay.js";
+import dayjs from "dayjs";
+import qs from "qs";
+import sortObject from "../utils/sortObject.js";
+
+const tmnCode = process.env.vnp_TmnCode;
+const secretKey = process.env.vnp_HashSecret;
+const vnpUrl = process.env.vnp_Url;
+const returnUrl = process.env.vnp_ReturnUrl;
 
 const include = {
   orderTrackings: {
@@ -374,9 +383,21 @@ export const createOrder = async (req, res) => {
       return updatedOrder;
     });
 
+    const ipAddr =
+      req.headers['x-forwarded-for']?.split(',').shift() ||
+      req.socket.remoteAddress ||
+      req.ip;
+
+    const createDate = dayjs(result.createdAt).format('YYYYMMDDHHmmss');
+    const orderId = result.orderId;
+    const amount = result.finalPrice;
+
+    const vnpayUrl = createPaymentUrl(ipAddr, createDate, orderId, amount);
+
     return res.status(200).json({
       message: "Order created!",
       data: result,
+      redirectUrl: vnpayUrl
     });
   } catch (error) {
     console.error(error);
@@ -472,4 +493,42 @@ export const updateOrderStatus = async (req, res) => {
       error: error.message,
     });
   }
+};
+
+
+export const vnpayReturn = (req, res) => {
+  let vnp_Params = req.query;
+
+  const secureHash = vnp_Params['vnp_SecureHash'];
+  delete vnp_Params['vnp_SecureHash'];
+  delete vnp_Params['vnp_SecureHashType'];
+
+  vnp_Params = sortObject(vnp_Params);
+
+  const signData = qs.stringify(vnp_Params, { encode: true });
+  const hmac = crypto.createHmac('sha512', secretKey);
+  const signed = hmac.update(Buffer.from(signData, 'utf-8')).digest('hex');
+
+  if (secureHash !== signed) {
+    return {
+      success: false,
+      message: 'Invalid Sign',
+      vnp_Code: 97,
+    };
+  }
+
+  const vnp_RspCode = vnp_Params['vnp_ResponseCode'];
+
+  if (vnp_RspCode !== '00') {
+    return {
+      success: false,
+      message: `Thanh toán thất bại, mã lỗi vnpay ${vnp_RspCode}`,
+    };
+  }
+
+  return {
+    success: true,
+    vnp_Code: vnp_RspCode,
+    message: 'Thanh toán thành công',
+  };
 };
