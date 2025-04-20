@@ -1,14 +1,7 @@
 import prisma from "../config/prismaClient.js";
 import getCurrentPrice from "../utils/getCurrentPrice.js";
-import { createPaymentUrl } from "../utils/vnpay.js";
+import { createPaymentUrl, handlePaymentReturn } from "../utils/vnpay.js";
 import dayjs from "dayjs";
-import qs from "qs";
-import sortObject from "../utils/sortObject.js";
-
-const tmnCode = process.env.vnp_TmnCode;
-const secretKey = process.env.vnp_HashSecret;
-const vnpUrl = process.env.vnp_Url;
-const returnUrl = process.env.vnp_ReturnUrl;
 
 const include = {
   orderTrackings: {
@@ -496,39 +489,17 @@ export const updateOrderStatus = async (req, res) => {
 };
 
 
-export const vnpayReturn = (req, res) => {
-  let vnp_Params = req.query;
+export const vnpayReturn = async (req, res) => {
+  const vnp_Params = req.query;
 
-  const secureHash = vnp_Params['vnp_SecureHash'];
-  delete vnp_Params['vnp_SecureHash'];
-  delete vnp_Params['vnp_SecureHashType'];
+  const paymentReturnData = await handlePaymentReturn(vnp_Params);
 
-  vnp_Params = sortObject(vnp_Params);
-
-  const signData = qs.stringify(vnp_Params, { encode: true });
-  const hmac = crypto.createHmac('sha512', secretKey);
-  const signed = hmac.update(Buffer.from(signData, 'utf-8')).digest('hex');
-
-  if (secureHash !== signed) {
-    return {
-      success: false,
-      message: 'Invalid Sign',
-      vnp_Code: 97,
-    };
+  if (!paymentReturnData.success) {
+    return res.status(400).json({
+      error: paymentReturnData.message,
+      vnp_Code: paymentReturnData?.vnp_Code,
+    });
   }
 
-  const vnp_RspCode = vnp_Params['vnp_ResponseCode'];
-
-  if (vnp_RspCode !== '00') {
-    return {
-      success: false,
-      message: `Thanh toán thất bại, mã lỗi vnpay ${vnp_RspCode}`,
-    };
-  }
-
-  return {
-    success: true,
-    vnp_Code: vnp_RspCode,
-    message: 'Thanh toán thành công',
-  };
+  res.redirect(`http://localhost:3001/order-success`);
 };
