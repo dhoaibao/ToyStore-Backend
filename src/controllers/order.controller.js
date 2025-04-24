@@ -376,16 +376,19 @@ export const createOrder = async (req, res) => {
       return updatedOrder;
     });
 
-    const ipAddr =
-      req.headers['x-forwarded-for']?.split(',').shift() ||
-      req.socket.remoteAddress ||
-      req.ip;
-
-    const createDate = dayjs(result.createdAt).format('YYYYMMDDHHmmss');
-    const orderId = result.orderId;
-    const amount = result.finalPrice;
-
-    const vnpayUrl = createPaymentUrl(ipAddr, createDate, orderId, amount);
+    let vnpayUrl = null;
+    if (paymentMethodId === 2) {
+      const ipAddr =
+        req.headers['x-forwarded-for']?.split(',').shift() ||
+        req.socket.remoteAddress ||
+        req.ip;
+  
+      const createDate = dayjs(result.createdAt).format('YYYYMMDDHHmmss');
+      const orderId = result.orderId;
+      const amount = result.finalPrice;
+  
+      vnpayUrl = createPaymentUrl(ipAddr, createDate, orderId, amount);
+    }
 
     return res.status(200).json({
       message: "Order created!",

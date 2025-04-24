@@ -23,6 +23,7 @@ import {
   permissionRoute,
   statisticRoute,
   newsRoute,
+  recommendationRoute
 } from "./routes/index.js";
 import prisma from "./config/prismaClient.js";
 
@@ -182,6 +183,7 @@ app.use(`/api/${API_VERSION}/review`, reviewRoute);
 app.use(`/api/${API_VERSION}/message`, messageRoute);
 app.use(`/api/${API_VERSION}/statistic`, statisticRoute);
 app.use(`/api/${API_VERSION}/news`, newsRoute);
+app.use(`/api/${API_VERSION}/recommendations`, recommendationRoute);
 
 app.get("/", (_, res) => {
   res.json({ message: "Server is running!" });
