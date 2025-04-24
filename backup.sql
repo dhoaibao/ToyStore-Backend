@@ -1406,6 +1406,11 @@ COPY public._permission_roles ("A", "B") FROM stdin;
 22	2
 23	2
 4	2
+15	1
+17	1
+18	1
+20	1
+21	1
 \.
 
 
@@ -1442,6 +1447,7 @@ COPY public._user_voucher ("A", "B") FROM stdin;
 --
 
 COPY public.addresses ("addressId", "addressName", "provinceId", "districtId", "wardCode", "provinceName", "districtName", "wardName", detail, "contactName", "contactPhone", "isDefault", "userId") FROM stdin;
+1	Nhà riêng	220	1572	550105	Cần Thơ	Quận Ninh Kiều	Phường An Khánh	Nguyễn Văn Linh	Dương Bảo	0912345678	t	3
 \.
 
 
@@ -1468,6 +1474,7 @@ COPY public.brands ("brandId", "brandName", "brandDesc", "isActive", "createdAt"
 --
 
 COPY public.cart_details (quantity, "productId", "cartId") FROM stdin;
+1	2	1
 \.
 
 
@@ -1476,6 +1483,7 @@ COPY public.cart_details (quantity, "productId", "cartId") FROM stdin;
 --
 
 COPY public.carts ("cartId", "userId") FROM stdin;
+1	3
 \.
 
 
@@ -1510,6 +1518,9 @@ COPY public.newses ("newsId", title, slug, content, "createdAt", "updatedAt") FR
 --
 
 COPY public.order_addresses ("orderAddressId", address, "contactName", "contactPhone") FROM stdin;
+1	Nguyễn Văn Linh, Phường An Khánh, Quận Ninh Kiều, Cần Thơ	Dương Bảo	0912345678
+2	Nguyễn Văn Linh, Phường An Khánh, Quận Ninh Kiều, Cần Thơ	Dương Bảo	0912345678
+3	Nguyễn Văn Linh, Phường An Khánh, Quận Ninh Kiều, Cần Thơ	Dương Bảo	0912345678
 \.
 
 
@@ -1518,6 +1529,9 @@ COPY public.order_addresses ("orderAddressId", address, "contactName", "contactP
 --
 
 COPY public.order_details ("orderDetailId", price, "discountedPrice", quantity, "orderId", "productId") FROM stdin;
+1	299000	0	4	1	1
+2	419000	0	8	2	2
+3	299000	0	12	3	1
 \.
 
 
@@ -1539,6 +1553,9 @@ COPY public.order_statuses ("orderStatusId", "statusName") FROM stdin;
 --
 
 COPY public.order_trackings ("time", "orderId", "orderStatusId") FROM stdin;
+2025-04-08 14:45:39.598+00	1	1
+2025-04-08 14:47:12.019+00	2	1
+2025-04-08 14:50:52.886+00	3	1
 \.
 
 
@@ -1547,6 +1564,9 @@ COPY public.order_trackings ("time", "orderId", "orderStatusId") FROM stdin;
 --
 
 COPY public.orders ("orderId", "totalPrice", "totalDiscount", "shippingFee", "finalPrice", "paymentStatus", "paidDate", "createdAt", "updatedAt", "userId", "orderAddressId", "paymentMethodId", "voucherId") FROM stdin;
+1	1196000	269200	22000	948800	f	\N	2025-04-08 14:45:39.581+00	2025-04-08 14:45:39.581+00	3	1	1	\N
+2	3352000	670400	22000	2703600	f	\N	2025-04-08 14:47:12.016+00	2025-04-08 14:47:12.016+00	3	2	1	\N
+3	3588000	717600	22000	2892400	f	\N	2025-04-08 14:50:52.869+00	2025-04-08 14:50:52.869+00	3	3	1	\N
 \.
 
 
@@ -1673,8 +1693,8 @@ COPY public.product_informations ("productInfoId", "productInfoName", "isActive"
 --
 
 COPY public.products ("productId", "productName", slug, quantity, description, vat, "soldNumber", "avgRating", "isActive", "createdAt", "updatedAt", "brandId", "categoryId") FROM stdin;
-2	Đồ chơi lắp ráp Chiến giáp của Cole LEGO NINJAGO 71806	do-choi-lap-rap-chien-giap-cua-cole-lego-ninjago-71806	100	Siêu chiến giáp của Cole có buồng lái và được trang bị một cây búa để chiến đấu với những tên Chiến binh Sói gian ác. Và bây giờ, bạn có thể kết hợp các bộ phận của 3 cỗ máy ninja tuyệt vời do Cole, Sora và Kai điều khiển để tạo ra cỗ máy kết hợp của riêng bạn. Mỗi cỗ máy có thể tùy chỉnh và được bán riêng, đi kèm với chân, tay, vũ khí và thân có thể tháo rời để bạn có thể kết hợp.\r\n\r\n• Xây dựng những bộ chiến giáp của riêng bạn – Những bé hâm mộ NINJAGO® có thể tận hưởng hàng giờ vui vẻ sáng tạo khi kết hợp các bộ phận từ những bộ đồ chơi khác nhau (được bán riêng) để tạo ra những bộ siêu chiến giáp NINJAGO® của riêng mình\r\n\r\n• 2 nhân vật NINJAGO® – Bộ trò chơi bao gồm Cole với phụ kiện thanh kiếm mini và Chiến binh Sói gian ác cũng có thanh kiếm. Bé có thể tái hiện các trận chiến từ phần 2 của bộ phim hoạt hình NINJAGO Dragons Rising\r\n\r\n• Chiến giáp có thể điều chỉnh được – chiến giáp hạng nặng này có buồng lái để bé có thể đặt Cole vào, một chiếc búa lớn và tay chân có thể điều chỉnh được, có thể nghiêng và điều chỉnh thành các tư thế chiến đấu. Ngoài ra bé có thể hoán đổi và kết hợp các bộ phận từ chiến giáp của Cole với chiến giáp công nghệ của Sora (71807) và chiến giáp Kai (71808) được bán riêng\r\n\r\n• Quà tặng siêu hấp dẫn cho bé – Bộ LEGO® NINJAGO siêu đỉnh này sẽ mang đến cho bé nghiệm lắp ráp và vui chơi sáng tạo. Qúa thích hợp làm quà tặng cho những dịp sinh nhật hoặc lễ Tết.\r\n\r\n• Xây dựng thế giới LEGO® NINJAGO® của bé – Cùng sưu tập thêm những bộ trò chơi LEGO® NINJAGO® khác và xây dựng một thế giới của riêng bé, từ đó mở ra những câu chuyện mới\r\n\r\n• Kích thước – Bộ lắp ráp LEGO® gồm 235 mảnh, sau khi hoàn thiện cao trên 5,5 inch (14 cm)	10	0	0	t	2025-04-08 12:56:05.162+00	2025-04-08 12:56:05.162+00	1	1
-1	Mô Hình Nhân Vật Người Dơi 4inch BATMAN 6055946	mo-hinh-nhan-vat-nguoi-doi-4inch-batman-6055946	100	Đồ chơi BATMAN mô hình siêu anh hùng 4 inch 6058529 là mô hình đồ chơi siêu anh hùng đến từ vũ trụ DC chiếm được tình cảm không nhỏ của mọi người trên toàn thế giới. Mô hình sở hữu các chi tiết hoàn hảo, lắp ráp dễ dàng với các khớp nối linh hoạt. Sản phẩm đến từ hãng BATMAN cực kỳ an toàn cho bé trong quá trình chơi cũng như kích thích sự phát triển trí tuệ của bé\r\n\r\nĐồ chơi siêu anh hùng 6058529 gây ấn tượng với những đặc điểm nổi bật sau đây:\r\n\r\n    Sản phẩm có đường nét và chi tiết sắc sảo kết hợp với áo choàng mềm mại cực kỳ giống với nhân vật trên phim ảnh mang đến một anh hùng người dơi “siêu thực”.\r\n    Mô hình hành động với kích thước chuẩn 10cm nhỏ gọn phù hợp mang đi nhiều nơi cũng như cho bé cầm nắm trong quá trình chơi.\r\n    Sản phẩm được đi kèm 3 vũ khí bí mật như: găng tay, khiên chắn, súng plasma nhằm hỗ trợ bé có thể biến hoá nhiều trạng thái thông qua khả năng tư duy lắp ráp của bé từ đó kích thích trí tuệ, sự tưởng tượng và sáng tạo của trẻ bay cao để cho các nhân vật trong việc hoàn thành nhiệm vụ hay kế hoạch đặt ra của các bé.\r\n    Sản phẩm được làm từ nhựa cao cấp, các góc cạnh được bo tròn với bề mặt nhẵn tạo sự an toàn, không làm trầy xước da khi bé chơi. \r\n    Sở hữu 11 khớp nối giúp bé có thể sáng tạo ra những hành động hay tư thế khác nhau để hòa mình vào cuộc chiến của riêng mình và các bạn chơi cùng.\r\n    Quá trình tháo lắp dễ dàng mà không sợ dễ dàng bị hư hỏng, rớt các khớp nên không hề độc hại trong quá trình bé chơi robot.\r\n    Hỗ trợ kích thích phát triển vận động cũng như trí não của bé trong quá trình chơi mô hình.\r\n    Sản phẩm phù hợp cho các bé có độ tuổi từ 3 tuổi trở lên.\r\n    Sản phẩm giao hàng ngẫu nhiên	10	0	0	t	2025-04-06 11:04:53.327+00	2025-04-08 10:14:00.781+00	2	2
+2	Đồ chơi lắp ráp Chiến giáp của Cole LEGO NINJAGO 71806	do-choi-lap-rap-chien-giap-cua-cole-lego-ninjago-71806	100	Siêu chiến giáp của Cole có buồng lái và được trang bị một cây búa để chiến đấu với những tên Chiến binh Sói gian ác. Và bây giờ, bạn có thể kết hợp các bộ phận của 3 cỗ máy ninja tuyệt vời do Cole, Sora và Kai điều khiển để tạo ra cỗ máy kết hợp của riêng bạn. Mỗi cỗ máy có thể tùy chỉnh và được bán riêng, đi kèm với chân, tay, vũ khí và thân có thể tháo rời để bạn có thể kết hợp.\r\n\r\n• Xây dựng những bộ chiến giáp của riêng bạn – Những bé hâm mộ NINJAGO® có thể tận hưởng hàng giờ vui vẻ sáng tạo khi kết hợp các bộ phận từ những bộ đồ chơi khác nhau (được bán riêng) để tạo ra những bộ siêu chiến giáp NINJAGO® của riêng mình\r\n\r\n• 2 nhân vật NINJAGO® – Bộ trò chơi bao gồm Cole với phụ kiện thanh kiếm mini và Chiến binh Sói gian ác cũng có thanh kiếm. Bé có thể tái hiện các trận chiến từ phần 2 của bộ phim hoạt hình NINJAGO Dragons Rising\r\n\r\n• Chiến giáp có thể điều chỉnh được – chiến giáp hạng nặng này có buồng lái để bé có thể đặt Cole vào, một chiếc búa lớn và tay chân có thể điều chỉnh được, có thể nghiêng và điều chỉnh thành các tư thế chiến đấu. Ngoài ra bé có thể hoán đổi và kết hợp các bộ phận từ chiến giáp của Cole với chiến giáp công nghệ của Sora (71807) và chiến giáp Kai (71808) được bán riêng\r\n\r\n• Quà tặng siêu hấp dẫn cho bé – Bộ LEGO® NINJAGO siêu đỉnh này sẽ mang đến cho bé nghiệm lắp ráp và vui chơi sáng tạo. Qúa thích hợp làm quà tặng cho những dịp sinh nhật hoặc lễ Tết.\r\n\r\n• Xây dựng thế giới LEGO® NINJAGO® của bé – Cùng sưu tập thêm những bộ trò chơi LEGO® NINJAGO® khác và xây dựng một thế giới của riêng bé, từ đó mở ra những câu chuyện mới\r\n\r\n• Kích thước – Bộ lắp ráp LEGO® gồm 235 mảnh, sau khi hoàn thiện cao trên 5,5 inch (14 cm)	10	8	0	t	2025-04-08 12:56:05.162+00	2025-04-08 14:47:12.022+00	1	1
+1	Mô Hình Nhân Vật Người Dơi 4inch BATMAN 6055946	mo-hinh-nhan-vat-nguoi-doi-4inch-batman-6055946	100	Đồ chơi BATMAN mô hình siêu anh hùng 4 inch 6058529 là mô hình đồ chơi siêu anh hùng đến từ vũ trụ DC chiếm được tình cảm không nhỏ của mọi người trên toàn thế giới. Mô hình sở hữu các chi tiết hoàn hảo, lắp ráp dễ dàng với các khớp nối linh hoạt. Sản phẩm đến từ hãng BATMAN cực kỳ an toàn cho bé trong quá trình chơi cũng như kích thích sự phát triển trí tuệ của bé\r\n\r\nĐồ chơi siêu anh hùng 6058529 gây ấn tượng với những đặc điểm nổi bật sau đây:\r\n\r\n    Sản phẩm có đường nét và chi tiết sắc sảo kết hợp với áo choàng mềm mại cực kỳ giống với nhân vật trên phim ảnh mang đến một anh hùng người dơi “siêu thực”.\r\n    Mô hình hành động với kích thước chuẩn 10cm nhỏ gọn phù hợp mang đi nhiều nơi cũng như cho bé cầm nắm trong quá trình chơi.\r\n    Sản phẩm được đi kèm 3 vũ khí bí mật như: găng tay, khiên chắn, súng plasma nhằm hỗ trợ bé có thể biến hoá nhiều trạng thái thông qua khả năng tư duy lắp ráp của bé từ đó kích thích trí tuệ, sự tưởng tượng và sáng tạo của trẻ bay cao để cho các nhân vật trong việc hoàn thành nhiệm vụ hay kế hoạch đặt ra của các bé.\r\n    Sản phẩm được làm từ nhựa cao cấp, các góc cạnh được bo tròn với bề mặt nhẵn tạo sự an toàn, không làm trầy xước da khi bé chơi. \r\n    Sở hữu 11 khớp nối giúp bé có thể sáng tạo ra những hành động hay tư thế khác nhau để hòa mình vào cuộc chiến của riêng mình và các bạn chơi cùng.\r\n    Quá trình tháo lắp dễ dàng mà không sợ dễ dàng bị hư hỏng, rớt các khớp nên không hề độc hại trong quá trình bé chơi robot.\r\n    Hỗ trợ kích thích phát triển vận động cũng như trí não của bé trong quá trình chơi mô hình.\r\n    Sản phẩm phù hợp cho các bé có độ tuổi từ 3 tuổi trở lên.\r\n    Sản phẩm giao hàng ngẫu nhiên	10	16	0	t	2025-04-06 11:04:53.327+00	2025-04-08 14:50:52.891+00	2	2
 \.
 
 
@@ -1760,13 +1780,13 @@ COPY public.users ("userId", "fullName", email, password, phone, gender, birthda
 --
 
 COPY public.vouchers ("voucherId", "voucherCode", "discountType", "discountValue", "minOrderPrice", "maxPriceDiscount", "startDate", "endDate", quantity, "collectedQuantity", "currentUsedQuantity", "createdAt", "updatedAt") FROM stdin;
-1	NGUOIMOI	fixed_amount	30000	0	0	2025-04-01 00:00:00	2025-04-30 00:00:00	100	1	0	2025-04-08 08:20:32.967+00	2025-04-08 08:20:40.152+00
 2	GIANGSINH	percentage	20	50000	50000	2025-04-01 00:00:00	2025-04-30 00:00:00	20	0	0	2025-04-08 09:36:45.37+00	2025-04-08 09:36:45.37+00
 3	TEST1	percentage	50	50000	50000	2025-04-01 00:00:00	2025-04-30 00:00:00	20	0	0	2025-04-08 09:57:28.825+00	2025-04-08 09:57:28.825+00
 4	TEST2	fixed_amount	20000	0	50000	2025-04-01 00:00:00	2025-04-30 00:00:00	20	0	0	2025-04-08 09:58:02.384+00	2025-04-08 09:58:02.384+00
 5	TEST3	percentage	100	50000	20000	2025-04-01 00:00:00	2025-04-30 00:00:00	20	0	0	2025-04-08 09:59:01.01+00	2025-04-08 09:59:01.01+00
 6	TEST4	fixed_amount	20000	0	0	2025-04-01 00:00:00	2025-04-30 00:00:00	20	0	0	2025-04-08 09:59:20.024+00	2025-04-08 09:59:20.024+00
 7	TEST5	percentage	30	100000	50000	2025-04-01 00:00:00	2025-04-30 00:00:00	20	0	0	2025-04-08 10:00:30.73+00	2025-04-08 10:00:30.73+00
+1	NGUOIMOI	fixed_amount	30000	0	0	2025-04-01 00:00:00	2025-04-30 00:00:00	100	1	1	2025-04-08 08:20:32.967+00	2025-04-08 14:45:39.614+00
 \.
 
 
@@ -1774,7 +1794,7 @@ COPY public.vouchers ("voucherId", "voucherCode", "discountType", "discountValue
 -- Name: addresses_addressId_seq; Type: SEQUENCE SET; Schema: public; Owner: dhoaibao
 --
 
-SELECT pg_catalog.setval('public."addresses_addressId_seq"', 1, false);
+SELECT pg_catalog.setval('public."addresses_addressId_seq"', 1, true);
 
 
 --
@@ -1795,7 +1815,7 @@ SELECT pg_catalog.setval('public."brands_brandId_seq"', 2, true);
 -- Name: carts_cartId_seq; Type: SEQUENCE SET; Schema: public; Owner: dhoaibao
 --
 
-SELECT pg_catalog.setval('public."carts_cartId_seq"', 1, false);
+SELECT pg_catalog.setval('public."carts_cartId_seq"', 1, true);
 
 
 --
@@ -1823,14 +1843,14 @@ SELECT pg_catalog.setval('public."newses_newsId_seq"', 1, false);
 -- Name: order_addresses_orderAddressId_seq; Type: SEQUENCE SET; Schema: public; Owner: dhoaibao
 --
 
-SELECT pg_catalog.setval('public."order_addresses_orderAddressId_seq"', 1, false);
+SELECT pg_catalog.setval('public."order_addresses_orderAddressId_seq"', 3, true);
 
 
 --
 -- Name: order_details_orderDetailId_seq; Type: SEQUENCE SET; Schema: public; Owner: dhoaibao
 --
 
-SELECT pg_catalog.setval('public."order_details_orderDetailId_seq"', 1, false);
+SELECT pg_catalog.setval('public."order_details_orderDetailId_seq"', 3, true);
 
 
 --
@@ -1844,7 +1864,7 @@ SELECT pg_catalog.setval('public."order_statuses_orderStatusId_seq"', 1, false);
 -- Name: orders_orderId_seq; Type: SEQUENCE SET; Schema: public; Owner: dhoaibao
 --
 
-SELECT pg_catalog.setval('public."orders_orderId_seq"', 1, false);
+SELECT pg_catalog.setval('public."orders_orderId_seq"', 3, true);
 
 
 --
