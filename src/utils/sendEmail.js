@@ -56,6 +56,44 @@ export const sendOTPEmail = async (email, otp) => {
     await sendEmail(email, subject, text, html);
 };
 
+export const sendOrderStatusEmail = async (email, orderId, statusKey) => {
+    const statusMap = {
+        'pending': 'Chờ xác nhận',
+        'confirmed': 'Đang xử lý',
+        'shipping': 'Đang giao',
+        'delivered': 'Đã giao',
+        'cancelled': 'Đã hủy',
+    };
+    const subject = `Cập nhật trạng thái đơn hàng #${orderId}`;
+    const text = `Đơn hàng của bạn có mã ${orderId} hiện đang ở trạng thái: ${statusMap[statusKey]}`;
+    const html = `
+        <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+            <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; background-color: #f9f9f9;">
+                <h2 style="text-align: center; color: #122da6;">ToyStore - Cập nhật trạng thái đơn hàng</h2>
+                <p>Xin chào,</p>
+                <p>Đơn hàng của bạn với mã <strong>#${orderId}</strong> hiện đã được cập nhật với trạng thái mới như sau:</p>
+                <div style="text-align: center; margin: 20px 0;">
+                    <span style="display: inline-block; padding: 15px 30px; font-size: 20px; font-weight: bold; color: #fff; background-color: #122da6; border-radius: 4px;">
+                        ${statusMap[statusKey]}
+                    </span>
+                </div>
+                 <p style="color: #333; font-size: 16px; margin: 20px 0; text-align: center;">
+                    <a href="http://localhost:3001/" style="color: #122da6; font-weight: 500; text-decoration: underline;">Xem chi tiết đơn hàng</a>
+                 </p>
+                <p>Nếu bạn có bất kỳ câu hỏi nào liên quan đến đơn hàng, đừng ngần ngại liên hệ với chúng tôi.</p>
+                <p>Cảm ơn bạn đã mua sắm tại <strong>ToyStore</strong>!</p>
+                <p><strong>Đội ngũ ToyStore</strong></p>
+                <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;" />
+                <p style="font-size: 12px; color: #999; text-align: center;">
+                    Email này được gửi tự động từ hệ thống của ToyStore. Mọi thắc mắc xin vui lòng liên hệ qua email <a href="mailto:support@toystore.com" style="color: #122da6;">support@toystore.com</a>.
+                </p>
+            </div>
+        </div>
+    `;
+
+    await sendEmail(email, subject, text, html);
+};
+
 export const sendPasswordResetSuccessEmail = async (email) => {
     const subject = 'Đặt lại mật khẩu thành công';
     const text = 'Mật khẩu của bạn đã được đặt lại thành công.';

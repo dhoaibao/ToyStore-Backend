@@ -2,6 +2,7 @@ import prisma from "../config/prismaClient.js";
 import getCurrentPrice from "../utils/getCurrentPrice.js";
 import { createPaymentUrl, handlePaymentReturn } from "../utils/vnpay.js";
 import dayjs from "dayjs";
+import { sendOrderStatusEmail } from "../utils/sendEmail.js";
 
 const include = {
   orderTrackings: {
@@ -382,13 +383,19 @@ export const createOrder = async (req, res) => {
         req.headers['x-forwarded-for']?.split(',').shift() ||
         req.socket.remoteAddress ||
         req.ip;
-  
+
       const createDate = dayjs(result.createdAt).format('YYYYMMDDHHmmss');
       const orderId = result.orderId;
       const amount = result.finalPrice;
-  
+
       vnpayUrl = createPaymentUrl(ipAddr, createDate, orderId, amount);
     }
+
+    await sendOrderStatusEmail(
+      req.email,
+      result.orderId,
+      "pending",
+    );
 
     return res.status(200).json({
       message: "Order created!",
@@ -426,6 +433,12 @@ export const cancelOrder = async (req, res) => {
       },
     });
 
+    await sendOrderStatusEmail(
+      req.email,
+      existingOrder.orderId,
+      "cancelled",
+    );
+
     return res.status(200).json({
       message: "Order cancelled!",
     });
@@ -445,6 +458,13 @@ export const updateOrderStatus = async (req, res) => {
 
     const existingOrder = await prisma.order.findUnique({
       where: { orderId: parseInt(id) },
+      include: {
+        user: {
+          select: {
+            email: true,
+          },
+        }
+      }
     });
 
     if (!existingOrder) {
@@ -478,6 +498,21 @@ export const updateOrderStatus = async (req, res) => {
         },
       });
     }
+
+    let statusKey = "";
+    if (parseInt(orderStatusId) === 2) {
+      statusKey = "confirmed";
+    } else if (parseInt(orderStatusId) === 3) {
+      statusKey = "shipping";
+    } else if (parseInt(orderStatusId) === 4) {
+      statusKey = "delivered";
+    }
+
+    await sendOrderStatusEmail(
+      existingOrder.user.email,
+      existingOrder.orderId,
+      statusKey,
+    );
 
     return res.status(200).json({
       message: "Order status updated!",

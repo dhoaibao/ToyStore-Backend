@@ -31,14 +31,20 @@ export const getAllProductsInformation = async (req, res) => {
         if (take === -1) {
             productsInformation = await prisma.productInformation.findMany({
                 where: filters,
-                orderBy: sortOrder
+                orderBy: sortOrder,
+                include: {
+                    productInfoDetails: true,
+                }
             });
         } else {
             productsInformation = await prisma.productInformation.findMany({
                 where: filters,
                 skip,
                 take,
-                orderBy: sortOrder
+                orderBy: sortOrder,
+                include: {
+                    productInfoDetails: true,
+                }
             });
         }
 

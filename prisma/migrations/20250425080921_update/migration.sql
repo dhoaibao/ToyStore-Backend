@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "cart_details" ADD COLUMN     "createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP;

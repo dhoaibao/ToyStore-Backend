@@ -126,6 +126,9 @@ export const getRecommendations = async (req, res) => {
         productId: {
           in: filteredProductArray,
         },
+        isActive: {
+          equals: true,
+        },
       },
       include,
     });
@@ -158,6 +161,9 @@ const getProducts = async (limit, productIds = []) => {
     where: {
       productId: {
         notIn: productIds,
+      },
+      isActive: {
+        equals: true,
       },
       orderDetails: {
         some: {

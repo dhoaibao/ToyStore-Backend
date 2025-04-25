@@ -42,6 +42,29 @@ const include = {
           fullName: true,
         },
       },
+      uploadImages: {
+        select: {
+          url: true,
+        }
+      },
+      childrenReviews: {
+        select: {
+          comment: true,
+          createdAt: true,
+          user: {
+            select: {
+              fullName: true,
+              email: true,
+              avatar: true
+            }
+          },
+          uploadImages: {
+            select: {
+              url: true,
+            }
+          },
+        }
+      },
     },
   },
 };
@@ -54,6 +77,7 @@ export const getAllProducts = async (req, res) => {
       productIds,
       brandNames,
       categoryNames,
+      materials,
       ageOption,
       priceOption,
       sort,
@@ -119,28 +143,18 @@ export const getAllProducts = async (req, res) => {
       };
     }
 
-    if (ageOption) {
-      const [minAge, maxAge] = ageOption.includes("-")
-        ? ageOption.split("-").map((age) => age)
-        : [ageOption, "100"];
+    if (materials) {
       filters.productInfoValues = {
         some: {
-          AND: [
-            {
-              value: {
-                gte: minAge,
-                lte: maxAge,
-              },
+          value: {
+            in: materials.split(",").map((material) => material.trim()),
+          },
+          productInfo: {
+            productInfoName: {
+              equals: "Chất liệu",
+              mode: "insensitive",
             },
-            {
-              productInfo: {
-                productInfoName: {
-                  equals: "Tuổi",
-                  mode: "insensitive",
-                },
-              },
-            },
-          ],
+          },
         },
       };
     }
@@ -198,7 +212,25 @@ export const getAllProducts = async (req, res) => {
       include,
     });
 
-    const updatedProducts = products.map((product) => {
+
+    let filteredProducts = products;
+    if (ageOption) {
+      const [minAge, maxAge] = ageOption.includes("-")
+        ? ageOption.split("-").map((age) => parseInt(age))
+        : [parseInt(ageOption), 100];
+
+      filteredProducts = products.filter(product => {
+        const ageField = product.productInfoValues.find(info =>
+          info.productInfo.productInfoName.toLowerCase() === 'tuổi'
+        );
+
+        const age = parseInt(ageField?.value ?? "0");
+
+        return age >= minAge && age <= maxAge;
+      });
+    }
+
+    const updatedProducts = filteredProducts.map((product) => {
       const currentPrice = getCurrentPrice(product.prices);
       return {
         ...product,
@@ -214,9 +246,7 @@ export const getAllProducts = async (req, res) => {
       });
     }
 
-    const totalProducts = await prisma.product.count({
-      where: filters,
-    });
+    const totalProducts = updatedProducts.length;
 
     return res.status(200).json({
       message: "All products fetched!",
@@ -479,7 +509,7 @@ export const updateProduct = async (req, res) => {
     if (
       price &&
       parseFloat(price) !==
-        existingProduct.prices[existingProduct.prices.length - 1].price
+      existingProduct.prices[existingProduct.prices.length - 1].price
     ) {
       // const endDate = new Date();
       // endDate.setDate(endDate.getDate() - 1); // Trừ 1 ngày một cách chính xác

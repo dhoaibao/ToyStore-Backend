@@ -345,6 +345,8 @@ model CartDetail {
   cartId Int
   cart   Cart @relation(fields: [cartId], references: [cartId])
 
+  createdAt DateTime @default(now()) @db.Timestamptz
+
   @@id([productId, cartId])
   @@map("cart_details")
 }
