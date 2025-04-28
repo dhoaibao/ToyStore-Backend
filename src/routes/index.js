@@ -14,3 +14,5 @@ export * from './permission.route.js';
 export * from './review.route.js';
 export * from './message.route.js';
 export * from './statistic.route.js';
+export * from './news.route.js';
+export * from './recommendation.route.js'

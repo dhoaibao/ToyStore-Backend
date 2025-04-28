@@ -72,6 +72,7 @@ model UploadImage {
   promotion             Promotion?
   systemConfig          SystemConfiguration?
   category              Category?
+  news                  News?
 
   @@map("upload_images")
 }
@@ -128,6 +129,9 @@ model News {
   content   String
   createdAt DateTime @default(now()) @db.Timestamptz
   updatedAt DateTime @updatedAt @db.Timestamptz
+  
+  uploadImageId Int         @unique @map("upload_image_id")
+  thumbnail     UploadImage @relation(fields: [uploadImageId], references: [uploadImageId])
 
   @@map("newses")
 }
@@ -340,6 +344,8 @@ model CartDetail {
 
   cartId Int
   cart   Cart @relation(fields: [cartId], references: [cartId])
+
+  createdAt DateTime @default(now()) @db.Timestamptz
 
   @@id([productId, cartId])
   @@map("cart_details")

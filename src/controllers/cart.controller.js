@@ -72,7 +72,15 @@ export const addToCart = async (req, res) => {
 
         const updatedCart = await prisma.cart.findFirst({
             where: { userId: userId },
-            include,
+            include: {
+                ...include,
+                cartDetails: {
+                    ...include.cartDetails,
+                    orderBy: {
+                        createdAt: 'desc'
+                    }
+                }
+            }
         });
 
         return res.status(200).json({
@@ -94,7 +102,15 @@ export const getCartByUser = async (req, res) => {
 
         const cart = await prisma.cart.findFirst({
             where: { userId: userId },
-            include,
+            include: {
+                ...include,
+                cartDetails: {
+                    ...include.cartDetails,
+                    orderBy: {
+                        createdAt: 'desc'
+                    }
+                }
+            }
         });
 
         return res.status(200).json({
@@ -145,7 +161,15 @@ export const removeFromCart = async (req, res) => {
 
         const updatedCart = await prisma.cart.findFirst({
             where: { userId: userId },
-            include,
+            include: {
+                ...include,
+                cartDetails: {
+                    ...include.cartDetails,
+                    orderBy: {
+                        createdAt: 'desc'
+                    }
+                }
+            }
         });
 
         return res.status(200).json({
@@ -193,13 +217,21 @@ export const updateCartItem = async (req, res) => {
                 }
             },
             data: {
-                quantity
+                quantity,
             }
         });
 
         const updatedCart = await prisma.cart.findFirst({
             where: { userId: userId },
-            include,
+            include: {
+                ...include,
+                cartDetails: {
+                    ...include.cartDetails,
+                    orderBy: {
+                        createdAt: 'desc'
+                    }
+                }
+            }
         });
 
         return res.status(200).json({
