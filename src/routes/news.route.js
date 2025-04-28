@@ -7,8 +7,8 @@ const router = express.Router();
 
 router.get('/', getAllNews);
 router.get('/:slug', authentication, getNewsBySlug);
-router.post('/', authentication, upload.single("file"), createNews);
-router.put('/:id', authentication, upload.single("file"), updateNews);
+router.post('/', authentication, authorization, upload.single("file"), createNews);
+router.put('/:id', authentication, authorization, upload.single("file"), updateNews);
 router.delete('/:id', authentication, deleteNews);
 
 export const newsRoute = router;

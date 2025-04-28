@@ -756,7 +756,7 @@ export const imageSearch = async (req, res) => {
             FROM product_image_embeddings
             WHERE 1 - (embedding <=> ${imageEmbeddingString}::vector) > 0.5
             ORDER BY cosine_similarity DESC
-            LIMIT 1;
+            LIMIT 10;
         `;
 
     const productIds = productImageEmbeddings.map(

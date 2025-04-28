@@ -4,7 +4,7 @@ import { authentication, authorization } from "../middlewares/auth.js";
 
 const router = express.Router();
 
-router.get('/', getStatistics);
-router.get('/products', getProducts);
+router.get('/', authentication, authorization, getStatistics);
+router.get('/products', authentication, authorization, getProducts);
 
 export const statisticRoute = router;

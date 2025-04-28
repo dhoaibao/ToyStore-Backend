@@ -142,6 +142,12 @@ io.on("connection", (socket) => {
       senderId,
       content,
       isRead: false,
+      uploadImages:
+          images.length > 0
+            ? images.map(({ url }) => ({
+                url,
+              }))
+            : [],
       time,
     });
   });
